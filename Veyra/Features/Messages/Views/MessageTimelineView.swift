@@ -45,6 +45,7 @@ struct MessageTimelineView: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .tabBar)
         .toolbarBackground(VeyraColor.surface.opacity(0.96), for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbar {
