@@ -25,4 +25,8 @@ final class ConversationListViewModel {
     var hasSearchQuery: Bool {
         !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
+
+    func add(_ conversation: Conversation) {
+        conversations.insert(conversation, at: 0)
+    }
 }
