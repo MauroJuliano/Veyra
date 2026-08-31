@@ -8,7 +8,7 @@ A modern SwiftUI chat application built step by step with native Apple framework
 
 Veyra is being rebuilt incrementally. Every feature is developed in an isolated pull request and must compile and pass its tests before the next feature starts.
 
-The current milestone establishes the application bootstrap and its visual foundation. Product screens and data persistence will be introduced in later pull requests.
+The current milestone includes the application bootstrap, visual foundation, typed navigation, and a local conversation list. Message persistence will be introduced in later pull requests.
 
 ## Requirements
 
