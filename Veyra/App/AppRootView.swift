@@ -7,7 +7,7 @@ struct AppRootView: View {
                 .navigationDestination(for: AppRoute.self) { route in
                     switch route {
                     case let .conversation(conversation):
-                        ConversationPlaceholderView(conversation: conversation)
+                        MessageTimelineView(conversation: conversation)
                     }
                 }
         }
