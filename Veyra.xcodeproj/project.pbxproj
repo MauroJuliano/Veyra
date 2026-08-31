@@ -114,7 +114,6 @@
 			children = (
 				B94A5909B940AD5D3ADBDB05 /* ConversationListViewModel.swift */,
 			);
-			name = Presentation;
 			path = Presentation;
 			sourceTree = "<group>";
 		};
@@ -134,7 +133,6 @@
 				7B110D4A85DA09EF80C1A7D2 /* AppMetadata.swift */,
 				12575B7C86C1FF310C6440A5 /* DesignSystem */,
 			);
-			name = Core;
 			path = Core;
 			sourceTree = "<group>";
 		};
@@ -153,7 +151,6 @@
 				082AFEC3EDA6622C035B8FC8 /* ConversationRowView.swift */,
 				A7BC5825D1F38E225F0E3FB6 /* ConversationPlaceholderView.swift */,
 			);
-			name = Views;
 			path = Views;
 			sourceTree = "<group>";
 		};
@@ -173,7 +170,6 @@
 			children = (
 				B7F33F1CEFEA5169702DB93D /* Conversations */,
 			);
-			name = Features;
 			path = Features;
 			sourceTree = "<group>";
 		};
@@ -199,7 +195,6 @@
 			children = (
 				E0EAA93FD7CD9802592B73FA /* ConversationPreviewData.swift */,
 			);
-			name = Data;
 			path = Data;
 			sourceTree = "<group>";
 		};
@@ -211,7 +206,6 @@
 				1DB89F235E7D007BEF9A6D7E /* Presentation */,
 				5DAD1BA9E9AE5532069D387E /* Views */,
 			);
-			name = Conversations;
 			path = Conversations;
 			sourceTree = "<group>";
 		};
@@ -223,7 +217,6 @@
 				31A020A334F10D814DB2DC6C /* DesignTokenTests.swift */,
 				6B4C091B2C571B56F0C49F39 /* ConversationListViewModelTests.swift */,
 			);
-			name = VeyraTests;
 			path = VeyraTests;
 			sourceTree = "<group>";
 		};
@@ -244,7 +237,6 @@
 				443FA02DB0E706D8F1FD2D5C /* Core */,
 				6577D3D2341D28983B36E493 /* Features */,
 			);
-			name = Veyra;
 			path = Veyra;
 			sourceTree = "<group>";
 		};
@@ -255,7 +247,6 @@
 				ED09F370FA57E9D2202E653F /* AppRootView.swift */,
 				E810F31ADEB4011D2EC7D5EF /* AppRoute.swift */,
 			);
-			name = App;
 			path = App;
 			sourceTree = "<group>";
 		};
@@ -264,7 +255,6 @@
 			children = (
 				5698CE11ECAE96D995835FCD /* Conversation.swift */,
 			);
-			name = Models;
 			path = Models;
 			sourceTree = "<group>";
 		};
@@ -314,6 +304,15 @@
 			attributes = {
 				LastSwiftUpdateCheck = 1600;
 				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					4E3EF17B9CD209A6C85A06E7 = {
+						DevelopmentTeam = LMTRNCP347;
+						ProvisioningStyle = Automatic;
+					};
+					F5E8822DC362A45307CC45A4 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
 			};
 			buildConfigurationList = 0FB2225C37F3758BE7B03ABD /* Build configuration list for PBXProject "Veyra" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -324,8 +323,6 @@
 				Base,
 			);
 			mainGroup = CD51C17E867393530457834D;
-			minimizedProjectReferenceProxies = 0;
-			preferredProjectObjectVersion = 100;
 			productRefGroup = 7D7EEB33674F43D0F024F961 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -489,6 +486,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = LMTRNCP347;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -515,6 +513,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = LMTRNCP347;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -579,8 +578,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
