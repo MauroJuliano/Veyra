@@ -20,6 +20,7 @@ The current milestone includes the visual foundation, typed navigation, searchab
 
 - SwiftUI
 - Swift Testing
+- Repository-based data access with dependency injection
 - Apple frameworks only
 
 The project intentionally has no CocoaPods, third-party packages, or backend dependency.

@@ -3,11 +3,17 @@ import Observation
 
 @Observable
 final class ConversationListViewModel {
+    private let repository: any ConversationRepository
     private(set) var conversations: [Conversation]
     var searchText = ""
 
-    init(conversations: [Conversation] = ConversationPreviewData.conversations) {
-        self.conversations = conversations.sorted { $0.updatedAt > $1.updatedAt }
+    init(repository: any ConversationRepository = InMemoryConversationRepository()) {
+        self.repository = repository
+        conversations = repository.fetchConversations()
+    }
+
+    convenience init(conversations: [Conversation]) {
+        self.init(repository: InMemoryConversationRepository(conversations: conversations))
     }
 
     var totalUnreadCount: Int {
@@ -27,6 +33,7 @@ final class ConversationListViewModel {
     }
 
     func add(_ conversation: Conversation) {
-        conversations.insert(conversation, at: 0)
+        repository.save(conversation)
+        conversations = repository.fetchConversations()
     }
 }
