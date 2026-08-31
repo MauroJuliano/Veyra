@@ -4,9 +4,14 @@ struct ConversationListView: View {
     @State private var viewModel: ConversationListViewModel
     @State private var presentsNewConversation = false
     @State private var selectedConversation: Conversation?
+    private let contactRepository: any ContactRepository
 
-    init(viewModel: ConversationListViewModel = ConversationListViewModel()) {
+    init(
+        viewModel: ConversationListViewModel = ConversationListViewModel(),
+        contactRepository: any ContactRepository = InMemoryContactRepository()
+    ) {
         _viewModel = State(initialValue: viewModel)
+        self.contactRepository = contactRepository
     }
 
     var body: some View {
@@ -45,7 +50,7 @@ struct ConversationListView: View {
             MessageTimelineView(conversation: conversation, messages: [])
         }
         .sheet(isPresented: $presentsNewConversation) {
-            NewConversationView { conversation in
+            NewConversationView(viewModel: NewConversationViewModel(repository: contactRepository)) { conversation in
                 viewModel.add(conversation)
                 selectedConversation = conversation
             }

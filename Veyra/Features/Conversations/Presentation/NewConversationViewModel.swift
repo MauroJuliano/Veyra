@@ -6,8 +6,12 @@ final class NewConversationViewModel {
     let contacts: [Contact]
     var searchText = ""
 
-    init(contacts: [Contact] = ContactPreviewData.contacts) {
-        self.contacts = contacts.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    init(repository: any ContactRepository = InMemoryContactRepository()) {
+        contacts = repository.fetchContacts()
+    }
+
+    convenience init(contacts: [Contact]) {
+        self.init(repository: InMemoryContactRepository(contacts: contacts))
     }
 
     var filteredContacts: [Contact] {
