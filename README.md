@@ -1,5 +1,7 @@
 # Veyra
 
+[![CI](https://github.com/MauroJuliano/Veyra/actions/workflows/ci.yml/badge.svg)](https://github.com/MauroJuliano/Veyra/actions/workflows/ci.yml)
+
 A modern SwiftUI chat application built step by step with native Apple frameworks.
 
 ## Status
