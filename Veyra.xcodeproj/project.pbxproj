@@ -8,20 +8,26 @@
 
 /* Begin PBXBuildFile section */
 		0338B32735B6527A4987F2B0 /* DesignSystemCatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92D1807482AB6926E4DA3AFB /* DesignSystemCatalogView.swift */; };
-		068629C6861D6D658A53B122 /* ConversationPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7BC5825D1F38E225F0E3FB6 /* ConversationPlaceholderView.swift */; };
 		0C7B4565867628A8A7E73B6E /* Conversation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5698CE11ECAE96D995835FCD /* Conversation.swift */; };
 		12C821102DA87163D75754D4 /* ConversationListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B94A5909B940AD5D3ADBDB05 /* ConversationListViewModel.swift */; };
 		2F5A1E8DC77B696C08789C3F /* AppRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = E810F31ADEB4011D2EC7D5EF /* AppRoute.swift */; };
 		43ACD9B7B96AD843FE8E4420 /* VeyraRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612257922E48B3ACB47078A3 /* VeyraRadius.swift */; };
+		44755A60DDB5415B6345E48C /* MessagePreviewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DF296E5214CCEBFA8ABE939 /* MessagePreviewData.swift */; };
+		462039CDAE80A4380ECB29CE /* MessageTimelineViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF0E692A9671F543EED8718 /* MessageTimelineViewModel.swift */; };
 		4E5BB1BAF90877B31BAE4F22 /* DesignTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31A020A334F10D814DB2DC6C /* DesignTokenTests.swift */; };
 		5668E2E56D89B2AD327ECC23 /* ConversationListViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B4C091B2C571B56F0C49F39 /* ConversationListViewModelTests.swift */; };
 		60CDAF65F1178A5709B81BE3 /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED09F370FA57E9D2202E653F /* AppRootView.swift */; };
+		62CE91E35271A60A88FF310F /* MessageTimelineViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2678BF2576CF692192367CA9 /* MessageTimelineViewModelTests.swift */; };
+		6DBD723058510BC9DFED81AC /* MessageTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF5389180DA0846CECDD8509 /* MessageTimelineView.swift */; };
 		6E7B76D4486B46ECED541380 /* ConversationPreviewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0EAA93FD7CD9802592B73FA /* ConversationPreviewData.swift */; };
 		734597C19877BA0641165DB5 /* ConversationRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 082AFEC3EDA6622C035B8FC8 /* ConversationRowView.swift */; };
+		7423C1C01A34B0930A69B35C /* MessageComposerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAD678B15A97CA475953DB /* MessageComposerView.swift */; };
 		753286285FC560C6DE98F2BA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 208DF70C250EDFE8C75411CE /* Foundation.framework */; };
+		76FC6800A2D4B7B8493ACFC2 /* MessageBubbleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67E4FA0E7A4E39541CF5B110 /* MessageBubbleView.swift */; };
 		782AB63FFF1CF012CCBE15D9 /* VeyraTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACE1C7EE7B619D59D5529C04 /* VeyraTextField.swift */; };
 		7C9F715FB5E1C3D678BC47B9 /* AppMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B110D4A85DA09EF80C1A7D2 /* AppMetadata.swift */; };
 		880A32328EAACEC3D916197A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 208DF70C250EDFE8C75411CE /* Foundation.framework */; };
+		95A91251246566BEA392862D /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B6EEED8A124464784C2B17 /* Message.swift */; };
 		95DD681F3B9F64C813E31A9F /* AvatarInitialsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BF8B6FD286458DDB74C22F1 /* AvatarInitialsTests.swift */; };
 		9B311E6D5BCF803CF646E063 /* VeyraPrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D907300CAB7511CAFB4C0D7 /* VeyraPrimaryButton.swift */; };
 		A3F57AB2EFBDC14540CD7DE7 /* VeyraColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18C29846BD4E660FFF3319F /* VeyraColor.swift */; };
@@ -48,27 +54,33 @@
 		082AFEC3EDA6622C035B8FC8 /* ConversationRowView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationRowView.swift; sourceTree = "<group>"; };
 		0D907300CAB7511CAFB4C0D7 /* VeyraPrimaryButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraPrimaryButton.swift; sourceTree = "<group>"; };
 		208DF70C250EDFE8C75411CE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		2678BF2576CF692192367CA9 /* MessageTimelineViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessageTimelineViewModelTests.swift; sourceTree = "<group>"; };
 		31A020A334F10D814DB2DC6C /* DesignTokenTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DesignTokenTests.swift; sourceTree = "<group>"; };
 		5698CE11ECAE96D995835FCD /* Conversation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Conversation.swift; sourceTree = "<group>"; };
 		612257922E48B3ACB47078A3 /* VeyraRadius.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraRadius.swift; sourceTree = "<group>"; };
+		67E4FA0E7A4E39541CF5B110 /* MessageBubbleView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessageBubbleView.swift; sourceTree = "<group>"; };
 		6B4C091B2C571B56F0C49F39 /* ConversationListViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationListViewModelTests.swift; sourceTree = "<group>"; };
 		778776CB7DBCAB1C013FD617 /* Veyra.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Veyra.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		79FC21B9F9899BED11DEF736 /* VeyraTypography.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraTypography.swift; sourceTree = "<group>"; };
 		7B110D4A85DA09EF80C1A7D2 /* AppMetadata.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppMetadata.swift; sourceTree = "<group>"; };
 		815CF3D51D8A2E92364C8777 /* VeyraApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraApp.swift; sourceTree = "<group>"; };
+		8DF296E5214CCEBFA8ABE939 /* MessagePreviewData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessagePreviewData.swift; sourceTree = "<group>"; };
 		92D1807482AB6926E4DA3AFB /* DesignSystemCatalogView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DesignSystemCatalogView.swift; sourceTree = "<group>"; };
 		96D6F9076981087963B2FF89 /* AppMetadataTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppMetadataTests.swift; sourceTree = "<group>"; };
 		9BF8B6FD286458DDB74C22F1 /* AvatarInitialsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AvatarInitialsTests.swift; sourceTree = "<group>"; };
 		A18C29846BD4E660FFF3319F /* VeyraColor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraColor.swift; sourceTree = "<group>"; };
-		A7BC5825D1F38E225F0E3FB6 /* ConversationPlaceholderView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationPlaceholderView.swift; sourceTree = "<group>"; };
 		AAA6A3BB479DAFD774307B9D /* VeyraSpacing.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraSpacing.swift; sourceTree = "<group>"; };
+		AAAAD678B15A97CA475953DB /* MessageComposerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessageComposerView.swift; sourceTree = "<group>"; };
 		ACE1C7EE7B619D59D5529C04 /* VeyraTextField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraTextField.swift; sourceTree = "<group>"; };
+		B6B6EEED8A124464784C2B17 /* Message.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		B94A5909B940AD5D3ADBDB05 /* ConversationListViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationListViewModel.swift; sourceTree = "<group>"; };
 		C2E49A4879773A3660F32692 /* ConversationListView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationListView.swift; sourceTree = "<group>"; };
+		DDF0E692A9671F543EED8718 /* MessageTimelineViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessageTimelineViewModel.swift; sourceTree = "<group>"; };
 		E0EAA93FD7CD9802592B73FA /* ConversationPreviewData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationPreviewData.swift; sourceTree = "<group>"; };
 		E810F31ADEB4011D2EC7D5EF /* AppRoute.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppRoute.swift; sourceTree = "<group>"; };
 		E827789E667ED520D1F288BC /* VeyraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VeyraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED09F370FA57E9D2202E653F /* AppRootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
+		FF5389180DA0846CECDD8509 /* MessageTimelineView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessageTimelineView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,6 +103,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0D313FE79FD841EB30849DC8 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B6B6EEED8A124464784C2B17 /* Message.swift */,
+			);
+			name = Models;
+			path = Models;
+			sourceTree = "<group>";
+		};
 		1052962894E0F9F466EEABBE /* Previews */ = {
 			isa = PBXGroup;
 			children = (
@@ -114,6 +135,15 @@
 			children = (
 				B94A5909B940AD5D3ADBDB05 /* ConversationListViewModel.swift */,
 			);
+			path = Presentation;
+			sourceTree = "<group>";
+		};
+		23FFEE96E918F105EB053FED /* Presentation */ = {
+			isa = PBXGroup;
+			children = (
+				DDF0E692A9671F543EED8718 /* MessageTimelineViewModel.swift */,
+			);
+			name = Presentation;
 			path = Presentation;
 			sourceTree = "<group>";
 		};
@@ -144,12 +174,22 @@
 			name = iOS;
 			sourceTree = "<group>";
 		};
+		52F35888B0023302ABF8F350 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				67E4FA0E7A4E39541CF5B110 /* MessageBubbleView.swift */,
+				AAAAD678B15A97CA475953DB /* MessageComposerView.swift */,
+				FF5389180DA0846CECDD8509 /* MessageTimelineView.swift */,
+			);
+			name = Views;
+			path = Views;
+			sourceTree = "<group>";
+		};
 		5DAD1BA9E9AE5532069D387E /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				C2E49A4879773A3660F32692 /* ConversationListView.swift */,
 				082AFEC3EDA6622C035B8FC8 /* ConversationRowView.swift */,
-				A7BC5825D1F38E225F0E3FB6 /* ConversationPlaceholderView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -169,6 +209,7 @@
 			isa = PBXGroup;
 			children = (
 				B7F33F1CEFEA5169702DB93D /* Conversations */,
+				D62F192FE2C61BF9C279E612 /* Messages */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -198,6 +239,15 @@
 			path = Data;
 			sourceTree = "<group>";
 		};
+		B1EEE824C219217C75F29061 /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				8DF296E5214CCEBFA8ABE939 /* MessagePreviewData.swift */,
+			);
+			name = Data;
+			path = Data;
+			sourceTree = "<group>";
+		};
 		B7F33F1CEFEA5169702DB93D /* Conversations */ = {
 			isa = PBXGroup;
 			children = (
@@ -216,6 +266,7 @@
 				9BF8B6FD286458DDB74C22F1 /* AvatarInitialsTests.swift */,
 				31A020A334F10D814DB2DC6C /* DesignTokenTests.swift */,
 				6B4C091B2C571B56F0C49F39 /* ConversationListViewModelTests.swift */,
+				2678BF2576CF692192367CA9 /* MessageTimelineViewModelTests.swift */,
 			);
 			path = VeyraTests;
 			sourceTree = "<group>";
@@ -228,6 +279,18 @@
 				EC94D5BA68BF5A79522EEAB5 /* Veyra */,
 				BFBF3C2D03A9534B3FA12D2E /* VeyraTests */,
 			);
+			sourceTree = "<group>";
+		};
+		D62F192FE2C61BF9C279E612 /* Messages */ = {
+			isa = PBXGroup;
+			children = (
+				0D313FE79FD841EB30849DC8 /* Models */,
+				B1EEE824C219217C75F29061 /* Data */,
+				23FFEE96E918F105EB053FED /* Presentation */,
+				52F35888B0023302ABF8F350 /* Views */,
+			);
+			name = Messages;
+			path = Messages;
 			sourceTree = "<group>";
 		};
 		EC94D5BA68BF5A79522EEAB5 /* Veyra */ = {
@@ -359,6 +422,7 @@
 				95DD681F3B9F64C813E31A9F /* AvatarInitialsTests.swift in Sources */,
 				4E5BB1BAF90877B31BAE4F22 /* DesignTokenTests.swift in Sources */,
 				5668E2E56D89B2AD327ECC23 /* ConversationListViewModelTests.swift in Sources */,
+				62CE91E35271A60A88FF310F /* MessageTimelineViewModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -382,8 +446,13 @@
 				12C821102DA87163D75754D4 /* ConversationListViewModel.swift in Sources */,
 				EE0E18835536CBB582D465AC /* ConversationListView.swift in Sources */,
 				734597C19877BA0641165DB5 /* ConversationRowView.swift in Sources */,
-				068629C6861D6D658A53B122 /* ConversationPlaceholderView.swift in Sources */,
 				2F5A1E8DC77B696C08789C3F /* AppRoute.swift in Sources */,
+				95A91251246566BEA392862D /* Message.swift in Sources */,
+				44755A60DDB5415B6345E48C /* MessagePreviewData.swift in Sources */,
+				462039CDAE80A4380ECB29CE /* MessageTimelineViewModel.swift in Sources */,
+				76FC6800A2D4B7B8493ACFC2 /* MessageBubbleView.swift in Sources */,
+				7423C1C01A34B0930A69B35C /* MessageComposerView.swift in Sources */,
+				6DBD723058510BC9DFED81AC /* MessageTimelineView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
