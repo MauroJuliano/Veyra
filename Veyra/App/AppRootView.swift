@@ -5,16 +5,19 @@ struct AppRootView: View {
         VStack(spacing: 12) {
             Image(systemName: "message.fill")
                 .font(.system(size: 44))
-                .foregroundStyle(.tint)
+                .foregroundStyle(VeyraColor.accent)
 
             Text(AppMetadata.name)
-                .font(.largeTitle.bold())
+                .font(VeyraTypography.display)
 
             Text("Built one feature at a time.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(VeyraTypography.body)
+                .foregroundStyle(VeyraColor.textSecondary)
         }
-        .padding()
+        .foregroundStyle(VeyraColor.textPrimary)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(VeyraSpacing.lg)
+        .background(VeyraColor.background)
     }
 }
 
