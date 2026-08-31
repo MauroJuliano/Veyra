@@ -22,4 +22,22 @@ struct ConversationListViewModelTests {
 
         #expect(viewModel.totalUnreadCount == 5)
     }
+
+    @Test func filtersByParticipantNameIgnoringCase() {
+        let viewModel = ConversationListViewModel(conversations: [
+            Conversation(participantName: "Ana Lima", lastMessage: "Hello", updatedAt: .now),
+            Conversation(participantName: "Lucas Rocha", lastMessage: "Welcome", updatedAt: .now)
+        ])
+        viewModel.searchText = "ana"
+        #expect(viewModel.filteredConversations.map(\.participantName) == ["Ana Lima"])
+    }
+
+    @Test func filtersByLastMessage() {
+        let viewModel = ConversationListViewModel(conversations: [
+            Conversation(participantName: "Ana", lastMessage: "Review the prototype", updatedAt: .now),
+            Conversation(participantName: "Lucas", lastMessage: "See you later", updatedAt: .now)
+        ])
+        viewModel.searchText = "prototype"
+        #expect(viewModel.filteredConversations.map(\.participantName) == ["Ana"])
+    }
 }
