@@ -18,7 +18,16 @@ struct MessageBubbleView: View {
                     .foregroundStyle(VeyraColor.textPrimary)
                     .padding(.horizontal, VeyraSpacing.md)
                     .padding(.vertical, VeyraSpacing.sm)
-                    .background(bubbleBackground)
+                    .background {
+                        RoundedRectangle(cornerRadius: VeyraRadius.medium)
+                            .fill(.ultraThinMaterial)
+                            .overlay {
+                                if message.direction == .outgoing {
+                                    RoundedRectangle(cornerRadius: VeyraRadius.medium)
+                                        .fill(VeyraColor.accent.opacity(0.22))
+                                }
+                            }
+                    }
                     .clipShape(RoundedRectangle(cornerRadius: VeyraRadius.medium))
 
                 HStack(spacing: VeyraSpacing.xs) {
@@ -38,11 +47,6 @@ struct MessageBubbleView: View {
         .accessibilityElement(children: .combine)
     }
 
-    private var bubbleBackground: some ShapeStyle {
-        message.direction == .outgoing
-            ? AnyShapeStyle(VeyraColor.accentMuted)
-            : AnyShapeStyle(VeyraColor.surfaceElevated)
-    }
 }
 
 #Preview("Message bubbles") {
