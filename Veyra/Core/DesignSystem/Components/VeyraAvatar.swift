@@ -40,6 +40,7 @@ struct VeyraAvatar: View {
     let name: String
     var image: Image?
     var size: VeyraAvatarSize = .medium
+    var showsOnlineIndicator = false
 
     var body: some View {
         Group {
@@ -57,6 +58,15 @@ struct VeyraAvatar: View {
         }
         .frame(width: size.dimension, height: size.dimension)
         .clipShape(Circle())
+        .overlay(alignment: .bottomTrailing) {
+            if showsOnlineIndicator {
+                Circle()
+                    .fill(VeyraColor.success)
+                    .frame(width: size.dimension * 0.28, height: size.dimension * 0.28)
+                    .overlay(Circle().stroke(VeyraColor.surface, lineWidth: 2))
+                    .accessibilityHidden(true)
+            }
+        }
         .accessibilityLabel(name)
     }
 }
