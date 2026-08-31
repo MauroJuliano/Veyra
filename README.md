@@ -37,6 +37,8 @@ The interface is built from semantic, reusable SwiftUI primitives:
 
 Product screens should consume these primitives instead of introducing one-off visual values.
 
+The chat home uses a dark-first visual direction with a purple atmosphere, elevated conversation cards, and native tab navigation.
+
 ## Running the project
 
 1. Clone the repository.
