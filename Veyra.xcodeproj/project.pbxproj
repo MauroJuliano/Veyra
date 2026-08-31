@@ -7,12 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0338B32735B6527A4987F2B0 /* DesignSystemCatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92D1807482AB6926E4DA3AFB /* DesignSystemCatalogView.swift */; };
+		43ACD9B7B96AD843FE8E4420 /* VeyraRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612257922E48B3ACB47078A3 /* VeyraRadius.swift */; };
+		4E5BB1BAF90877B31BAE4F22 /* DesignTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31A020A334F10D814DB2DC6C /* DesignTokenTests.swift */; };
 		60CDAF65F1178A5709B81BE3 /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED09F370FA57E9D2202E653F /* AppRootView.swift */; };
 		753286285FC560C6DE98F2BA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 208DF70C250EDFE8C75411CE /* Foundation.framework */; };
+		782AB63FFF1CF012CCBE15D9 /* VeyraTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACE1C7EE7B619D59D5529C04 /* VeyraTextField.swift */; };
 		7C9F715FB5E1C3D678BC47B9 /* AppMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B110D4A85DA09EF80C1A7D2 /* AppMetadata.swift */; };
 		880A32328EAACEC3D916197A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 208DF70C250EDFE8C75411CE /* Foundation.framework */; };
+		95DD681F3B9F64C813E31A9F /* AvatarInitialsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BF8B6FD286458DDB74C22F1 /* AvatarInitialsTests.swift */; };
+		9B311E6D5BCF803CF646E063 /* VeyraPrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D907300CAB7511CAFB4C0D7 /* VeyraPrimaryButton.swift */; };
+		A3F57AB2EFBDC14540CD7DE7 /* VeyraColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18C29846BD4E660FFF3319F /* VeyraColor.swift */; };
 		AFA0D0231FA487557A3ACFBA /* VeyraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815CF3D51D8A2E92364C8777 /* VeyraApp.swift */; };
+		C4F01BA4C1FC96FCE3BC3D1D /* VeyraTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FC21B9F9899BED11DEF736 /* VeyraTypography.swift */; };
+		CEEA022B7E5F677BA3E64917 /* VeyraAvatar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038CE3E0EAE19CBFD20112BA /* VeyraAvatar.swift */; };
 		E03D522D231932CB9A16CA75 /* AppMetadataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96D6F9076981087963B2FF89 /* AppMetadataTests.swift */; };
+		FC691B76552D331E00398DE3 /* VeyraSpacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA6A3BB479DAFD774307B9D /* VeyraSpacing.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -26,11 +36,21 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		038CE3E0EAE19CBFD20112BA /* VeyraAvatar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraAvatar.swift; sourceTree = "<group>"; };
+		0D907300CAB7511CAFB4C0D7 /* VeyraPrimaryButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraPrimaryButton.swift; sourceTree = "<group>"; };
 		208DF70C250EDFE8C75411CE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		31A020A334F10D814DB2DC6C /* DesignTokenTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DesignTokenTests.swift; sourceTree = "<group>"; };
+		612257922E48B3ACB47078A3 /* VeyraRadius.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraRadius.swift; sourceTree = "<group>"; };
 		778776CB7DBCAB1C013FD617 /* Veyra.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Veyra.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		79FC21B9F9899BED11DEF736 /* VeyraTypography.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraTypography.swift; sourceTree = "<group>"; };
 		7B110D4A85DA09EF80C1A7D2 /* AppMetadata.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppMetadata.swift; sourceTree = "<group>"; };
 		815CF3D51D8A2E92364C8777 /* VeyraApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraApp.swift; sourceTree = "<group>"; };
+		92D1807482AB6926E4DA3AFB /* DesignSystemCatalogView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DesignSystemCatalogView.swift; sourceTree = "<group>"; };
 		96D6F9076981087963B2FF89 /* AppMetadataTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppMetadataTests.swift; sourceTree = "<group>"; };
+		9BF8B6FD286458DDB74C22F1 /* AvatarInitialsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AvatarInitialsTests.swift; sourceTree = "<group>"; };
+		A18C29846BD4E660FFF3319F /* VeyraColor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraColor.swift; sourceTree = "<group>"; };
+		AAA6A3BB479DAFD774307B9D /* VeyraSpacing.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraSpacing.swift; sourceTree = "<group>"; };
+		ACE1C7EE7B619D59D5529C04 /* VeyraTextField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraTextField.swift; sourceTree = "<group>"; };
 		E827789E667ED520D1F288BC /* VeyraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VeyraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED09F370FA57E9D2202E653F /* AppRootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -55,10 +75,39 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1052962894E0F9F466EEABBE /* Previews */ = {
+			isa = PBXGroup;
+			children = (
+				92D1807482AB6926E4DA3AFB /* DesignSystemCatalogView.swift */,
+			);
+			path = Previews;
+			sourceTree = "<group>";
+		};
+		12575B7C86C1FF310C6440A5 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				5FF5271B60B1D69D8DF32C09 /* Foundation */,
+				24BABF8ED18F9DCB1A2139F0 /* Components */,
+				1052962894E0F9F466EEABBE /* Previews */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		24BABF8ED18F9DCB1A2139F0 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				038CE3E0EAE19CBFD20112BA /* VeyraAvatar.swift */,
+				0D907300CAB7511CAFB4C0D7 /* VeyraPrimaryButton.swift */,
+				ACE1C7EE7B619D59D5529C04 /* VeyraTextField.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		443FA02DB0E706D8F1FD2D5C /* Core */ = {
 			isa = PBXGroup;
 			children = (
 				7B110D4A85DA09EF80C1A7D2 /* AppMetadata.swift */,
+				12575B7C86C1FF310C6440A5 /* DesignSystem */,
 			);
 			name = Core;
 			path = Core;
@@ -70,6 +119,17 @@
 				208DF70C250EDFE8C75411CE /* Foundation.framework */,
 			);
 			name = iOS;
+			sourceTree = "<group>";
+		};
+		5FF5271B60B1D69D8DF32C09 /* Foundation */ = {
+			isa = PBXGroup;
+			children = (
+				A18C29846BD4E660FFF3319F /* VeyraColor.swift */,
+				AAA6A3BB479DAFD774307B9D /* VeyraSpacing.swift */,
+				612257922E48B3ACB47078A3 /* VeyraRadius.swift */,
+				79FC21B9F9899BED11DEF736 /* VeyraTypography.swift */,
+			);
+			path = Foundation;
 			sourceTree = "<group>";
 		};
 		7D7EEB33674F43D0F024F961 /* Products */ = {
@@ -93,6 +153,8 @@
 			isa = PBXGroup;
 			children = (
 				96D6F9076981087963B2FF89 /* AppMetadataTests.swift */,
+				9BF8B6FD286458DDB74C22F1 /* AvatarInitialsTests.swift */,
+				31A020A334F10D814DB2DC6C /* DesignTokenTests.swift */,
 			);
 			name = VeyraTests;
 			path = VeyraTests;
@@ -219,6 +281,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				E03D522D231932CB9A16CA75 /* AppMetadataTests.swift in Sources */,
+				95DD681F3B9F64C813E31A9F /* AvatarInitialsTests.swift in Sources */,
+				4E5BB1BAF90877B31BAE4F22 /* DesignTokenTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -229,6 +293,14 @@
 				AFA0D0231FA487557A3ACFBA /* VeyraApp.swift in Sources */,
 				60CDAF65F1178A5709B81BE3 /* AppRootView.swift in Sources */,
 				7C9F715FB5E1C3D678BC47B9 /* AppMetadata.swift in Sources */,
+				A3F57AB2EFBDC14540CD7DE7 /* VeyraColor.swift in Sources */,
+				FC691B76552D331E00398DE3 /* VeyraSpacing.swift in Sources */,
+				43ACD9B7B96AD843FE8E4420 /* VeyraRadius.swift in Sources */,
+				C4F01BA4C1FC96FCE3BC3D1D /* VeyraTypography.swift in Sources */,
+				CEEA022B7E5F677BA3E64917 /* VeyraAvatar.swift in Sources */,
+				9B311E6D5BCF803CF646E063 /* VeyraPrimaryButton.swift in Sources */,
+				782AB63FFF1CF012CCBE15D9 /* VeyraTextField.swift in Sources */,
+				0338B32735B6527A4987F2B0 /* DesignSystemCatalogView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

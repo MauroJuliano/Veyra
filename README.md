@@ -8,7 +8,7 @@ A modern SwiftUI chat application built step by step with native Apple framework
 
 Veyra is being rebuilt incrementally. Every feature is developed in an isolated pull request and must compile and pass its tests before the next feature starts.
 
-The current milestone contains only the application bootstrap. Product screens and data persistence will be introduced in later pull requests.
+The current milestone establishes the application bootstrap and its visual foundation. Product screens and data persistence will be introduced in later pull requests.
 
 ## Requirements
 
@@ -23,6 +23,17 @@ The current milestone contains only the application bootstrap. Product screens a
 - Apple frameworks only
 
 The project intentionally has no CocoaPods, third-party packages, or backend dependency.
+
+## Design system
+
+The interface is built from semantic, reusable SwiftUI primitives:
+
+- Adaptive light and dark color roles
+- Spacing, corner-radius, and typography scales
+- Avatar, primary button, and text-field components
+- A preview catalog for visual review in Xcode
+
+Product screens should consume these primitives instead of introducing one-off visual values.
 
 ## Running the project
 
