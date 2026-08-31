@@ -2,6 +2,8 @@ import SwiftUI
 
 struct ConversationListView: View {
     @State private var viewModel: ConversationListViewModel
+    @State private var presentsNewConversation = false
+    @State private var selectedConversation: Conversation?
 
     init(viewModel: ConversationListViewModel = ConversationListViewModel()) {
         _viewModel = State(initialValue: viewModel)
@@ -39,9 +41,18 @@ struct ConversationListView: View {
         .background(VeyraColor.background)
         .navigationTitle("Messages")
         .searchable(text: $viewModel.searchText, prompt: "Search conversations")
+        .navigationDestination(item: $selectedConversation) { conversation in
+            MessageTimelineView(conversation: conversation, messages: [])
+        }
+        .sheet(isPresented: $presentsNewConversation) {
+            NewConversationView { conversation in
+                viewModel.add(conversation)
+                selectedConversation = conversation
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button(action: {}) { Image(systemName: "square.and.pencil") }
+                Button { presentsNewConversation = true } label: { Image(systemName: "square.and.pencil") }
                     .accessibilityLabel("New conversation")
             }
         }
