@@ -10,6 +10,7 @@
 		0338B32735B6527A4987F2B0 /* DesignSystemCatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92D1807482AB6926E4DA3AFB /* DesignSystemCatalogView.swift */; };
 		0C7B4565867628A8A7E73B6E /* Conversation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5698CE11ECAE96D995835FCD /* Conversation.swift */; };
 		12C821102DA87163D75754D4 /* ConversationListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B94A5909B940AD5D3ADBDB05 /* ConversationListViewModel.swift */; };
+		14497BE77041C7B0A71FA6A0 /* SwiftDataConversationRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF646664F27E3856206D966C /* SwiftDataConversationRepositoryTests.swift */; };
 		1A05F76268540B8DBBDF8D9B /* NewConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5917AB74FE9969FED29ED57E /* NewConversationView.swift */; };
 		1C05F92851F0DF88FF1FD371 /* Contact.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D3DEB07FE517FDFC254469 /* Contact.swift */; };
 		2F5A1E8DC77B696C08789C3F /* AppRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = E810F31ADEB4011D2EC7D5EF /* AppRoute.swift */; };
@@ -31,7 +32,9 @@
 		76FC6800A2D4B7B8493ACFC2 /* MessageBubbleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67E4FA0E7A4E39541CF5B110 /* MessageBubbleView.swift */; };
 		782AB63FFF1CF012CCBE15D9 /* VeyraTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACE1C7EE7B619D59D5529C04 /* VeyraTextField.swift */; };
 		7B51BB037BE5D99F3698FF44 /* ContactRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 994EA17041AD6A2C9DAA0CC3 /* ContactRepository.swift */; };
+		7C0D872ADBC557FB5919A320 /* SwiftDataConversationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D5400F153B6D21CB5BB9CC5 /* SwiftDataConversationRepository.swift */; };
 		7C9F715FB5E1C3D678BC47B9 /* AppMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B110D4A85DA09EF80C1A7D2 /* AppMetadata.swift */; };
+		861B06509E4A9B740264E765 /* ConversationRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E91305B16B77EBDDB5AF62A /* ConversationRecord.swift */; };
 		880A32328EAACEC3D916197A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 208DF70C250EDFE8C75411CE /* Foundation.framework */; };
 		8CD8A037A2DD7E127629FE32 /* AppDependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF36A65784567611871F8863 /* AppDependencies.swift */; };
 		95A91251246566BEA392862D /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B6EEED8A124464784C2B17 /* Message.swift */; };
@@ -61,7 +64,9 @@
 /* Begin PBXFileReference section */
 		038CE3E0EAE19CBFD20112BA /* VeyraAvatar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraAvatar.swift; sourceTree = "<group>"; };
 		082AFEC3EDA6622C035B8FC8 /* ConversationRowView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationRowView.swift; sourceTree = "<group>"; };
+		0D5400F153B6D21CB5BB9CC5 /* SwiftDataConversationRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDataConversationRepository.swift; sourceTree = "<group>"; };
 		0D907300CAB7511CAFB4C0D7 /* VeyraPrimaryButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraPrimaryButton.swift; sourceTree = "<group>"; };
+		0E91305B16B77EBDDB5AF62A /* ConversationRecord.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationRecord.swift; sourceTree = "<group>"; };
 		104FF2BF2B7EC15672D300DE /* NewConversationViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NewConversationViewModel.swift; sourceTree = "<group>"; };
 		17D3DEB07FE517FDFC254469 /* Contact.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Contact.swift; sourceTree = "<group>"; };
 		208DF70C250EDFE8C75411CE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
@@ -86,6 +91,7 @@
 		AAA6A3BB479DAFD774307B9D /* VeyraSpacing.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraSpacing.swift; sourceTree = "<group>"; };
 		AAAAD678B15A97CA475953DB /* MessageComposerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessageComposerView.swift; sourceTree = "<group>"; };
 		ACE1C7EE7B619D59D5529C04 /* VeyraTextField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraTextField.swift; sourceTree = "<group>"; };
+		AF646664F27E3856206D966C /* SwiftDataConversationRepositoryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDataConversationRepositoryTests.swift; sourceTree = "<group>"; };
 		B6B6EEED8A124464784C2B17 /* Message.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		B94A5909B940AD5D3ADBDB05 /* ConversationListViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationListViewModel.swift; sourceTree = "<group>"; };
 		C2E49A4879773A3660F32692 /* ConversationListView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationListView.swift; sourceTree = "<group>"; };
@@ -215,6 +221,16 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		5FB644311B3D511515ABBACA /* SwiftData */ = {
+			isa = PBXGroup;
+			children = (
+				0E91305B16B77EBDDB5AF62A /* ConversationRecord.swift */,
+				0D5400F153B6D21CB5BB9CC5 /* SwiftDataConversationRepository.swift */,
+			);
+			name = SwiftData;
+			path = SwiftData;
+			sourceTree = "<group>";
+		};
 		5FF5271B60B1D69D8DF32C09 /* Foundation */ = {
 			isa = PBXGroup;
 			children = (
@@ -231,6 +247,7 @@
 			children = (
 				D0AD1E06E47C792CA10EF1FD /* Repositories */,
 				D50FA23D7E52344B0DFD4339 /* Dependency */,
+				5FB644311B3D511515ABBACA /* SwiftData */,
 			);
 			name = Data;
 			path = Data;
@@ -301,6 +318,7 @@
 				2678BF2576CF692192367CA9 /* MessageTimelineViewModelTests.swift */,
 				E4959CA35782AD866F12C222 /* NewConversationViewModelTests.swift */,
 				498246899EA244F2F82A14F1 /* RepositoryTests.swift */,
+				AF646664F27E3856206D966C /* SwiftDataConversationRepositoryTests.swift */,
 			);
 			path = VeyraTests;
 			sourceTree = "<group>";
@@ -479,6 +497,7 @@
 				62CE91E35271A60A88FF310F /* MessageTimelineViewModelTests.swift in Sources */,
 				E5340791E020E8DF098FD36E /* NewConversationViewModelTests.swift in Sources */,
 				4EAC419DBDE02E852844EE82 /* RepositoryTests.swift in Sources */,
+				14497BE77041C7B0A71FA6A0 /* SwiftDataConversationRepositoryTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -516,6 +535,8 @@
 				3C20A3D616AFF95F6F424150 /* ConversationRepository.swift in Sources */,
 				7B51BB037BE5D99F3698FF44 /* ContactRepository.swift in Sources */,
 				8CD8A037A2DD7E127629FE32 /* AppDependencies.swift in Sources */,
+				861B06509E4A9B740264E765 /* ConversationRecord.swift in Sources */,
+				7C0D872ADBC557FB5919A320 /* SwiftDataConversationRepository.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

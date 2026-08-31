@@ -3,10 +3,23 @@ final class AppDependencies {
     let contacts: any ContactRepository
 
     init(
-        conversations: any ConversationRepository = InMemoryConversationRepository(),
-        contacts: any ContactRepository = InMemoryContactRepository()
+        conversations: any ConversationRepository,
+        contacts: any ContactRepository
     ) {
         self.conversations = conversations
         self.contacts = contacts
+    }
+
+    convenience init() {
+        let conversations: any ConversationRepository
+        do {
+            conversations = try SwiftDataConversationRepository()
+        } catch {
+            conversations = InMemoryConversationRepository()
+        }
+        self.init(
+            conversations: conversations,
+            contacts: InMemoryContactRepository()
+        )
     }
 }
