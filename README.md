@@ -39,6 +39,7 @@ Product screens should consume these primitives instead of introducing one-off v
 
 The chat home uses a dark-first visual direction with a purple atmosphere, elevated conversation cards, and native tab navigation.
 The message timeline continues this direction with contact context, asymmetric bubbles, delivery status, and a focused composer.
+Profile uses a softer light lavender direction, translucent white cards, and restrained purple accents for a native settings feel.
 
 ## Running the project
 
