@@ -1,41 +1,45 @@
 import SwiftUI
 
 struct AppRootView: View {
-    private enum AuthenticationRoute: Equatable {
-        case login
-        case registration
-        case authenticated
-    }
-
     private let dependencies: AppDependencies
-    private let sessionStore: any SessionStore
-    @State private var authenticationRoute: AuthenticationRoute
+    @State private var authentication: AuthenticationCoordinator
 
     init(
         dependencies: AppDependencies = AppDependencies(),
-        sessionStore: any SessionStore = UserDefaultsSessionStore()
+        authenticationService: any AuthenticationService = AuthenticationServiceFactory.make()
     ) {
         self.dependencies = dependencies
-        self.sessionStore = sessionStore
-        _authenticationRoute = State(initialValue: sessionStore.isAuthenticated ? .authenticated : .login)
+        _authentication = State(initialValue: AuthenticationCoordinator(service: authenticationService))
     }
 
     var body: some View {
-        if authenticationRoute == .authenticated {
+        switch authentication.route {
+        case .authenticated:
             authenticatedContent
                 .transition(.opacity)
-        } else if authenticationRoute == .registration {
+        case .registration:
             RegistrationView(
-                onBack: { withAnimation(.easeInOut) { authenticationRoute = .login } },
-                onRegistered: { authenticate(remembersSession: true) }
+                isLoading: authentication.isLoading,
+                externalError: authentication.errorMessage,
+                onBack: authentication.showLogin,
+                onRegistered: { name, email, password in
+                    Task { await authentication.signUp(name: name, email: email, password: password) }
+                }
             )
             .transition(.opacity)
-        } else {
+        case .login:
             LoginView(
-                onAuthenticated: authenticate,
-                onCreateAccount: { withAnimation(.easeInOut) { authenticationRoute = .registration } }
+                isLoading: authentication.isLoading,
+                externalError: authentication.errorMessage,
+                onAuthenticated: { email, password in
+                    Task { await authentication.signIn(email: email, password: password) }
+                },
+                onCreateAccount: authentication.showRegistration
             )
             .transition(.opacity)
+        case let .emailConfirmation(email):
+            EmailConfirmationView(email: email, onBack: authentication.showLogin)
+                .transition(.opacity)
         }
     }
 
@@ -58,7 +62,7 @@ struct AppRootView: View {
             PlaceholderTabView(title: "People", message: "Your contacts will live here.", systemImage: "person.2")
                 .tabItem { Label("People", systemImage: "person.2.fill") }
 
-            ProfileView(onLogout: logout)
+            ProfileView(onLogout: { Task { await authentication.signOut() } })
                 .tabItem { Label("Profile", systemImage: "person.crop.circle.fill") }
         }
         .tint(VeyraColor.accent)
@@ -67,15 +71,6 @@ struct AppRootView: View {
         .preferredColorScheme(.dark)
     }
 
-    private func authenticate(remembersSession: Bool) {
-        sessionStore.setAuthenticated(remembersSession)
-        withAnimation(.easeInOut) { authenticationRoute = .authenticated }
-    }
-
-    private func logout() {
-        sessionStore.setAuthenticated(false)
-        withAnimation(.easeInOut) { authenticationRoute = .login }
-    }
 }
 
 private struct PlaceholderTabView: View {

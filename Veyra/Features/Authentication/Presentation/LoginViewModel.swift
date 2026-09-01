@@ -5,7 +5,6 @@ import Observation
 final class LoginViewModel {
     var email = ""
     var password = ""
-    var remembersUser = true
     var showsPassword = false
     private(set) var validationMessage: String?
 

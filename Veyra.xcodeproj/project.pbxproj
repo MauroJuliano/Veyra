@@ -26,6 +26,7 @@
 		43ACD9B7B96AD843FE8E4420 /* VeyraRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612257922E48B3ACB47078A3 /* VeyraRadius.swift */; };
 		44755A60DDB5415B6345E48C /* MessagePreviewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DF296E5214CCEBFA8ABE939 /* MessagePreviewData.swift */; };
 		462039CDAE80A4380ECB29CE /* MessageTimelineViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF0E692A9671F543EED8718 /* MessageTimelineViewModel.swift */; };
+		475F1FB2211E48F55A1A51E6 /* AuthenticationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3193A4162DD922E516262590 /* AuthenticationCoordinator.swift */; };
 		48740A8D240138CA83CFE28C /* NewConversationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 104FF2BF2B7EC15672D300DE /* NewConversationViewModel.swift */; };
 		4E5BB1BAF90877B31BAE4F22 /* DesignTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31A020A334F10D814DB2DC6C /* DesignTokenTests.swift */; };
 		4EAC419DBDE02E852844EE82 /* RepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 498246899EA244F2F82A14F1 /* RepositoryTests.swift */; };
@@ -40,6 +41,7 @@
 		7423C1C01A34B0930A69B35C /* MessageComposerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAD678B15A97CA475953DB /* MessageComposerView.swift */; };
 		753286285FC560C6DE98F2BA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 208DF70C250EDFE8C75411CE /* Foundation.framework */; };
 		76FC6800A2D4B7B8493ACFC2 /* MessageBubbleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67E4FA0E7A4E39541CF5B110 /* MessageBubbleView.swift */; };
+		77843A999695668DF91E5BE9 /* EmailConfirmationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D4A58FBF3FD75D6CFB8D01 /* EmailConfirmationView.swift */; };
 		782AB63FFF1CF012CCBE15D9 /* VeyraTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACE1C7EE7B619D59D5529C04 /* VeyraTextField.swift */; };
 		7B51BB037BE5D99F3698FF44 /* ContactRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 994EA17041AD6A2C9DAA0CC3 /* ContactRepository.swift */; };
 		7C0D872ADBC557FB5919A320 /* SwiftDataConversationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D5400F153B6D21CB5BB9CC5 /* SwiftDataConversationRepository.swift */; };
@@ -57,6 +59,7 @@
 		A3F57AB2EFBDC14540CD7DE7 /* VeyraColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18C29846BD4E660FFF3319F /* VeyraColor.swift */; };
 		A9132EAC30465364009C03A6 /* GlassBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9132EAB30465364009C03A6 /* GlassBackground.swift */; };
 		AFA0D0231FA487557A3ACFBA /* VeyraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815CF3D51D8A2E92364C8777 /* VeyraApp.swift */; };
+		B357F0C51503990DB506D527 /* AuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A13B7B5A102C3620656316F /* AuthenticationService.swift */; };
 		BD796388BDA24BD3035EFBCE /* SupabaseClientProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B56D78C652AAAB9D315E96DF /* SupabaseClientProvider.swift */; };
 		C4F01BA4C1FC96FCE3BC3D1D /* VeyraTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FC21B9F9899BED11DEF736 /* VeyraTypography.swift */; };
 		CEEA022B7E5F677BA3E64917 /* VeyraAvatar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038CE3E0EAE19CBFD20112BA /* VeyraAvatar.swift */; };
@@ -66,6 +69,7 @@
 		E5340791E020E8DF098FD36E /* NewConversationViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4959CA35782AD866F12C222 /* NewConversationViewModelTests.swift */; };
 		EE0E18835536CBB582D465AC /* ConversationListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E49A4879773A3660F32692 /* ConversationListView.swift */; };
 		EEEDC5B85B970CF0A097194F /* ContactPreviewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2F212E6EB3EFE613A12BF21 /* ContactPreviewData.swift */; };
+		F7F2A320BA5A1076DF7F28C3 /* AuthenticationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86669357F39C6F6B80BFB3CE /* AuthenticationCoordinatorTests.swift */; };
 		F9133D4385FE6D55603C3DFB /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F545AD5822812B8446B21C3 /* UserProfile.swift */; };
 		FC691B76552D331E00398DE3 /* VeyraSpacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA6A3BB479DAFD774307B9D /* VeyraSpacing.swift */; };
 /* End PBXBuildFile section */
@@ -93,6 +97,7 @@
 		1F545AD5822812B8446B21C3 /* UserProfile.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
 		208DF70C250EDFE8C75411CE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		2678BF2576CF692192367CA9 /* MessageTimelineViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessageTimelineViewModelTests.swift; sourceTree = "<group>"; };
+		3193A4162DD922E516262590 /* AuthenticationCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthenticationCoordinator.swift; sourceTree = "<group>"; };
 		31A020A334F10D814DB2DC6C /* DesignTokenTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DesignTokenTests.swift; sourceTree = "<group>"; };
 		3A02FA30EF6A1C531E680055 /* ProfileViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProfileViewModelTests.swift; sourceTree = "<group>"; };
 		441519C505B18A6B80C92E7B /* RegistrationViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RegistrationViewModelTests.swift; sourceTree = "<group>"; };
@@ -113,6 +118,8 @@
 		7F4875B03CC2A5078E3B2831 /* LoginView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		815CF3D51D8A2E92364C8777 /* VeyraApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraApp.swift; sourceTree = "<group>"; };
 		8429D3FC53470967204274B2 /* ProfileViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProfileViewModel.swift; sourceTree = "<group>"; };
+		86669357F39C6F6B80BFB3CE /* AuthenticationCoordinatorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthenticationCoordinatorTests.swift; sourceTree = "<group>"; };
+		8A13B7B5A102C3620656316F /* AuthenticationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthenticationService.swift; sourceTree = "<group>"; };
 		8DF296E5214CCEBFA8ABE939 /* MessagePreviewData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessagePreviewData.swift; sourceTree = "<group>"; };
 		92D1807482AB6926E4DA3AFB /* DesignSystemCatalogView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DesignSystemCatalogView.swift; sourceTree = "<group>"; };
 		9429A6F0A5F3BA4C90324820 /* SupabaseConfiguration.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SupabaseConfiguration.swift; sourceTree = "<group>"; };
@@ -121,6 +128,7 @@
 		99FCB349C1FDF1744BC06562 /* RegistrationViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RegistrationViewModel.swift; sourceTree = "<group>"; };
 		9BF8B6FD286458DDB74C22F1 /* AvatarInitialsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AvatarInitialsTests.swift; sourceTree = "<group>"; };
 		A18C29846BD4E660FFF3319F /* VeyraColor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraColor.swift; sourceTree = "<group>"; };
+		A1D4A58FBF3FD75D6CFB8D01 /* EmailConfirmationView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EmailConfirmationView.swift; sourceTree = "<group>"; };
 		A9132EAB30465364009C03A6 /* GlassBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassBackground.swift; sourceTree = "<group>"; };
 		AAA6A3BB479DAFD774307B9D /* VeyraSpacing.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraSpacing.swift; sourceTree = "<group>"; };
 		AAAAD678B15A97CA475953DB /* MessageComposerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessageComposerView.swift; sourceTree = "<group>"; };
@@ -142,6 +150,7 @@
 		E812827318A22C6360199016 /* LoginViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LoginViewModelTests.swift; sourceTree = "<group>"; };
 		E827789E667ED520D1F288BC /* VeyraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VeyraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED09F370FA57E9D2202E653F /* AppRootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
+		F5B95E0AB67F2F623383C13E /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FF36A65784567611871F8863 /* AppDependencies.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppDependencies.swift; sourceTree = "<group>"; };
 		FF5389180DA0846CECDD8509 /* MessageTimelineView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessageTimelineView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -229,6 +238,15 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
+		319BB9F586381A13BE290554 /* Authentication */ = {
+			isa = PBXGroup;
+			children = (
+				8A13B7B5A102C3620656316F /* AuthenticationService.swift */,
+			);
+			name = Authentication;
+			path = Authentication;
+			sourceTree = "<group>";
+		};
 		443FA02DB0E706D8F1FD2D5C /* Core */ = {
 			isa = PBXGroup;
 			children = (
@@ -253,6 +271,7 @@
 			children = (
 				5CF5736F5D2BE299C077CE7C /* LoginViewModel.swift */,
 				99FCB349C1FDF1744BC06562 /* RegistrationViewModel.swift */,
+				3193A4162DD922E516262590 /* AuthenticationCoordinator.swift */,
 			);
 			name = Presentation;
 			path = Presentation;
@@ -272,6 +291,7 @@
 			isa = PBXGroup;
 			children = (
 				CD4A7C3978F85DD2937EF67D /* Supabase */,
+				319BB9F586381A13BE290554 /* Authentication */,
 			);
 			name = Backend;
 			path = Backend;
@@ -420,6 +440,7 @@
 				518FAE9C5EAC0D5F6FA3C072 /* SessionStoreTests.swift */,
 				3A02FA30EF6A1C531E680055 /* ProfileViewModelTests.swift */,
 				E39EA489B16A28A2CA94C2CB /* SupabaseConfigurationTests.swift */,
+				86669357F39C6F6B80BFB3CE /* AuthenticationCoordinatorTests.swift */,
 			);
 			path = VeyraTests;
 			sourceTree = "<group>";
@@ -429,6 +450,7 @@
 			children = (
 				7F4875B03CC2A5078E3B2831 /* LoginView.swift */,
 				126B3FF9F85A7890CF968383 /* RegistrationView.swift */,
+				A1D4A58FBF3FD75D6CFB8D01 /* EmailConfirmationView.swift */,
 			);
 			name = Views;
 			path = Views;
@@ -439,6 +461,7 @@
 			children = (
 				5819FAF79B8D19C6656AC295 /* Base.xcconfig */,
 				B6CB6E0F746BFB96C7862450 /* Secrets.xcconfig.example */,
+				F5B95E0AB67F2F623383C13E /* Info.plist */,
 			);
 			name = Configuration;
 			path = Configuration;
@@ -668,6 +691,7 @@
 				872F01C95182FD43EEC53CF6 /* SessionStoreTests.swift in Sources */,
 				0FA5037A60995702755BBC6B /* ProfileViewModelTests.swift in Sources */,
 				87499B69C8C6BF7F58AC16F6 /* SupabaseConfigurationTests.swift in Sources */,
+				F7F2A320BA5A1076DF7F28C3 /* AuthenticationCoordinatorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -720,6 +744,9 @@
 				1AA8567C7E0EC69A7D58B631 /* ProfileStore.swift in Sources */,
 				88D05E71B0F456BA216AA73A /* SupabaseConfiguration.swift in Sources */,
 				BD796388BDA24BD3035EFBCE /* SupabaseClientProvider.swift in Sources */,
+				B357F0C51503990DB506D527 /* AuthenticationService.swift in Sources */,
+				475F1FB2211E48F55A1A51E6 /* AuthenticationCoordinator.swift in Sources */,
+				77843A999695668DF91E5BE9 /* EmailConfirmationView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -825,6 +852,7 @@
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = LMTRNCP347;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Veyra/Configuration/Info.plist;
 				INFOPLIST_KEY_SupabasePublishableKey = "$(SUPABASE_PUBLISHABLE_KEY)";
 				INFOPLIST_KEY_SupabaseURL = "$(SUPABASE_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -855,6 +883,7 @@
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = LMTRNCP347;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Veyra/Configuration/Info.plist;
 				INFOPLIST_KEY_SupabasePublishableKey = "$(SUPABASE_PUBLISHABLE_KEY)";
 				INFOPLIST_KEY_SupabaseURL = "$(SUPABASE_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
