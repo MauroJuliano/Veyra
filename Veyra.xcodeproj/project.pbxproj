@@ -31,6 +31,7 @@
 		4EAC419DBDE02E852844EE82 /* RepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 498246899EA244F2F82A14F1 /* RepositoryTests.swift */; };
 		5668E2E56D89B2AD327ECC23 /* ConversationListViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B4C091B2C571B56F0C49F39 /* ConversationListViewModelTests.swift */; };
 		59051956F4A255E8134149B4 /* RegistrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 126B3FF9F85A7890CF968383 /* RegistrationView.swift */; };
+		591FE0FE5282B61592A26CD7 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 884AE89A91B4CADAB1F7563C /* Supabase */; };
 		60CDAF65F1178A5709B81BE3 /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED09F370FA57E9D2202E653F /* AppRootView.swift */; };
 		62CE91E35271A60A88FF310F /* MessageTimelineViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2678BF2576CF692192367CA9 /* MessageTimelineViewModelTests.swift */; };
 		6DBD723058510BC9DFED81AC /* MessageTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF5389180DA0846CECDD8509 /* MessageTimelineView.swift */; };
@@ -45,7 +46,9 @@
 		7C9F715FB5E1C3D678BC47B9 /* AppMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B110D4A85DA09EF80C1A7D2 /* AppMetadata.swift */; };
 		861B06509E4A9B740264E765 /* ConversationRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E91305B16B77EBDDB5AF62A /* ConversationRecord.swift */; };
 		872F01C95182FD43EEC53CF6 /* SessionStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 518FAE9C5EAC0D5F6FA3C072 /* SessionStoreTests.swift */; };
+		87499B69C8C6BF7F58AC16F6 /* SupabaseConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E39EA489B16A28A2CA94C2CB /* SupabaseConfigurationTests.swift */; };
 		880A32328EAACEC3D916197A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 208DF70C250EDFE8C75411CE /* Foundation.framework */; };
+		88D05E71B0F456BA216AA73A /* SupabaseConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9429A6F0A5F3BA4C90324820 /* SupabaseConfiguration.swift */; };
 		8CD8A037A2DD7E127629FE32 /* AppDependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF36A65784567611871F8863 /* AppDependencies.swift */; };
 		93D497AFF6DB00982DB6A4C2 /* LoginViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E812827318A22C6360199016 /* LoginViewModelTests.swift */; };
 		95A91251246566BEA392862D /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B6EEED8A124464784C2B17 /* Message.swift */; };
@@ -54,6 +57,7 @@
 		A3F57AB2EFBDC14540CD7DE7 /* VeyraColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18C29846BD4E660FFF3319F /* VeyraColor.swift */; };
 		A9132EAC30465364009C03A6 /* GlassBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9132EAB30465364009C03A6 /* GlassBackground.swift */; };
 		AFA0D0231FA487557A3ACFBA /* VeyraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815CF3D51D8A2E92364C8777 /* VeyraApp.swift */; };
+		BD796388BDA24BD3035EFBCE /* SupabaseClientProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B56D78C652AAAB9D315E96DF /* SupabaseClientProvider.swift */; };
 		C4F01BA4C1FC96FCE3BC3D1D /* VeyraTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FC21B9F9899BED11DEF736 /* VeyraTypography.swift */; };
 		CEEA022B7E5F677BA3E64917 /* VeyraAvatar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038CE3E0EAE19CBFD20112BA /* VeyraAvatar.swift */; };
 		D5DDC42F3766A986FB03DADB /* RegistrationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99FCB349C1FDF1744BC06562 /* RegistrationViewModel.swift */; };
@@ -95,6 +99,7 @@
 		498246899EA244F2F82A14F1 /* RepositoryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RepositoryTests.swift; sourceTree = "<group>"; };
 		518FAE9C5EAC0D5F6FA3C072 /* SessionStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SessionStoreTests.swift; sourceTree = "<group>"; };
 		5698CE11ECAE96D995835FCD /* Conversation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Conversation.swift; sourceTree = "<group>"; };
+		5819FAF79B8D19C6656AC295 /* Base.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 		5917AB74FE9969FED29ED57E /* NewConversationView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NewConversationView.swift; sourceTree = "<group>"; };
 		5CF5736F5D2BE299C077CE7C /* LoginViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
 		5EBE432F2420C29F7249B975 /* PersonalDetailsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PersonalDetailsView.swift; sourceTree = "<group>"; };
@@ -110,6 +115,7 @@
 		8429D3FC53470967204274B2 /* ProfileViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProfileViewModel.swift; sourceTree = "<group>"; };
 		8DF296E5214CCEBFA8ABE939 /* MessagePreviewData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessagePreviewData.swift; sourceTree = "<group>"; };
 		92D1807482AB6926E4DA3AFB /* DesignSystemCatalogView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DesignSystemCatalogView.swift; sourceTree = "<group>"; };
+		9429A6F0A5F3BA4C90324820 /* SupabaseConfiguration.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SupabaseConfiguration.swift; sourceTree = "<group>"; };
 		96D6F9076981087963B2FF89 /* AppMetadataTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppMetadataTests.swift; sourceTree = "<group>"; };
 		994EA17041AD6A2C9DAA0CC3 /* ContactRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactRepository.swift; sourceTree = "<group>"; };
 		99FCB349C1FDF1744BC06562 /* RegistrationViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RegistrationViewModel.swift; sourceTree = "<group>"; };
@@ -121,13 +127,16 @@
 		ACE1C7EE7B619D59D5529C04 /* VeyraTextField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraTextField.swift; sourceTree = "<group>"; };
 		AF646664F27E3856206D966C /* SwiftDataConversationRepositoryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDataConversationRepositoryTests.swift; sourceTree = "<group>"; };
 		B38DAB0E23CBA856810C467B /* SessionStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
+		B56D78C652AAAB9D315E96DF /* SupabaseClientProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SupabaseClientProvider.swift; sourceTree = "<group>"; };
 		B6B6EEED8A124464784C2B17 /* Message.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
+		B6CB6E0F746BFB96C7862450 /* Secrets.xcconfig.example */ = {isa = PBXFileReference; includeInIndex = 1; path = Secrets.xcconfig.example; sourceTree = "<group>"; };
 		B94A5909B940AD5D3ADBDB05 /* ConversationListViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationListViewModel.swift; sourceTree = "<group>"; };
 		C2E49A4879773A3660F32692 /* ConversationListView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationListView.swift; sourceTree = "<group>"; };
 		C2F212E6EB3EFE613A12BF21 /* ContactPreviewData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactPreviewData.swift; sourceTree = "<group>"; };
 		DDF0E692A9671F543EED8718 /* MessageTimelineViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessageTimelineViewModel.swift; sourceTree = "<group>"; };
 		E0E79AFD1721697118A5B30F /* ConversationRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationRepository.swift; sourceTree = "<group>"; };
 		E0EAA93FD7CD9802592B73FA /* ConversationPreviewData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationPreviewData.swift; sourceTree = "<group>"; };
+		E39EA489B16A28A2CA94C2CB /* SupabaseConfigurationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SupabaseConfigurationTests.swift; sourceTree = "<group>"; };
 		E4959CA35782AD866F12C222 /* NewConversationViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NewConversationViewModelTests.swift; sourceTree = "<group>"; };
 		E810F31ADEB4011D2EC7D5EF /* AppRoute.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppRoute.swift; sourceTree = "<group>"; };
 		E812827318A22C6360199016 /* LoginViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LoginViewModelTests.swift; sourceTree = "<group>"; };
@@ -151,6 +160,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				880A32328EAACEC3D916197A /* Foundation.framework in Frameworks */,
+				591FE0FE5282B61592A26CD7 /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -225,6 +235,7 @@
 				7B110D4A85DA09EF80C1A7D2 /* AppMetadata.swift */,
 				12575B7C86C1FF310C6440A5 /* DesignSystem */,
 				61676F069A96A091937AFF57 /* Data */,
+				591BCD800B625EE7F7F37664 /* Backend */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -255,6 +266,15 @@
 				FF5389180DA0846CECDD8509 /* MessageTimelineView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		591BCD800B625EE7F7F37664 /* Backend */ = {
+			isa = PBXGroup;
+			children = (
+				CD4A7C3978F85DD2937EF67D /* Supabase */,
+			);
+			name = Backend;
+			path = Backend;
 			sourceTree = "<group>";
 		};
 		5DAD1BA9E9AE5532069D387E /* Views */ = {
@@ -399,6 +419,7 @@
 				441519C505B18A6B80C92E7B /* RegistrationViewModelTests.swift */,
 				518FAE9C5EAC0D5F6FA3C072 /* SessionStoreTests.swift */,
 				3A02FA30EF6A1C531E680055 /* ProfileViewModelTests.swift */,
+				E39EA489B16A28A2CA94C2CB /* SupabaseConfigurationTests.swift */,
 			);
 			path = VeyraTests;
 			sourceTree = "<group>";
@@ -411,6 +432,26 @@
 			);
 			name = Views;
 			path = Views;
+			sourceTree = "<group>";
+		};
+		C9B2B5790BD3B93BB1DBD5C6 /* Configuration */ = {
+			isa = PBXGroup;
+			children = (
+				5819FAF79B8D19C6656AC295 /* Base.xcconfig */,
+				B6CB6E0F746BFB96C7862450 /* Secrets.xcconfig.example */,
+			);
+			name = Configuration;
+			path = Configuration;
+			sourceTree = "<group>";
+		};
+		CD4A7C3978F85DD2937EF67D /* Supabase */ = {
+			isa = PBXGroup;
+			children = (
+				9429A6F0A5F3BA4C90324820 /* SupabaseConfiguration.swift */,
+				B56D78C652AAAB9D315E96DF /* SupabaseClientProvider.swift */,
+			);
+			name = Supabase;
+			path = Supabase;
 			sourceTree = "<group>";
 		};
 		CD51C17E867393530457834D = {
@@ -487,6 +528,7 @@
 				EE202FB336242A4D8F791965 /* App */,
 				443FA02DB0E706D8F1FD2D5C /* Core */,
 				6577D3D2341D28983B36E493 /* Features */,
+				C9B2B5790BD3B93BB1DBD5C6 /* Configuration */,
 			);
 			path = Veyra;
 			sourceTree = "<group>";
@@ -526,6 +568,9 @@
 			dependencies = (
 			);
 			name = Veyra;
+			packageProductDependencies = (
+				884AE89A91B4CADAB1F7563C /* Supabase */,
+			);
 			productName = Veyra;
 			productReference = 778776CB7DBCAB1C013FD617 /* Veyra.app */;
 			productType = "com.apple.product-type.application";
@@ -575,6 +620,9 @@
 				Base,
 			);
 			mainGroup = CD51C17E867393530457834D;
+			packageReferences = (
+				56DCD800BB6344D687F6B05F /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			productRefGroup = 7D7EEB33674F43D0F024F961 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -619,6 +667,7 @@
 				21E1D7AA0375B9CEF432EE59 /* RegistrationViewModelTests.swift in Sources */,
 				872F01C95182FD43EEC53CF6 /* SessionStoreTests.swift in Sources */,
 				0FA5037A60995702755BBC6B /* ProfileViewModelTests.swift in Sources */,
+				87499B69C8C6BF7F58AC16F6 /* SupabaseConfigurationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -669,6 +718,8 @@
 				DE4360550F651CFC339409DA /* ProfileViewModel.swift in Sources */,
 				148683245215D266B1F69398 /* PersonalDetailsView.swift in Sources */,
 				1AA8567C7E0EC69A7D58B631 /* ProfileStore.swift in Sources */,
+				88D05E71B0F456BA216AA73A /* SupabaseConfiguration.swift in Sources */,
+				BD796388BDA24BD3035EFBCE /* SupabaseClientProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -764,6 +815,7 @@
 		};
 		9A1311F21D43F1EA25C82F44 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5819FAF79B8D19C6656AC295 /* Base.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -773,6 +825,8 @@
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = LMTRNCP347;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_SupabasePublishableKey = "$(SUPABASE_PUBLISHABLE_KEY)";
+				INFOPLIST_KEY_SupabaseURL = "$(SUPABASE_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -791,6 +845,7 @@
 		};
 		9EBE54379422C580501F9960 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5819FAF79B8D19C6656AC295 /* Base.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -800,6 +855,8 @@
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = LMTRNCP347;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_SupabasePublishableKey = "$(SUPABASE_PUBLISHABLE_KEY)";
+				INFOPLIST_KEY_SupabaseURL = "$(SUPABASE_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -917,6 +974,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		56DCD800BB6344D687F6B05F /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		884AE89A91B4CADAB1F7563C /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 56DCD800BB6344D687F6B05F /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 6419DCF7C0E045DA70CAFBE4 /* Project object */;
 }
