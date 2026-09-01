@@ -2,10 +2,10 @@ import SwiftUI
 
 struct LoginView: View {
     @State private var viewModel: LoginViewModel
-    let onAuthenticated: () -> Void
+    let onAuthenticated: (Bool) -> Void
     let onCreateAccount: () -> Void
 
-    init(viewModel: LoginViewModel = LoginViewModel(), onAuthenticated: @escaping () -> Void, onCreateAccount: @escaping () -> Void = {}) {
+    init(viewModel: LoginViewModel = LoginViewModel(), onAuthenticated: @escaping (Bool) -> Void, onCreateAccount: @escaping () -> Void = {}) {
         _viewModel = State(initialValue: viewModel)
         self.onAuthenticated = onAuthenticated
         self.onCreateAccount = onCreateAccount
@@ -97,7 +97,7 @@ struct LoginView: View {
             }
 
             Button {
-                if viewModel.submit() { onAuthenticated() }
+                if viewModel.submit() { onAuthenticated(viewModel.remembersUser) }
             } label: {
                 HStack {
                     Spacer()
@@ -185,5 +185,5 @@ struct LoginView: View {
 }
 
 #Preview("Login") {
-    LoginView(onAuthenticated: {})
+    LoginView(onAuthenticated: { _ in })
 }
