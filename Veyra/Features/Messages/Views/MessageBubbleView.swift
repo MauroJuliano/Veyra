@@ -13,11 +13,23 @@ struct MessageBubbleView: View {
             }
 
             VStack(alignment: message.direction == .incoming ? .leading : .trailing, spacing: VeyraSpacing.xs) {
-                Text(message.text)
+                Group {
+                    if let imageURL = message.imageURL {
+                        AsyncImage(url: imageURL) { image in
+                            image.resizable().scaledToFill()
+                        } placeholder: {
+                            ProgressView()
+                        }
+                        .frame(width: 220, height: 220)
+                        .clipped()
+                    } else {
+                        Text(message.text)
+                            .padding(.horizontal, VeyraSpacing.md)
+                            .padding(.vertical, VeyraSpacing.sm)
+                    }
+                }
                     .font(VeyraTypography.body)
                     .foregroundStyle(VeyraColor.textPrimary)
-                    .padding(.horizontal, VeyraSpacing.md)
-                    .padding(.vertical, VeyraSpacing.sm)
                     .background {
                         GlassBackground(
                             tintOpacity: message.direction == .outgoing ? 0.2 : 0.08,

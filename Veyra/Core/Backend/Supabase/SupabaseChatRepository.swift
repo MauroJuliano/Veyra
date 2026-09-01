@@ -7,6 +7,7 @@ protocol RemoteChatRepository: Sendable {
     func startConversation(with contact: Contact) async throws -> Conversation
     func fetchMessages(conversationID: UUID) async throws -> [Message]
     func sendMessage(_ text: String, conversationID: UUID) async throws -> Message
+    func sendImage(_ data: Data, conversationID: UUID) async throws -> Message
     func messageEvents(conversationID: UUID, participantID: UUID?) async throws -> AsyncStream<MessageEvent>
     func setTyping(_ isTyping: Bool, conversationID: UUID) async throws
     func conversationEvents() async throws -> AsyncStream<ConversationEvent>
@@ -81,7 +82,17 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             .rpc("list_conversation_messages", params: ["target_conversation_id": conversationID])
             .execute()
             .value
-        return rows.map { $0.message(currentUserID: currentUserID) }
+        var messages: [Message] = []
+        for row in rows {
+            let signedURL: URL?
+            if let imagePath = row.imagePath {
+                signedURL = try await client.storage.from("chat-media").createSignedURL(path: imagePath, expiresIn: 3_600)
+            } else {
+                signedURL = nil
+            }
+            messages.append(row.message(currentUserID: currentUserID, imageURL: signedURL))
+        }
+        return messages
     }
 
     func markConversationRead(conversationID: UUID) async throws {
@@ -104,7 +115,18 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             .single()
             .execute()
             .value
-        return row.message(currentUserID: currentUserID)
+        return row.message(currentUserID: currentUserID, imageURL: nil)
+    }
+
+    func sendImage(_ data: Data, conversationID: UUID) async throws -> Message {
+        let currentUserID = try await client.auth.session.user.id
+        let path = "\(currentUserID.uuidString)/\(conversationID.uuidString)/\(UUID().uuidString).jpg"
+        let bucket = client.storage.from("chat-media")
+        try await bucket.upload(path, data: data, options: FileOptions(contentType: "image/jpeg"))
+        let imageURL = try await bucket.createSignedURL(path: path, expiresIn: 3_600)
+        let payload = NewMessageRow(conversationID: conversationID, senderID: currentUserID, body: "Photo", imagePath: path)
+        let row: MessageRow = try await client.from("messages").insert(payload).select().single().execute().value
+        return row.message(currentUserID: currentUserID, imageURL: imageURL)
     }
 
     func deleteMessage(id: UUID) async throws {
@@ -399,6 +421,7 @@ private struct MessageRow: Decodable {
     let body: String
     let createdAt: Date
     let isRead: Bool?
+    let imagePath: String?
 
     enum CodingKeys: String, CodingKey {
         case id, body
@@ -406,15 +429,17 @@ private struct MessageRow: Decodable {
         case senderID = "sender_id"
         case createdAt = "created_at"
         case isRead = "is_read"
+        case imagePath = "image_path"
     }
 
-    func message(currentUserID: UUID) -> Message {
+    func message(currentUserID: UUID, imageURL: URL?) -> Message {
         Message(
             id: id,
             text: body,
             sentAt: createdAt,
             direction: senderID == currentUserID ? .outgoing : .incoming,
-            receipt: isRead == true ? .read : .sent
+            receipt: isRead == true ? .read : .sent,
+            imageURL: imageURL
         )
     }
 }
@@ -423,10 +448,19 @@ private struct NewMessageRow: Encodable {
     let conversationID: UUID
     let senderID: UUID
     let body: String
+    let imagePath: String?
+
+    init(conversationID: UUID, senderID: UUID, body: String, imagePath: String? = nil) {
+        self.conversationID = conversationID
+        self.senderID = senderID
+        self.body = body
+        self.imagePath = imagePath
+    }
 
     enum CodingKeys: String, CodingKey {
         case conversationID = "conversation_id"
         case senderID = "sender_id"
         case body
+        case imagePath = "image_path"
     }
 }

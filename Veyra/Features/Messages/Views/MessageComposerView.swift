@@ -1,13 +1,23 @@
 import SwiftUI
+import PhotosUI
 
 struct MessageComposerView: View {
     @Binding var text: String
     let canSend: Bool
     let onSend: () -> Void
+    @Binding var selectedPhoto: PhotosPickerItem?
 
     var body: some View {
         HStack(alignment: .bottom, spacing: VeyraSpacing.sm) {
-            composerButton(systemImage: "plus", label: "Add attachment") {}
+            PhotosPicker(selection: $selectedPhoto, matching: .images) {
+                Image(systemName: "plus")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .frame(width: 42, height: 42)
+                    .background(VeyraColor.accent)
+                    .clipShape(Circle())
+            }
+            .accessibilityLabel("Add photo")
 
             HStack(alignment: .bottom, spacing: VeyraSpacing.sm) {
                 TextField("Message...", text: $text, axis: .vertical)

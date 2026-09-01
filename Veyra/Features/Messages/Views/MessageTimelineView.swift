@@ -1,9 +1,11 @@
 import SwiftUI
+import PhotosUI
 
 struct MessageTimelineView: View {
     let conversation: Conversation
     @State private var viewModel: MessageTimelineViewModel
     @State private var messagePendingDeletion: Message?
+    @State private var selectedPhoto: PhotosPickerItem?
 
     init(conversation: Conversation, repository: (any RemoteChatRepository)? = nil, messages: [Message]? = nil) {
         self.conversation = conversation
@@ -65,7 +67,7 @@ struct MessageTimelineView: View {
                 .padding(.top, VeyraSpacing.sm)
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
-            MessageComposerView(text: $viewModel.draft, canSend: viewModel.canSend && !viewModel.isSending) {
+            MessageComposerView(text: $viewModel.draft, canSend: viewModel.canSend && !viewModel.isSending, selectedPhoto: $selectedPhoto) {
                 Task { await viewModel.send() }
             }
         }
@@ -106,6 +108,9 @@ struct MessageTimelineView: View {
         }
         .task { await viewModel.observeMessages() }
         .onChange(of: viewModel.draft) { _, _ in viewModel.draftDidChange() }
+        .onChange(of: selectedPhoto) { _, item in
+            sendSelectedPhoto(item)
+        }
         .onDisappear { Task { await viewModel.stopTyping() } }
         .animation(.easeInOut(duration: 0.2), value: viewModel.isParticipantTyping)
         .alert("Delete message?", isPresented: deletionAlertIsPresented, presenting: messagePendingDeletion) { message in
@@ -129,6 +134,16 @@ struct MessageTimelineView: View {
         if viewModel.isParticipantActive { return "Active" }
         guard let lastSeenAt = viewModel.participantLastSeenAt else { return "Offline" }
         return "Last seen at \(lastSeenAt.formatted(date: .omitted, time: .shortened))"
+    }
+
+    private func sendSelectedPhoto(_ item: PhotosPickerItem?) {
+        guard let item else { return }
+        Task {
+            if let data = try? await item.loadTransferable(type: Data.self) {
+                await viewModel.sendImage(data)
+            }
+            selectedPhoto = nil
+        }
     }
 }
 
