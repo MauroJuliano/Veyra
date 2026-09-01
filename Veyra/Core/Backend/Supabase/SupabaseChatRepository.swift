@@ -132,17 +132,28 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
 
     func messageEvents(conversationID: UUID) async throws -> AsyncStream<MessageEvent> {
         let currentUserID = try await client.auth.session.user.id
-        let channel = client.channel("conversation:\(conversationID.uuidString)") { config in
+        let messagesChannel = client.channel("messages:\(conversationID.uuidString)")
+        let typingChannel = client.channel("conversation:\(conversationID.uuidString)") { config in
             config.isPrivate = true
         }
         // Supabase does not reliably apply column filters to DELETE payloads.
         // RLS still limits events to the signed-in user's conversations, and
         // the timeline refetch below keeps this conversation consistent.
-        let changes = channel.postgresChange(AnyAction.self, table: "messages")
-        let typingChanges = channel.broadcastStream(event: "typing")
+        let changes = messagesChannel.postgresChange(AnyAction.self, table: "messages")
+        let typingChanges = typingChannel.broadcastStream(event: "typing")
 
-        try await channel.subscribeWithError()
-        await messageChannels.store(channel, for: conversationID)
+        // Message synchronization is essential and must not depend on the
+        // optional typing channel being authorized or available.
+        try await messagesChannel.subscribeWithError()
+
+        let activeTypingChannel: RealtimeChannelV2?
+        do {
+            try await typingChannel.subscribeWithError()
+            await messageChannels.store(typingChannel, for: conversationID)
+            activeTypingChannel = typingChannel
+        } catch {
+            activeTypingChannel = nil
+        }
 
         return AsyncStream { continuation in
             let messagesTask = Task {
@@ -165,7 +176,10 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
                 typingTask.cancel()
                 Task {
                     await messageChannels.remove(conversationID)
-                    await client.removeChannel(channel)
+                    await client.removeChannel(messagesChannel)
+                    if let activeTypingChannel {
+                        await client.removeChannel(activeTypingChannel)
+                    }
                 }
             }
         }

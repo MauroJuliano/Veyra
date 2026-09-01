@@ -83,7 +83,9 @@ final class MessageTimelineViewModel {
         defer { isSending = false }
         do {
             typingStopTask?.cancel()
-            try await repository.setTyping(false, conversationID: conversationID)
+            // Typing is an optional realtime enhancement and must never block
+            // the durable message insert.
+            try? await repository.setTyping(false, conversationID: conversationID)
             let message = try await repository.sendMessage(text, conversationID: conversationID)
             appendIfNeeded(message)
             draft = ""
