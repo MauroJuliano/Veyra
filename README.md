@@ -8,7 +8,7 @@ A modern SwiftUI chat application built step by step with native Apple framework
 
 Veyra is being rebuilt incrementally. Every feature is developed in an isolated pull request and must compile and pass its tests before the next feature starts.
 
-The current milestone includes a local login gate, typed navigation, searchable persisted conversations, contact selection, and an in-memory message timeline with a composer.
+The current milestone includes local login and registration flows, typed navigation, searchable persisted conversations, contact selection, and an in-memory message timeline with a composer.
 
 ## Requirements
 
