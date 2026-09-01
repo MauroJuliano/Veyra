@@ -26,7 +26,13 @@ struct ProfileView: View {
     }
 
     @State private var confirmsLogout = false
+    @State private var viewModel: ProfileViewModel
     let onLogout: () -> Void
+
+    init(viewModel: ProfileViewModel = ProfileViewModel(), onLogout: @escaping () -> Void) {
+        _viewModel = State(initialValue: viewModel)
+        self.onLogout = onLogout
+    }
 
     var body: some View {
         NavigationStack {
@@ -44,7 +50,11 @@ struct ProfileView: View {
             .background(profileBackground)
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: Route.self) { route in
-                ProfileDetailPlaceholder(route: route.rawValue, systemImage: route.icon)
+                if route == .personalDetails {
+                    PersonalDetailsView(viewModel: viewModel)
+                } else {
+                    ProfileDetailPlaceholder(route: route.rawValue, systemImage: route.icon)
+                }
             }
             .confirmationDialog("Log out of Veyra?", isPresented: $confirmsLogout, titleVisibility: .visible) {
                 Button("Log out", role: .destructive, action: onLogout)
@@ -69,7 +79,7 @@ struct ProfileView: View {
     private var profileCard: some View {
         HStack(spacing: VeyraSpacing.md) {
             ZStack(alignment: .bottomTrailing) {
-                VeyraAvatar(name: "Veyra Member", size: .large)
+                VeyraAvatar(name: viewModel.profile.displayName, size: .large)
                 Image(systemName: "checkmark.seal.fill")
                     .font(.title3)
                     .foregroundStyle(profileAccent)
@@ -77,12 +87,12 @@ struct ProfileView: View {
             }
 
             VStack(alignment: .leading, spacing: VeyraSpacing.xs) {
-                Text("Veyra Member")
+                Text(viewModel.profile.displayName)
                     .font(.system(size: 21, weight: .semibold, design: .rounded))
                 Label("Verified member", systemImage: "checkmark.seal.fill")
                     .font(VeyraTypography.caption.weight(.medium))
                     .foregroundStyle(profileAccent)
-                Text("@veyramember")
+                Text(viewModel.profile.formattedUsername)
                     .font(VeyraTypography.caption)
                     .foregroundStyle(.secondary)
             }
