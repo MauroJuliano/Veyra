@@ -1,42 +1,212 @@
 import SwiftUI
 
 struct ProfileView: View {
+    private enum Route: String, Hashable {
+        case personalDetails = "Personal details"
+        case privacy = "Privacy"
+        case notifications = "Notifications"
+        case help = "Help & Support"
+        case language = "Language"
+
+        var icon: String {
+            switch self {
+            case .personalDetails: "person"
+            case .privacy: "lock"
+            case .notifications: "bell"
+            case .help: "questionmark.circle"
+            case .language: "globe"
+            }
+        }
+    }
+
+    private struct SettingsItem: Identifiable {
+        let route: Route
+        let subtitle: String
+        var id: Route { route }
+    }
+
+    @State private var confirmsLogout = false
     let onLogout: () -> Void
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: VeyraSpacing.lg) {
-                VeyraAvatar(name: "Veyra Member", size: .large, showsOnlineIndicator: true)
-
-                VStack(spacing: VeyraSpacing.xs) {
-                    Text("Veyra Member").font(VeyraTypography.title)
-                    Text("Local preview account")
-                        .font(VeyraTypography.body)
-                        .foregroundStyle(VeyraColor.textSecondary)
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: VeyraSpacing.lg) {
+                    header
+                    profileCard
+                    settingsSection(title: "Account", items: accountItems)
+                    settingsSection(title: "Support & Preferences", items: supportItems)
+                    logoutButton
                 }
-
-                Button(role: .destructive, action: onLogout) {
-                    Label("Log out", systemImage: "rectangle.portrait.and.arrow.right")
-                        .font(VeyraTypography.bodyEmphasized)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 54)
-                }
-                .buttonStyle(.bordered)
-                .tint(VeyraColor.danger)
-                .padding(.top, VeyraSpacing.md)
+                .padding(.horizontal, VeyraSpacing.md)
+                .padding(.bottom, VeyraSpacing.xl)
             }
-            .padding(VeyraSpacing.lg)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background {
-                LinearGradient(colors: [VeyraColor.accentMuted.opacity(0.55), VeyraColor.background], startPoint: .topLeading, endPoint: .bottomTrailing)
-                    .ignoresSafeArea()
+            .background(profileBackground)
+            .toolbar(.hidden, for: .navigationBar)
+            .navigationDestination(for: Route.self) { route in
+                ProfileDetailPlaceholder(route: route.rawValue, systemImage: route.icon)
             }
-            .navigationTitle("Profile")
+            .confirmationDialog("Log out of Veyra?", isPresented: $confirmsLogout, titleVisibility: .visible) {
+                Button("Log out", role: .destructive, action: onLogout)
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("You will return to the login screen.")
+            }
         }
+        .preferredColorScheme(.light)
+    }
+
+    private var header: some View {
+        HStack {
+            Text("Profile")
+                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.primary)
+            Spacer()
+        }
+        .padding(.top, VeyraSpacing.md)
+    }
+
+    private var profileCard: some View {
+        HStack(spacing: VeyraSpacing.md) {
+            ZStack(alignment: .bottomTrailing) {
+                VeyraAvatar(name: "Veyra Member", size: .large)
+                Image(systemName: "checkmark.seal.fill")
+                    .font(.title3)
+                    .foregroundStyle(profileAccent)
+                    .background(Circle().fill(.white).padding(2))
+            }
+
+            VStack(alignment: .leading, spacing: VeyraSpacing.xs) {
+                Text("Veyra Member")
+                    .font(.system(size: 21, weight: .semibold, design: .rounded))
+                Label("Verified member", systemImage: "checkmark.seal.fill")
+                    .font(VeyraTypography.caption.weight(.medium))
+                    .foregroundStyle(profileAccent)
+                Text("@veyramember")
+                    .font(VeyraTypography.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: VeyraSpacing.xs)
+
+            NavigationLink(value: Route.personalDetails) {
+                Label("Edit", systemImage: "pencil")
+                    .font(VeyraTypography.caption.weight(.semibold))
+                    .foregroundStyle(profileAccent)
+                    .padding(.horizontal, VeyraSpacing.md)
+                    .frame(height: 40)
+                    .background(profileAccent.opacity(0.1))
+                    .clipShape(Capsule())
+            }
+        }
+        .padding(VeyraSpacing.md)
+        .background(Color.white.opacity(0.78))
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .overlay { RoundedRectangle(cornerRadius: 28).stroke(Color.white.opacity(0.8)) }
+    }
+
+    private func settingsSection(title: String, items: [SettingsItem]) -> some View {
+        VStack(alignment: .leading, spacing: VeyraSpacing.sm) {
+            Text(title)
+                .font(VeyraTypography.bodyEmphasized)
+                .foregroundStyle(Color.black.opacity(0.5))
+                .padding(.leading, VeyraSpacing.xs)
+
+            VStack(spacing: 0) {
+                ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                    NavigationLink(value: item.route) { settingsRow(item) }
+                        .buttonStyle(.plain)
+                    if index < items.count - 1 {
+                        Divider().padding(.leading, 76).opacity(0.35)
+                    }
+                }
+            }
+            .background(Color.white.opacity(0.8))
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        }
+    }
+
+    private func settingsRow(_ item: SettingsItem) -> some View {
+        HStack(spacing: VeyraSpacing.md) {
+            Image(systemName: item.route.icon)
+                .font(.system(size: 20))
+                .foregroundStyle(profileAccent)
+                .frame(width: 44, height: 44)
+                .background(profileAccent.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+
+            VStack(alignment: .leading, spacing: VeyraSpacing.xs) {
+                Text(item.route.rawValue).font(VeyraTypography.bodyEmphasized)
+                Text(item.subtitle).font(VeyraTypography.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.caption.bold())
+                .foregroundStyle(Color.black.opacity(0.3))
+        }
+        .padding(.horizontal, VeyraSpacing.md)
+        .frame(minHeight: 76)
+        .contentShape(Rectangle())
+    }
+
+    private var logoutButton: some View {
+        Button { confirmsLogout = true } label: {
+            HStack(spacing: VeyraSpacing.md) {
+                Image(systemName: "rectangle.portrait.and.arrow.right")
+                    .foregroundStyle(Color.red.opacity(0.75))
+                    .frame(width: 44, height: 44)
+                    .background(Color.red.opacity(0.07))
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                Text("Log out").font(VeyraTypography.bodyEmphasized).foregroundStyle(Color.red.opacity(0.8))
+                Spacer()
+                Image(systemName: "chevron.right").foregroundStyle(Color.black.opacity(0.3))
+            }
+            .padding(.horizontal, VeyraSpacing.md)
+            .frame(height: 70)
+            .background(Color.white.opacity(0.8))
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var profileAccent: Color { Color(red: 0.52, green: 0.40, blue: 0.78) }
+
+    private var profileBackground: some View {
+        LinearGradient(
+            colors: [Color(red: 0.97, green: 0.95, blue: 1), Color(red: 1, green: 0.97, blue: 0.98), Color(red: 0.97, green: 0.96, blue: 1)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
+    }
+
+    private var accountItems: [SettingsItem] {
+        [
+            SettingsItem(route: .personalDetails, subtitle: "Edit your info and preferences"),
+            SettingsItem(route: .privacy, subtitle: "Control who can see you"),
+            SettingsItem(route: .notifications, subtitle: "Manage your alerts and sounds")
+        ]
+    }
+
+    private var supportItems: [SettingsItem] {
+        [
+            SettingsItem(route: .help, subtitle: "Get help or contact us"),
+            SettingsItem(route: .language, subtitle: "Choose your preferred language")
+        ]
+    }
+}
+
+private struct ProfileDetailPlaceholder: View {
+    let route: String
+    let systemImage: String
+
+    var body: some View {
+        ContentUnavailableView(route, systemImage: systemImage, description: Text("This setting will be implemented in a focused pull request."))
+            .navigationTitle(route)
+            .navigationBarTitleDisplayMode(.inline)
     }
 }
 
 #Preview {
     ProfileView(onLogout: {})
-        .preferredColorScheme(.dark)
 }
