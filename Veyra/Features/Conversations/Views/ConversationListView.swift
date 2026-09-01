@@ -71,13 +71,13 @@ struct ConversationListView: View {
             MessageTimelineView(conversation: conversation, repository: viewModel.chatRepository, messages: [])
         }
         .sheet(isPresented: $presentsNewConversation) {
-            NewConversationView(errorMessage: viewModel.errorMessage) { email in
-                Task {
-                    if let conversation = await viewModel.startConversation(email: email) {
-                        presentsNewConversation = false
-                        selectedConversation = conversation
-                    }
+            NewConversationView { email in
+                if let conversation = await viewModel.startConversation(email: email) {
+                    presentsNewConversation = false
+                    selectedConversation = conversation
+                    return nil
                 }
+                return viewModel.errorMessage ?? "Unable to start this conversation."
             }
         }
         .task { await viewModel.load() }

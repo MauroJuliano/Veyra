@@ -3,11 +3,11 @@ import SwiftUI
 struct NewConversationView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var email = ""
-    let errorMessage: String?
-    let onSubmit: (String) -> Void
+    @State private var errorMessage: String?
+    @State private var isLoading = false
+    let onSubmit: (String) async -> String?
 
-    init(errorMessage: String? = nil, onSubmit: @escaping (String) -> Void) {
-        self.errorMessage = errorMessage
+    init(onSubmit: @escaping (String) async -> String?) {
         self.onSubmit = onSubmit
     }
 
@@ -29,11 +29,15 @@ struct NewConversationView: View {
                         .foregroundStyle(VeyraColor.danger)
                 }
 
-                VeyraPrimaryButton(title: "Start conversation") {
-                    onSubmit(email.trimmingCharacters(in: .whitespacesAndNewlines))
+                VeyraPrimaryButton(title: isLoading ? "Starting…" : "Start conversation") {
+                    Task {
+                        isLoading = true
+                        errorMessage = await onSubmit(email.trimmingCharacters(in: .whitespacesAndNewlines))
+                        isLoading = false
+                    }
                 }
-                .disabled(!isValidEmail)
-                .opacity(isValidEmail ? 1 : 0.55)
+                .disabled(!isValidEmail || isLoading)
+                .opacity(isValidEmail && !isLoading ? 1 : 0.55)
 
                 Spacer()
             }
@@ -51,4 +55,4 @@ struct NewConversationView: View {
     private var isValidEmail: Bool { email.contains("@") && email.contains(".") }
 }
 
-#Preview { NewConversationView(onSubmit: { _ in }) }
+#Preview { NewConversationView(onSubmit: { _ in nil }) }
