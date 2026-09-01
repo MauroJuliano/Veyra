@@ -47,11 +47,18 @@ final class MessageTimelineViewModel {
     func observeMessages() async {
         guard let repository else { return }
 
+        // The persisted timeline must load independently from Realtime. A
+        // temporary WebSocket failure should only pause live updates, never
+        // leave an existing conversation empty.
+        await load()
         do {
-            // Subscribe before the initial fetch so messages sent during loading are not missed.
-            let events = try await repository.messageEvents(conversationID: conversationID)
-            await load()
             try await repository.markConversationRead(conversationID: conversationID)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+
+        do {
+            let events = try await repository.messageEvents(conversationID: conversationID)
 
             for await event in events {
                 guard !Task.isCancelled else { return }
@@ -66,7 +73,10 @@ final class MessageTimelineViewModel {
         } catch is CancellationError {
             return
         } catch {
-            errorMessage = error.localizedDescription
+            // Keep the loaded timeline usable when live updates are
+            // temporarily unavailable. Sending and manual navigation still
+            // use the durable REST endpoints.
+            return
         }
     }
 
