@@ -29,6 +29,8 @@ struct PersonalDetailsView: View {
             }
         }
         .scrollContentBackground(.hidden)
+        .scrollDismissesKeyboard(.interactively)
+        .dismissKeyboardOnTap()
         .background(VeyraColor.background)
         .navigationTitle("Personal details")
         .navigationBarTitleDisplayMode(.inline)

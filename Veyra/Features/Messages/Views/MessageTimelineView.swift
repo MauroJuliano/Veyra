@@ -47,6 +47,7 @@ struct MessageTimelineView: View {
             }
             .defaultScrollAnchor(.bottom)
             .scrollDismissesKeyboard(.interactively)
+            .dismissKeyboardOnTap()
 
             Divider().overlay(VeyraColor.divider)
             MessageComposerView(text: $viewModel.draft, canSend: viewModel.canSend && !viewModel.isSending) {

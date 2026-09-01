@@ -60,6 +60,8 @@ struct ConversationListView: View {
                         .padding(.horizontal, VeyraSpacing.md)
                         .padding(.bottom, VeyraSpacing.xl)
                     }
+                    .scrollDismissesKeyboard(.interactively)
+                    .dismissKeyboardOnTap()
                 }
             }
         }

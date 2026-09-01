@@ -4,6 +4,7 @@ import Foundation
 protocol RemoteChatRepository: Sendable {
     func fetchConversations() async throws -> [Conversation]
     func startConversation(withEmail email: String) async throws -> Conversation
+    func startConversation(with contact: Contact) async throws -> Conversation
     func fetchMessages(conversationID: UUID) async throws -> [Message]
     func sendMessage(_ text: String, conversationID: UUID) async throws -> Message
     func messageEvents(conversationID: UUID) async throws -> AsyncStream<Void>
@@ -35,6 +36,28 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
     func startConversation(withEmail email: String) async throws -> Conversation {
         let conversationID: UUID = try await client
             .rpc("start_direct_conversation", params: ["target_email": email])
+            .execute()
+            .value
+        guard let conversation = try await fetchConversations().first(where: { $0.id == conversationID }) else {
+            throw ChatRepositoryError.conversationNotFound
+        }
+        return conversation
+    }
+
+    func startConversation(with contact: Contact) async throws -> Conversation {
+        if let conversationID = contact.conversationID {
+            return Conversation(
+                id: conversationID,
+                participantID: contact.id,
+                participantName: contact.name,
+                lastMessage: "",
+                updatedAt: .now,
+                isOnline: contact.isOnline
+            )
+        }
+
+        let conversationID: UUID = try await client
+            .rpc("start_direct_conversation_with_user", params: ["target_user_id": contact.id])
             .execute()
             .value
         guard let conversation = try await fetchConversations().first(where: { $0.id == conversationID }) else {

@@ -42,6 +42,8 @@ struct NewConversationView: View {
                 Spacer()
             }
             .padding(VeyraSpacing.lg)
+            .contentShape(Rectangle())
+            .dismissKeyboardOnTap()
             .background(VeyraColor.background.ignoresSafeArea())
             .navigationTitle("New message")
             .navigationBarTitleDisplayMode(.inline)

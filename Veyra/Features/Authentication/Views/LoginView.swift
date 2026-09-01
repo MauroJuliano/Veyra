@@ -42,6 +42,7 @@ struct LoginView: View {
                 .padding(.bottom, VeyraSpacing.xl)
             }
             .scrollDismissesKeyboard(.interactively)
+            .dismissKeyboardOnTap()
         }
         .preferredColorScheme(.dark)
     }
