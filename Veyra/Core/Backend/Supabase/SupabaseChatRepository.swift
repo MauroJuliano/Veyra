@@ -4,19 +4,28 @@ import Foundation
 protocol RemoteChatRepository: Sendable {
     func fetchConversations() async throws -> [Conversation]
     func startConversation(withEmail email: String) async throws -> Conversation
+    func startConversation(with contact: Contact) async throws -> Conversation
     func fetchMessages(conversationID: UUID) async throws -> [Message]
     func sendMessage(_ text: String, conversationID: UUID) async throws -> Message
-    func messageEvents(conversationID: UUID) async throws -> AsyncStream<Void>
+    func messageEvents(conversationID: UUID, participantID: UUID?) async throws -> AsyncStream<MessageEvent>
+    func setTyping(_ isTyping: Bool, conversationID: UUID) async throws
     func conversationEvents() async throws -> AsyncStream<ConversationEvent>
     func markConversationRead(conversationID: UUID) async throws
     func deleteMessage(id: UUID) async throws
     func deleteConversation(id: UUID) async throws
     func fetchContacts() async throws -> [Contact]
+    func maintainPresence() async
 }
 
 enum ConversationEvent: Sendable {
     case contentChanged
     case presenceChanged(Set<UUID>)
+}
+
+enum MessageEvent: Sendable {
+    case contentChanged
+    case typingChanged(Bool)
+    case presenceChanged(isActive: Bool, lastSeenAt: Date?)
 }
 
 final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
@@ -35,6 +44,28 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
     func startConversation(withEmail email: String) async throws -> Conversation {
         let conversationID: UUID = try await client
             .rpc("start_direct_conversation", params: ["target_email": email])
+            .execute()
+            .value
+        guard let conversation = try await fetchConversations().first(where: { $0.id == conversationID }) else {
+            throw ChatRepositoryError.conversationNotFound
+        }
+        return conversation
+    }
+
+    func startConversation(with contact: Contact) async throws -> Conversation {
+        if let conversationID = contact.conversationID {
+            return Conversation(
+                id: conversationID,
+                participantID: contact.id,
+                participantName: contact.name,
+                lastMessage: "",
+                updatedAt: .now,
+                isOnline: contact.isOnline
+            )
+        }
+
+        let conversationID: UUID = try await client
+            .rpc("start_direct_conversation_with_user", params: ["target_user_id": contact.id])
             .execute()
             .value
         guard let conversation = try await fetchConversations().first(where: { $0.id == conversationID }) else {
@@ -100,42 +131,102 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
         return rows.map(\.contact)
     }
 
-    func messageEvents(conversationID: UUID) async throws -> AsyncStream<Void> {
-        let channel = client.channel("conversation:\(conversationID.uuidString)")
+    func messageEvents(conversationID: UUID, participantID: UUID?) async throws -> AsyncStream<MessageEvent> {
+        let currentUserID = try await client.auth.session.user.id
+        let messagesChannel = client.channel("messages:\(conversationID.uuidString)")
         // Supabase does not reliably apply column filters to DELETE payloads.
         // RLS still limits events to the signed-in user's conversations, and
         // the timeline refetch below keeps this conversation consistent.
-        let changes = channel.postgresChange(AnyAction.self, table: "messages")
+        let changes = messagesChannel.postgresChange(AnyAction.self, table: "messages")
+        let typingChanges = messagesChannel.postgresChange(
+            AnyAction.self,
+            table: "typing_status",
+            filter: .eq("conversation_id", value: conversationID)
+        )
+        let presenceChanges = messagesChannel.postgresChange(AnyAction.self, table: "user_presence")
 
-        try await channel.subscribeWithError()
+        // Message synchronization is essential and must not depend on the
+        // optional typing channel being authorized or available.
+        try await messagesChannel.subscribeWithError()
 
         return AsyncStream { continuation in
-            let observation = Task {
+            let messagesTask = Task {
                 for await _ in changes {
                     guard !Task.isCancelled else { break }
-                    continuation.yield(())
+                    continuation.yield(.contentChanged)
                 }
-                continuation.finish()
+            }
+            let typingTask = Task {
+                for await _ in typingChanges {
+                    guard !Task.isCancelled else { break }
+                    let isTyping = (try? await self.fetchParticipantTyping(
+                        conversationID: conversationID,
+                        currentUserID: currentUserID
+                    )) ?? false
+                    continuation.yield(.typingChanged(isTyping))
+                }
+            }
+            let presenceTask = Task {
+                for await _ in presenceChanges {
+                    guard !Task.isCancelled, let participantID else { continue }
+                    if let presence = try? await self.fetchPresence(userID: participantID) {
+                        continuation.yield(.presenceChanged(
+                            isActive: presence.isActive,
+                            lastSeenAt: presence.lastSeenAt
+                        ))
+                    }
+                }
             }
 
             continuation.onTermination = { [client] _ in
-                observation.cancel()
-                Task { await client.removeChannel(channel) }
+                messagesTask.cancel()
+                typingTask.cancel()
+                presenceTask.cancel()
+                Task {
+                    await client.removeChannel(messagesChannel)
+                }
             }
         }
     }
 
-    func conversationEvents() async throws -> AsyncStream<ConversationEvent> {
+    func setTyping(_ isTyping: Bool, conversationID: UUID) async throws {
         let currentUserID = try await client.auth.session.user.id
-        let channel = client.channel("veyra:online-users") { config in
-            config.presence = PresenceJoinConfig(key: currentUserID.uuidString)
+        try await client
+            .from("typing_status")
+            .upsert(TypingStatusRow(
+                conversationID: conversationID,
+                userID: currentUserID,
+                isTyping: isTyping,
+                updatedAt: .now
+            ))
+            .execute()
+    }
+
+    func maintainPresence() async {
+        while !Task.isCancelled {
+            do {
+                let currentUserID = try await client.auth.session.user.id
+                try await client
+                    .from("user_presence")
+                    .upsert(UserPresenceRow(userID: currentUserID, lastSeenAt: .now))
+                    .execute()
+            } catch is CancellationError {
+                return
+            } catch {
+                // Presence is best effort and must never affect chat usage.
+            }
+
+            try? await Task.sleep(for: .seconds(20))
         }
+    }
+
+    func conversationEvents() async throws -> AsyncStream<ConversationEvent> {
+        let channel = client.channel("veyra:conversation-events")
         let messageChanges = channel.postgresChange(AnyAction.self, table: "messages")
         let membershipChanges = channel.postgresChange(AnyAction.self, table: "conversation_members")
-        let presenceChanges = channel.presenceChange()
+        let presenceChanges = channel.postgresChange(AnyAction.self, table: "user_presence")
 
         try await channel.subscribeWithError()
-        try await channel.track(PresencePayload(userID: currentUserID))
 
         return AsyncStream { continuation in
             let messagesTask = Task {
@@ -151,16 +242,9 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
                 }
             }
             let presenceTask = Task {
-                var onlineUserIDs = Set<UUID>()
-                for await change in presenceChanges {
+                for await _ in presenceChanges {
                     guard !Task.isCancelled else { break }
-                    for key in change.joins.keys {
-                        if let userID = UUID(uuidString: key) { onlineUserIDs.insert(userID) }
-                    }
-                    for key in change.leaves.keys {
-                        if let userID = UUID(uuidString: key) { onlineUserIDs.remove(userID) }
-                    }
-                    continuation.yield(.presenceChanged(onlineUserIDs))
+                    continuation.yield(.contentChanged)
                 }
             }
 
@@ -171,6 +255,34 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
                 Task { await client.removeChannel(channel) }
             }
         }
+    }
+
+    private func fetchParticipantTyping(conversationID: UUID, currentUserID: UUID) async throws -> Bool {
+        let rows: [TypingStatusRow] = try await client
+            .from("typing_status")
+            .select()
+            .eq("conversation_id", value: conversationID)
+            .neq("user_id", value: currentUserID)
+            .execute()
+            .value
+        return rows.contains { $0.isTyping && $0.updatedAt > Date().addingTimeInterval(-3) }
+    }
+
+    private func fetchPresence(userID: UUID) async throws -> ParticipantPresence {
+        let rows: [UserPresenceRow] = try await client
+            .from("user_presence")
+            .select()
+            .eq("user_id", value: userID)
+            .limit(1)
+            .execute()
+            .value
+        guard let row = rows.first else {
+            return ParticipantPresence(isActive: false, lastSeenAt: nil)
+        }
+        return ParticipantPresence(
+            isActive: row.lastSeenAt > Date().addingTimeInterval(-60),
+            lastSeenAt: row.lastSeenAt
+        )
     }
 }
 
@@ -186,6 +298,8 @@ private struct ConversationRow: Decodable {
     let lastMessage: String
     let updatedAt: Date
     let unreadCount: Int
+    let isOnline: Bool
+    let lastSeenAt: Date?
 
     enum CodingKeys: String, CodingKey {
         case conversationID = "conversation_id"
@@ -194,10 +308,12 @@ private struct ConversationRow: Decodable {
         case lastMessage = "last_message"
         case updatedAt = "updated_at"
         case unreadCount = "unread_count"
+        case isOnline = "is_online"
+        case lastSeenAt = "last_seen_at"
     }
 
     var conversation: Conversation {
-        Conversation(id: conversationID, participantID: participantID, participantName: participantName, lastMessage: lastMessage, updatedAt: updatedAt, unreadCount: unreadCount)
+        Conversation(id: conversationID, participantID: participantID, participantName: participantName, lastMessage: lastMessage, updatedAt: updatedAt, unreadCount: unreadCount, isOnline: isOnline, lastSeenAt: lastSeenAt)
     }
 }
 
@@ -231,6 +347,35 @@ private struct PresencePayload: Codable {
     enum CodingKeys: String, CodingKey {
         case userID = "user_id"
     }
+}
+
+private struct TypingStatusRow: Codable {
+    let conversationID: UUID
+    let userID: UUID
+    let isTyping: Bool
+    let updatedAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case conversationID = "conversation_id"
+        case userID = "user_id"
+        case isTyping = "is_typing"
+        case updatedAt = "updated_at"
+    }
+}
+
+private struct UserPresenceRow: Codable {
+    let userID: UUID
+    let lastSeenAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case userID = "user_id"
+        case lastSeenAt = "last_seen_at"
+    }
+}
+
+private struct ParticipantPresence {
+    let isActive: Bool
+    let lastSeenAt: Date?
 }
 
 private struct MessageRow: Decodable {

@@ -8,8 +8,9 @@ struct Conversation: Identifiable, Hashable {
     let updatedAt: Date
     let unreadCount: Int
     let isOnline: Bool
+    let lastSeenAt: Date?
 
-    init(id: UUID = UUID(), participantID: UUID? = nil, participantName: String, lastMessage: String, updatedAt: Date, unreadCount: Int = 0, isOnline: Bool = false) {
+    init(id: UUID = UUID(), participantID: UUID? = nil, participantName: String, lastMessage: String, updatedAt: Date, unreadCount: Int = 0, isOnline: Bool = false, lastSeenAt: Date? = nil) {
         self.id = id
         self.participantID = participantID
         self.participantName = participantName
@@ -17,5 +18,6 @@ struct Conversation: Identifiable, Hashable {
         self.updatedAt = updatedAt
         self.unreadCount = unreadCount
         self.isOnline = isOnline
+        self.lastSeenAt = lastSeenAt
     }
 }

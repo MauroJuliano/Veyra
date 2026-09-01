@@ -60,12 +60,6 @@ struct AppRootView: View {
 
             NavigationStack {
                 ContactListView(repository: dependencies.remoteChat)
-                    .navigationDestination(for: AppRoute.self) { route in
-                        switch route {
-                        case let .conversation(conversation):
-                            MessageTimelineView(conversation: conversation, repository: dependencies.remoteChat)
-                        }
-                    }
             }
                 .tabItem { Label("People", systemImage: "person.2.fill") }
 
@@ -76,6 +70,7 @@ struct AppRootView: View {
         .toolbarBackground(VeyraColor.surface, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
         .preferredColorScheme(.dark)
+        .task { await dependencies.remoteChat?.maintainPresence() }
     }
 
 }
@@ -85,6 +80,15 @@ private struct ContactListView: View {
     @State private var contacts: [Contact] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @State private var searchText = ""
+    @State private var selectedConversation: Conversation?
+    @State private var openingContactID: UUID?
+
+    private var filteredContacts: [Contact] {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return contacts }
+        return contacts.filter { $0.name.localizedStandardContains(query) }
+    }
 
     var body: some View {
         Group {
@@ -97,24 +101,39 @@ private struct ContactListView: View {
                     description: Text(errorMessage ?? "People you start conversations with will appear here.")
                 )
             } else {
-                List(contacts) { contact in
-                    if let conversationID = contact.conversationID {
-                        NavigationLink(value: AppRoute.conversation(
-                            Conversation(id: conversationID, participantID: contact.id, participantName: contact.name, lastMessage: "", updatedAt: .now, isOnline: contact.isOnline)
-                        )) {
+                List(filteredContacts) { contact in
+                    Button {
+                        Task { await openConversation(with: contact) }
+                    } label: {
+                        HStack {
                             contactRow(contact)
+                            Spacer()
+                            if openingContactID == contact.id {
+                                ProgressView()
+                            } else {
+                                Image(systemName: "chevron.right")
+                                    .font(.caption.bold())
+                                    .foregroundStyle(VeyraColor.textSecondary)
+                            }
                         }
-                    } else {
-                        contactRow(contact)
                     }
+                    .buttonStyle(.plain)
+                    .disabled(openingContactID != nil)
                 }
                 .scrollContentBackground(.hidden)
+                .scrollDismissesKeyboard(.interactively)
+                .dismissKeyboardOnTap()
             }
         }
         .navigationTitle("People")
+        .searchable(text: $searchText, prompt: "Search contacts")
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(VeyraColor.background)
         .task { await load() }
+        .refreshable { await load() }
+        .navigationDestination(item: $selectedConversation) { conversation in
+            MessageTimelineView(conversation: conversation, repository: repository, messages: [])
+        }
     }
 
     private func contactRow(_ contact: Contact) -> some View {
@@ -136,6 +155,20 @@ private struct ContactListView: View {
         do {
             contacts = try await repository.fetchContacts()
             errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    private func openConversation(with contact: Contact) async {
+        guard let repository else { return }
+        openingContactID = contact.id
+        defer { openingContactID = nil }
+        do {
+            selectedConversation = try await repository.startConversation(with: contact)
+            errorMessage = nil
+            await load()
         } catch {
             errorMessage = error.localizedDescription
         }

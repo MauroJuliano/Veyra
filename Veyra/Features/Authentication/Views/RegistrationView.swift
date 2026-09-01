@@ -84,6 +84,7 @@ struct RegistrationView: View {
                 .padding(.vertical, VeyraSpacing.xl)
             }
             .scrollDismissesKeyboard(.interactively)
+            .dismissKeyboardOnTap()
         }
         .preferredColorScheme(.dark)
     }

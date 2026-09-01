@@ -9,7 +9,6 @@ final class ConversationListViewModel {
     var searchText = ""
     private(set) var isLoading = false
     private(set) var errorMessage: String?
-    private var onlineUserIDs = Set<UUID>()
 
     init(repository: any ConversationRepository = InMemoryConversationRepository(), remoteRepository: (any RemoteChatRepository)? = nil) {
         self.repository = repository
@@ -68,9 +67,8 @@ final class ConversationListViewModel {
                 switch event {
                 case .contentChanged:
                     conversations = applyingPresence(to: try await remoteRepository.fetchConversations())
-                case let .presenceChanged(userIDs):
-                    onlineUserIDs = userIDs
-                    conversations = applyingPresence(to: conversations)
+                case .presenceChanged:
+                    break
                 }
             }
         } catch is CancellationError {
@@ -121,7 +119,8 @@ final class ConversationListViewModel {
                 lastMessage: conversation.lastMessage,
                 updatedAt: conversation.updatedAt,
                 unreadCount: conversation.unreadCount,
-                isOnline: conversation.participantID.map(onlineUserIDs.contains) ?? false
+                isOnline: conversation.isOnline,
+                lastSeenAt: conversation.lastSeenAt
             )
         }
     }

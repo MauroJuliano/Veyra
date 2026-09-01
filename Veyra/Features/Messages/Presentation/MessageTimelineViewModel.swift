@@ -4,15 +4,24 @@ import Observation
 @Observable
 final class MessageTimelineViewModel {
     private let conversationID: UUID
+    private let participantID: UUID?
     private let repository: (any RemoteChatRepository)?
     private(set) var messages: [Message]
     var draft = ""
     private(set) var isLoading = false
     private(set) var isSending = false
+    private(set) var isParticipantTyping = false
+    private(set) var isParticipantActive: Bool
+    private(set) var participantLastSeenAt: Date?
     private(set) var errorMessage: String?
+    private var typingStopTask: Task<Void, Never>?
+    private var participantTypingTimeoutTask: Task<Void, Never>?
 
-    init(conversationID: UUID = UUID(), repository: (any RemoteChatRepository)? = nil, messages: [Message]) {
+    init(conversationID: UUID = UUID(), participantID: UUID? = nil, isParticipantActive: Bool = false, participantLastSeenAt: Date? = nil, repository: (any RemoteChatRepository)? = nil, messages: [Message]) {
         self.conversationID = conversationID
+        self.participantID = participantID
+        self.isParticipantActive = isParticipantActive
+        self.participantLastSeenAt = participantLastSeenAt
         self.repository = repository
         self.messages = messages.sorted { $0.sentAt < $1.sentAt }
     }
@@ -44,21 +53,39 @@ final class MessageTimelineViewModel {
     func observeMessages() async {
         guard let repository else { return }
 
+        // The persisted timeline must load independently from Realtime. A
+        // temporary WebSocket failure should only pause live updates, never
+        // leave an existing conversation empty.
+        await load()
         do {
-            // Subscribe before the initial fetch so messages sent during loading are not missed.
-            let events = try await repository.messageEvents(conversationID: conversationID)
-            await load()
             try await repository.markConversationRead(conversationID: conversationID)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
 
-            for await _ in events {
+        do {
+            let events = try await repository.messageEvents(conversationID: conversationID, participantID: participantID)
+
+            for await event in events {
                 guard !Task.isCancelled else { return }
-                await refreshMessages(using: repository)
-                try await repository.markConversationRead(conversationID: conversationID)
+                switch event {
+                case .contentChanged:
+                    await refreshMessages(using: repository)
+                    try await repository.markConversationRead(conversationID: conversationID)
+                case let .typingChanged(isTyping):
+                    updateParticipantTyping(isTyping)
+                case let .presenceChanged(isActive, lastSeenAt):
+                    isParticipantActive = isActive
+                    participantLastSeenAt = lastSeenAt
+                }
             }
         } catch is CancellationError {
             return
         } catch {
-            errorMessage = error.localizedDescription
+            // Keep the loaded timeline usable when live updates are
+            // temporarily unavailable. Sending and manual navigation still
+            // use the durable REST endpoints.
+            return
         }
     }
 
@@ -74,6 +101,10 @@ final class MessageTimelineViewModel {
         isSending = true
         defer { isSending = false }
         do {
+            typingStopTask?.cancel()
+            // Typing is an optional realtime enhancement and must never block
+            // the durable message insert.
+            try? await repository.setTyping(false, conversationID: conversationID)
             let message = try await repository.sendMessage(text, conversationID: conversationID)
             appendIfNeeded(message)
             draft = ""
@@ -81,6 +112,28 @@ final class MessageTimelineViewModel {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    @MainActor
+    func draftDidChange() {
+        guard repository != nil else { return }
+        typingStopTask?.cancel()
+
+        let hasText = !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        Task { try? await repository?.setTyping(hasText, conversationID: conversationID) }
+        guard hasText else { return }
+
+        typingStopTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(1.5))
+            guard !Task.isCancelled, let self else { return }
+            try? await self.repository?.setTyping(false, conversationID: self.conversationID)
+        }
+    }
+
+    @MainActor
+    func stopTyping() async {
+        typingStopTask?.cancel()
+        try? await repository?.setTyping(false, conversationID: conversationID)
     }
 
     @MainActor
@@ -115,5 +168,18 @@ final class MessageTimelineViewModel {
         guard !messages.contains(where: { $0.id == message.id }) else { return }
         messages.append(message)
         messages.sort { $0.sentAt < $1.sentAt }
+    }
+
+    @MainActor
+    private func updateParticipantTyping(_ isTyping: Bool) {
+        participantTypingTimeoutTask?.cancel()
+        isParticipantTyping = isTyping
+        guard isTyping else { return }
+
+        participantTypingTimeoutTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(3))
+            guard !Task.isCancelled else { return }
+            self?.isParticipantTyping = false
+        }
     }
 }
