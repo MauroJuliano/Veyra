@@ -6,6 +6,7 @@ protocol RemoteChatRepository: Sendable {
     func startConversation(withEmail email: String) async throws -> Conversation
     func fetchMessages(conversationID: UUID) async throws -> [Message]
     func sendMessage(_ text: String, conversationID: UUID) async throws -> Message
+    func messageEvents(conversationID: UUID) async throws -> AsyncStream<Void>
 }
 
 final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
@@ -55,6 +56,32 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             .execute()
             .value
         return row.message(currentUserID: currentUserID)
+    }
+
+    func messageEvents(conversationID: UUID) async throws -> AsyncStream<Void> {
+        let channel = client.channel("conversation:\(conversationID.uuidString)")
+        let insertions = channel.postgresChange(
+            InsertAction.self,
+            table: "messages",
+            filter: .eq("conversation_id", value: conversationID)
+        )
+
+        try await channel.subscribeWithError()
+
+        return AsyncStream { continuation in
+            let observation = Task {
+                for await _ in insertions {
+                    guard !Task.isCancelled else { break }
+                    continuation.yield(())
+                }
+                continuation.finish()
+            }
+
+            continuation.onTermination = { [client] _ in
+                observation.cancel()
+                Task { await client.removeChannel(channel) }
+            }
+        }
     }
 }
 

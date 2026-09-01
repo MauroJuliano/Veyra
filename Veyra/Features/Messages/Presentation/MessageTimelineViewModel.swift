@@ -41,6 +41,26 @@ final class MessageTimelineViewModel {
     }
 
     @MainActor
+    func observeMessages() async {
+        guard let repository else { return }
+
+        do {
+            // Subscribe before the initial fetch so messages sent during loading are not missed.
+            let events = try await repository.messageEvents(conversationID: conversationID)
+            await load()
+
+            for await _ in events {
+                guard !Task.isCancelled else { return }
+                await refreshMessages(using: repository)
+            }
+        } catch is CancellationError {
+            return
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    @MainActor
     func send() async {
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
@@ -53,11 +73,29 @@ final class MessageTimelineViewModel {
         defer { isSending = false }
         do {
             let message = try await repository.sendMessage(text, conversationID: conversationID)
-            messages.append(message)
+            appendIfNeeded(message)
             draft = ""
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    @MainActor
+    private func refreshMessages(using repository: any RemoteChatRepository) async {
+        do {
+            messages = try await repository.fetchMessages(conversationID: conversationID)
+            errorMessage = nil
+        } catch is CancellationError {
+            return
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func appendIfNeeded(_ message: Message) {
+        guard !messages.contains(where: { $0.id == message.id }) else { return }
+        messages.append(message)
+        messages.sort { $0.sentAt < $1.sentAt }
     }
 }

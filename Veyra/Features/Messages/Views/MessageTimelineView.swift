@@ -80,7 +80,7 @@ struct MessageTimelineView: View {
                     .accessibilityLabel("Start video call")
             }
         }
-        .task { await viewModel.load() }
+        .task { await viewModel.observeMessages() }
     }
 }
 
