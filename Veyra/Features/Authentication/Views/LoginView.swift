@@ -2,11 +2,15 @@ import SwiftUI
 
 struct LoginView: View {
     @State private var viewModel: LoginViewModel
-    let onAuthenticated: (Bool) -> Void
+    let isLoading: Bool
+    let externalError: String?
+    let onAuthenticated: (String, String) -> Void
     let onCreateAccount: () -> Void
 
-    init(viewModel: LoginViewModel = LoginViewModel(), onAuthenticated: @escaping (Bool) -> Void, onCreateAccount: @escaping () -> Void = {}) {
+    init(viewModel: LoginViewModel = LoginViewModel(), isLoading: Bool = false, externalError: String? = nil, onAuthenticated: @escaping (String, String) -> Void, onCreateAccount: @escaping () -> Void = {}) {
         _viewModel = State(initialValue: viewModel)
+        self.isLoading = isLoading
+        self.externalError = externalError
         self.onAuthenticated = onAuthenticated
         self.onCreateAccount = onCreateAccount
     }
@@ -79,29 +83,18 @@ struct LoginView: View {
 
             passwordField
 
-            HStack {
-                Button { viewModel.remembersUser.toggle() } label: {
-                    Label("Remember me", systemImage: viewModel.remembersUser ? "checkmark.circle.fill" : "circle")
-                }
-                .foregroundStyle(viewModel.remembersUser ? VeyraColor.accent : VeyraColor.textSecondary)
-                Spacer()
-                Text("Secure local preview")
-                    .foregroundStyle(VeyraColor.textSecondary)
-            }
-            .font(VeyraTypography.caption)
-
-            if let message = viewModel.validationMessage {
+            if let message = viewModel.validationMessage ?? externalError {
                 Label(message, systemImage: "exclamationmark.circle")
                     .font(VeyraTypography.caption)
                     .foregroundStyle(VeyraColor.danger)
             }
 
             Button {
-                if viewModel.submit() { onAuthenticated(viewModel.remembersUser) }
+                if viewModel.submit() { onAuthenticated(viewModel.email, viewModel.password) }
             } label: {
                 HStack {
                     Spacer()
-                    Text("Login").font(VeyraTypography.bodyEmphasized)
+                    if isLoading { ProgressView().tint(.white) } else { Text("Login").font(VeyraTypography.bodyEmphasized) }
                     Spacer()
                     Image(systemName: "arrow.right")
                 }
@@ -114,8 +107,8 @@ struct LoginView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 18))
                 .shadow(color: VeyraColor.accent.opacity(0.4), radius: 18, y: 8)
             }
-            .disabled(!viewModel.canSubmit)
-            .opacity(viewModel.canSubmit ? 1 : 0.55)
+            .disabled(!viewModel.canSubmit || isLoading)
+            .opacity(viewModel.canSubmit && !isLoading ? 1 : 0.55)
         }
         .padding(VeyraSpacing.lg)
         .background { GlassBackground(cornerRadius: 28, tintOpacity: 0.1, glowOpacity: 0.22) }
@@ -168,7 +161,7 @@ struct LoginView: View {
     }
 
     private var footer: some View {
-        Text("Authentication is local during this development milestone.")
+        Text("Authentication powered by Supabase.")
             .font(VeyraTypography.caption)
             .multilineTextAlignment(.center)
             .foregroundStyle(VeyraColor.textSecondary)
@@ -185,5 +178,5 @@ struct LoginView: View {
 }
 
 #Preview("Login") {
-    LoginView(onAuthenticated: { _ in })
+    LoginView(onAuthenticated: { _, _ in })
 }

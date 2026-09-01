@@ -2,11 +2,15 @@ import SwiftUI
 
 struct RegistrationView: View {
     @State private var viewModel: RegistrationViewModel
+    let isLoading: Bool
+    let externalError: String?
     let onBack: () -> Void
-    let onRegistered: () -> Void
+    let onRegistered: (String, String, String) -> Void
 
-    init(viewModel: RegistrationViewModel = RegistrationViewModel(), onBack: @escaping () -> Void, onRegistered: @escaping () -> Void) {
+    init(viewModel: RegistrationViewModel = RegistrationViewModel(), isLoading: Bool = false, externalError: String? = nil, onBack: @escaping () -> Void, onRegistered: @escaping (String, String, String) -> Void) {
         _viewModel = State(initialValue: viewModel)
+        self.isLoading = isLoading
+        self.externalError = externalError
         self.onBack = onBack
         self.onRegistered = onRegistered
     }
@@ -43,18 +47,18 @@ struct RegistrationView: View {
                         }
                         .foregroundStyle(viewModel.acceptsTerms ? VeyraColor.accent : VeyraColor.textSecondary)
 
-                        if let message = viewModel.validationMessage {
+                        if let message = viewModel.validationMessage ?? externalError {
                             Label(message, systemImage: "exclamationmark.circle")
                                 .font(VeyraTypography.caption)
                                 .foregroundStyle(VeyraColor.danger)
                         }
 
                         Button {
-                            if viewModel.submit() { onRegistered() }
+                            if viewModel.submit() { onRegistered(viewModel.name, viewModel.email, viewModel.password) }
                         } label: {
                             HStack {
                                 Spacer()
-                                Text("Create account").font(VeyraTypography.bodyEmphasized)
+                                if isLoading { ProgressView().tint(.white) } else { Text("Create account").font(VeyraTypography.bodyEmphasized) }
                                 Spacer()
                                 Image(systemName: "arrow.right")
                             }
@@ -65,14 +69,14 @@ struct RegistrationView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 18))
                             .shadow(color: VeyraColor.accent.opacity(0.4), radius: 18, y: 8)
                         }
-                        .disabled(!viewModel.canSubmit)
-                        .opacity(viewModel.canSubmit ? 1 : 0.55)
+                        .disabled(!viewModel.canSubmit || isLoading)
+                        .opacity(viewModel.canSubmit && !isLoading ? 1 : 0.55)
                     }
                     .padding(VeyraSpacing.lg)
                     .background { GlassBackground(cornerRadius: 28, tintOpacity: 0.1, glowOpacity: 0.22) }
                     .clipShape(RoundedRectangle(cornerRadius: 28))
 
-                    Text("Account creation is local during this milestone.")
+                    Text("Your account is securely created with Supabase.")
                         .font(VeyraTypography.caption)
                         .foregroundStyle(VeyraColor.textSecondary)
                 }
@@ -122,5 +126,5 @@ struct RegistrationView: View {
 }
 
 #Preview("Registration") {
-    RegistrationView(onBack: {}, onRegistered: {})
+    RegistrationView(onBack: {}, onRegistered: { _, _, _ in })
 }
