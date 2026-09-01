@@ -84,6 +84,22 @@ final class MessageTimelineViewModel {
     }
 
     @MainActor
+    func delete(_ message: Message) async {
+        guard message.direction == .outgoing else { return }
+        guard let repository else {
+            messages.removeAll { $0.id == message.id }
+            return
+        }
+        do {
+            try await repository.deleteMessage(id: message.id)
+            messages.removeAll { $0.id == message.id }
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    @MainActor
     private func refreshMessages(using repository: any RemoteChatRepository) async {
         do {
             messages = try await repository.fetchMessages(conversationID: conversationID)

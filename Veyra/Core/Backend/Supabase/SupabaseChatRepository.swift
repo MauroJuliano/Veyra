@@ -9,6 +9,9 @@ protocol RemoteChatRepository: Sendable {
     func messageEvents(conversationID: UUID) async throws -> AsyncStream<Void>
     func conversationEvents() async throws -> AsyncStream<ConversationEvent>
     func markConversationRead(conversationID: UUID) async throws
+    func deleteMessage(id: UUID) async throws
+    func deleteConversation(id: UUID) async throws
+    func fetchContacts() async throws -> [Contact]
 }
 
 enum ConversationEvent: Sendable {
@@ -75,19 +78,40 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
         return row.message(currentUserID: currentUserID)
     }
 
+    func deleteMessage(id: UUID) async throws {
+        try await client
+            .from("messages")
+            .delete()
+            .eq("id", value: id)
+            .execute()
+    }
+
+    func deleteConversation(id: UUID) async throws {
+        try await client
+            .rpc("delete_conversation", params: ["target_conversation_id": id])
+            .execute()
+    }
+
+    func fetchContacts() async throws -> [Contact] {
+        let rows: [ContactRow] = try await client
+            .rpc("list_my_contacts")
+            .execute()
+            .value
+        return rows.map(\.contact)
+    }
+
     func messageEvents(conversationID: UUID) async throws -> AsyncStream<Void> {
         let channel = client.channel("conversation:\(conversationID.uuidString)")
-        let insertions = channel.postgresChange(
-            InsertAction.self,
-            table: "messages",
-            filter: .eq("conversation_id", value: conversationID)
-        )
+        // Supabase does not reliably apply column filters to DELETE payloads.
+        // RLS still limits events to the signed-in user's conversations, and
+        // the timeline refetch below keeps this conversation consistent.
+        let changes = channel.postgresChange(AnyAction.self, table: "messages")
 
         try await channel.subscribeWithError()
 
         return AsyncStream { continuation in
             let observation = Task {
-                for await _ in insertions {
+                for await _ in changes {
                     guard !Task.isCancelled else { break }
                     continuation.yield(())
                 }
@@ -106,12 +130,8 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
         let channel = client.channel("veyra:online-users") { config in
             config.presence = PresenceJoinConfig(key: currentUserID.uuidString)
         }
-        let messageInsertions = channel.postgresChange(InsertAction.self, table: "messages")
-        let membershipUpdates = channel.postgresChange(
-            UpdateAction.self,
-            table: "conversation_members",
-            filter: .eq("user_id", value: currentUserID)
-        )
+        let messageChanges = channel.postgresChange(AnyAction.self, table: "messages")
+        let membershipChanges = channel.postgresChange(AnyAction.self, table: "conversation_members")
         let presenceChanges = channel.presenceChange()
 
         try await channel.subscribeWithError()
@@ -119,13 +139,13 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
 
         return AsyncStream { continuation in
             let messagesTask = Task {
-                for await _ in messageInsertions {
+                for await _ in messageChanges {
                     guard !Task.isCancelled else { break }
                     continuation.yield(.contentChanged)
                 }
             }
             let membershipsTask = Task {
-                for await _ in membershipUpdates {
+                for await _ in membershipChanges {
                     guard !Task.isCancelled else { break }
                     continuation.yield(.contentChanged)
                 }
@@ -178,6 +198,22 @@ private struct ConversationRow: Decodable {
 
     var conversation: Conversation {
         Conversation(id: conversationID, participantID: participantID, participantName: participantName, lastMessage: lastMessage, updatedAt: updatedAt, unreadCount: unreadCount)
+    }
+}
+
+private struct ContactRow: Decodable {
+    let contactID: UUID
+    let displayName: String
+    let conversationID: UUID?
+
+    enum CodingKeys: String, CodingKey {
+        case contactID = "contact_id"
+        case displayName = "display_name"
+        case conversationID = "conversation_id"
+    }
+
+    var contact: Contact {
+        Contact(id: contactID, name: displayName, conversationID: conversationID)
     }
 }
 
