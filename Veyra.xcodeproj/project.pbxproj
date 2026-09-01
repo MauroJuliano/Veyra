@@ -41,6 +41,7 @@
 		95DD681F3B9F64C813E31A9F /* AvatarInitialsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BF8B6FD286458DDB74C22F1 /* AvatarInitialsTests.swift */; };
 		9B311E6D5BCF803CF646E063 /* VeyraPrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D907300CAB7511CAFB4C0D7 /* VeyraPrimaryButton.swift */; };
 		A3F57AB2EFBDC14540CD7DE7 /* VeyraColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18C29846BD4E660FFF3319F /* VeyraColor.swift */; };
+		A9132EAC30465364009C03A6 /* GlassBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9132EAB30465364009C03A6 /* GlassBackground.swift */; };
 		AFA0D0231FA487557A3ACFBA /* VeyraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815CF3D51D8A2E92364C8777 /* VeyraApp.swift */; };
 		C4F01BA4C1FC96FCE3BC3D1D /* VeyraTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FC21B9F9899BED11DEF736 /* VeyraTypography.swift */; };
 		CEEA022B7E5F677BA3E64917 /* VeyraAvatar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038CE3E0EAE19CBFD20112BA /* VeyraAvatar.swift */; };
@@ -88,6 +89,7 @@
 		994EA17041AD6A2C9DAA0CC3 /* ContactRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactRepository.swift; sourceTree = "<group>"; };
 		9BF8B6FD286458DDB74C22F1 /* AvatarInitialsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AvatarInitialsTests.swift; sourceTree = "<group>"; };
 		A18C29846BD4E660FFF3319F /* VeyraColor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraColor.swift; sourceTree = "<group>"; };
+		A9132EAB30465364009C03A6 /* GlassBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassBackground.swift; sourceTree = "<group>"; };
 		AAA6A3BB479DAFD774307B9D /* VeyraSpacing.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraSpacing.swift; sourceTree = "<group>"; };
 		AAAAD678B15A97CA475953DB /* MessageComposerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessageComposerView.swift; sourceTree = "<group>"; };
 		ACE1C7EE7B619D59D5529C04 /* VeyraTextField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraTextField.swift; sourceTree = "<group>"; };
@@ -132,7 +134,6 @@
 			children = (
 				B6B6EEED8A124464784C2B17 /* Message.swift */,
 			);
-			name = Models;
 			path = Models;
 			sourceTree = "<group>";
 		};
@@ -168,7 +169,6 @@
 			children = (
 				DDF0E692A9671F543EED8718 /* MessageTimelineViewModel.swift */,
 			);
-			name = Presentation;
 			path = Presentation;
 			sourceTree = "<group>";
 		};
@@ -207,7 +207,6 @@
 				AAAAD678B15A97CA475953DB /* MessageComposerView.swift */,
 				FF5389180DA0846CECDD8509 /* MessageTimelineView.swift */,
 			);
-			name = Views;
 			path = Views;
 			sourceTree = "<group>";
 		};
@@ -227,13 +226,13 @@
 				0E91305B16B77EBDDB5AF62A /* ConversationRecord.swift */,
 				0D5400F153B6D21CB5BB9CC5 /* SwiftDataConversationRepository.swift */,
 			);
-			name = SwiftData;
 			path = SwiftData;
 			sourceTree = "<group>";
 		};
 		5FF5271B60B1D69D8DF32C09 /* Foundation */ = {
 			isa = PBXGroup;
 			children = (
+				A9132EAB30465364009C03A6 /* GlassBackground.swift */,
 				A18C29846BD4E660FFF3319F /* VeyraColor.swift */,
 				AAA6A3BB479DAFD774307B9D /* VeyraSpacing.swift */,
 				612257922E48B3ACB47078A3 /* VeyraRadius.swift */,
@@ -249,7 +248,6 @@
 				D50FA23D7E52344B0DFD4339 /* Dependency */,
 				5FB644311B3D511515ABBACA /* SwiftData */,
 			);
-			name = Data;
 			path = Data;
 			sourceTree = "<group>";
 		};
@@ -293,7 +291,6 @@
 			children = (
 				8DF296E5214CCEBFA8ABE939 /* MessagePreviewData.swift */,
 			);
-			name = Data;
 			path = Data;
 			sourceTree = "<group>";
 		};
@@ -339,7 +336,6 @@
 				E0E79AFD1721697118A5B30F /* ConversationRepository.swift */,
 				994EA17041AD6A2C9DAA0CC3 /* ContactRepository.swift */,
 			);
-			name = Repositories;
 			path = Repositories;
 			sourceTree = "<group>";
 		};
@@ -348,7 +344,6 @@
 			children = (
 				FF36A65784567611871F8863 /* AppDependencies.swift */,
 			);
-			name = Dependency;
 			path = Dependency;
 			sourceTree = "<group>";
 		};
@@ -360,7 +355,6 @@
 				23FFEE96E918F105EB053FED /* Presentation */,
 				52F35888B0023302ABF8F350 /* Views */,
 			);
-			name = Messages;
 			path = Messages;
 			sourceTree = "<group>";
 		};
@@ -532,6 +526,7 @@
 				EEEDC5B85B970CF0A097194F /* ContactPreviewData.swift in Sources */,
 				48740A8D240138CA83CFE28C /* NewConversationViewModel.swift in Sources */,
 				1A05F76268540B8DBBDF8D9B /* NewConversationView.swift in Sources */,
+				A9132EAC30465364009C03A6 /* GlassBackground.swift in Sources */,
 				3C20A3D616AFF95F6F424150 /* ConversationRepository.swift in Sources */,
 				7B51BB037BE5D99F3698FF44 /* ContactRepository.swift in Sources */,
 				8CD8A037A2DD7E127629FE32 /* AppDependencies.swift in Sources */,
