@@ -2,12 +2,25 @@ import SwiftUI
 
 struct AppRootView: View {
     private let dependencies: AppDependencies
+    @State private var isAuthenticated = false
 
     init(dependencies: AppDependencies = AppDependencies()) {
         self.dependencies = dependencies
     }
 
     var body: some View {
+        if isAuthenticated {
+            authenticatedContent
+                .transition(.opacity)
+        } else {
+            LoginView {
+                withAnimation(.easeInOut) { isAuthenticated = true }
+            }
+            .transition(.opacity)
+        }
+    }
+
+    private var authenticatedContent: some View {
         TabView {
             NavigationStack {
                 ConversationListView(
