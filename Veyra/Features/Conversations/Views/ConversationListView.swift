@@ -4,6 +4,7 @@ struct ConversationListView: View {
     @State private var viewModel: ConversationListViewModel
     @State private var presentsNewConversation = false
     @State private var selectedConversation: Conversation?
+    @State private var conversationPendingDeletion: Conversation?
     init(viewModel: ConversationListViewModel = ConversationListViewModel()) {
         _viewModel = State(initialValue: viewModel)
     }
@@ -49,6 +50,11 @@ struct ConversationListView: View {
                                 .buttonStyle(.plain)
                                 .background { GlassBackground() }
                                 .clipShape(RoundedRectangle(cornerRadius: 18))
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    Button("Delete", systemImage: "trash", role: .destructive) {
+                                        conversationPendingDeletion = conversation
+                                    }
+                                }
                             }
                         }
                         .padding(.horizontal, VeyraSpacing.md)
@@ -81,6 +87,14 @@ struct ConversationListView: View {
             }
         }
         .task { await viewModel.observeConversations() }
+        .alert("Delete conversation?", isPresented: deletionAlertIsPresented, presenting: conversationPendingDeletion) { conversation in
+            Button("Delete", role: .destructive) {
+                Task { await viewModel.delete(conversation) }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: { conversation in
+            Text("The conversation with \(conversation.participantName) and all of its messages will be removed for both participants.")
+        }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 VeyraAvatar(name: "Mauro Juliano", size: .small)
@@ -102,6 +116,13 @@ struct ConversationListView: View {
                     .accessibilityLabel("New conversation")
             }
         }
+    }
+
+    private var deletionAlertIsPresented: Binding<Bool> {
+        Binding(
+            get: { conversationPendingDeletion != nil },
+            set: { if !$0 { conversationPendingDeletion = nil } }
+        )
     }
 
     private var searchField: some View {

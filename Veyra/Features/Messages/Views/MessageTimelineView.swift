@@ -3,6 +3,7 @@ import SwiftUI
 struct MessageTimelineView: View {
     let conversation: Conversation
     @State private var viewModel: MessageTimelineViewModel
+    @State private var messagePendingDeletion: Message?
 
     init(conversation: Conversation, repository: (any RemoteChatRepository)? = nil, messages: [Message]? = nil) {
         self.conversation = conversation
@@ -32,6 +33,13 @@ struct MessageTimelineView: View {
                             .padding(.vertical, VeyraSpacing.md)
                         ForEach(day.messages) { message in
                             MessageBubbleView(message: message, participantName: conversation.participantName)
+                                .contextMenu {
+                                    if message.direction == .outgoing {
+                                        Button("Delete message", systemImage: "trash", role: .destructive) {
+                                            messagePendingDeletion = message
+                                        }
+                                    }
+                                }
                         }
                     }
                 }
@@ -81,6 +89,21 @@ struct MessageTimelineView: View {
             }
         }
         .task { await viewModel.observeMessages() }
+        .alert("Delete message?", isPresented: deletionAlertIsPresented, presenting: messagePendingDeletion) { message in
+            Button("Delete", role: .destructive) {
+                Task { await viewModel.delete(message) }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: { _ in
+            Text("This message will be removed for everyone in the conversation.")
+        }
+    }
+
+    private var deletionAlertIsPresented: Binding<Bool> {
+        Binding(
+            get: { messagePendingDeletion != nil },
+            set: { if !$0 { messagePendingDeletion = nil } }
+        )
     }
 }
 

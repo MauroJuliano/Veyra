@@ -40,4 +40,13 @@ struct ConversationListViewModelTests {
         viewModel.searchText = "prototype"
         #expect(viewModel.filteredConversations.map(\.participantName) == ["Ana"])
     }
+
+    @Test @MainActor func deletesLocalConversation() async {
+        let conversation = Conversation(participantName: "Ana", lastMessage: "Hello", updatedAt: .now)
+        let viewModel = ConversationListViewModel(conversations: [conversation])
+
+        await viewModel.delete(conversation)
+
+        #expect(viewModel.conversations.isEmpty)
+    }
 }

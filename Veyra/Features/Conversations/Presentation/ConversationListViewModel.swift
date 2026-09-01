@@ -96,6 +96,21 @@ final class ConversationListViewModel {
         }
     }
 
+    @MainActor
+    func delete(_ conversation: Conversation) async {
+        guard let remoteRepository else {
+            conversations.removeAll { $0.id == conversation.id }
+            return
+        }
+        do {
+            try await remoteRepository.deleteConversation(id: conversation.id)
+            conversations.removeAll { $0.id == conversation.id }
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
 
     private func applyingPresence(to conversations: [Conversation]) -> [Conversation] {
         conversations.map { conversation in

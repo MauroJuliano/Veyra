@@ -58,7 +58,15 @@ struct AppRootView: View {
             }
             .tabItem { Label("Chats", systemImage: "bubble.left.and.bubble.right.fill") }
 
-            PlaceholderTabView(title: "People", message: "Your contacts will live here.", systemImage: "person.2")
+            NavigationStack {
+                ContactListView(repository: dependencies.remoteChat)
+                    .navigationDestination(for: AppRoute.self) { route in
+                        switch route {
+                        case let .conversation(conversation):
+                            MessageTimelineView(conversation: conversation, repository: dependencies.remoteChat)
+                        }
+                    }
+            }
                 .tabItem { Label("People", systemImage: "person.2.fill") }
 
             ProfileView(onLogout: { Task { await authentication.signOut() } })
@@ -72,15 +80,65 @@ struct AppRootView: View {
 
 }
 
-private struct PlaceholderTabView: View {
-    let title: String
-    let message: String
-    let systemImage: String
+private struct ContactListView: View {
+    let repository: (any RemoteChatRepository)?
+    @State private var contacts: [Contact] = []
+    @State private var isLoading = false
+    @State private var errorMessage: String?
 
     var body: some View {
-        ContentUnavailableView(title, systemImage: systemImage, description: Text(message))
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(VeyraColor.background)
+        Group {
+            if isLoading && contacts.isEmpty {
+                ProgressView("Loading contacts…")
+            } else if contacts.isEmpty {
+                ContentUnavailableView(
+                    "No contacts yet",
+                    systemImage: "person.2",
+                    description: Text(errorMessage ?? "People you start conversations with will appear here.")
+                )
+            } else {
+                List(contacts) { contact in
+                    if let conversationID = contact.conversationID {
+                        NavigationLink(value: AppRoute.conversation(
+                            Conversation(id: conversationID, participantID: contact.id, participantName: contact.name, lastMessage: "", updatedAt: .now, isOnline: contact.isOnline)
+                        )) {
+                            contactRow(contact)
+                        }
+                    } else {
+                        contactRow(contact)
+                    }
+                }
+                .scrollContentBackground(.hidden)
+            }
+        }
+        .navigationTitle("People")
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(VeyraColor.background)
+        .task { await load() }
+    }
+
+    private func contactRow(_ contact: Contact) -> some View {
+        HStack(spacing: VeyraSpacing.md) {
+            VeyraAvatar(name: contact.name, showsOnlineIndicator: contact.isOnline)
+            Text(contact.name)
+                .font(VeyraTypography.bodyEmphasized)
+                .foregroundStyle(VeyraColor.textPrimary)
+        }
+        .padding(.vertical, VeyraSpacing.xs)
+        .listRowBackground(VeyraColor.surface)
+    }
+
+    @MainActor
+    private func load() async {
+        guard let repository else { return }
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            contacts = try await repository.fetchContacts()
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }
 
