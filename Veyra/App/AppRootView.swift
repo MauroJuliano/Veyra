@@ -8,10 +8,16 @@ struct AppRootView: View {
     }
 
     private let dependencies: AppDependencies
-    @State private var authenticationRoute = AuthenticationRoute.login
+    private let sessionStore: any SessionStore
+    @State private var authenticationRoute: AuthenticationRoute
 
-    init(dependencies: AppDependencies = AppDependencies()) {
+    init(
+        dependencies: AppDependencies = AppDependencies(),
+        sessionStore: any SessionStore = UserDefaultsSessionStore()
+    ) {
         self.dependencies = dependencies
+        self.sessionStore = sessionStore
+        _authenticationRoute = State(initialValue: sessionStore.isAuthenticated ? .authenticated : .login)
     }
 
     var body: some View {
@@ -21,12 +27,12 @@ struct AppRootView: View {
         } else if authenticationRoute == .registration {
             RegistrationView(
                 onBack: { withAnimation(.easeInOut) { authenticationRoute = .login } },
-                onRegistered: { withAnimation(.easeInOut) { authenticationRoute = .authenticated } }
+                onRegistered: { authenticate(remembersSession: true) }
             )
             .transition(.opacity)
         } else {
             LoginView(
-                onAuthenticated: { withAnimation(.easeInOut) { authenticationRoute = .authenticated } },
+                onAuthenticated: authenticate,
                 onCreateAccount: { withAnimation(.easeInOut) { authenticationRoute = .registration } }
             )
             .transition(.opacity)
@@ -52,13 +58,23 @@ struct AppRootView: View {
             PlaceholderTabView(title: "People", message: "Your contacts will live here.", systemImage: "person.2")
                 .tabItem { Label("People", systemImage: "person.2.fill") }
 
-            PlaceholderTabView(title: "Profile", message: "Profile customization arrives soon.", systemImage: "person.crop.circle")
+            ProfileView(onLogout: logout)
                 .tabItem { Label("Profile", systemImage: "person.crop.circle.fill") }
         }
         .tint(VeyraColor.accent)
         .toolbarBackground(VeyraColor.surface, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
         .preferredColorScheme(.dark)
+    }
+
+    private func authenticate(remembersSession: Bool) {
+        sessionStore.setAuthenticated(remembersSession)
+        withAnimation(.easeInOut) { authenticationRoute = .authenticated }
+    }
+
+    private func logout() {
+        sessionStore.setAuthenticated(false)
+        withAnimation(.easeInOut) { authenticationRoute = .login }
     }
 }
 
