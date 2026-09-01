@@ -120,7 +120,9 @@ final class ConversationListViewModel {
                 updatedAt: conversation.updatedAt,
                 unreadCount: conversation.unreadCount,
                 isOnline: conversation.isOnline,
-                lastSeenAt: conversation.lastSeenAt
+                lastSeenAt: conversation.lastSeenAt,
+                lastMessageIsMine: conversation.lastMessageIsMine,
+                lastMessageIsRead: conversation.lastMessageIsRead
             )
         }
     }

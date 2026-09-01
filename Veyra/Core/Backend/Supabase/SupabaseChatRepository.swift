@@ -310,6 +310,8 @@ private struct ConversationRow: Decodable {
     let unreadCount: Int
     let isOnline: Bool
     let lastSeenAt: Date?
+    let lastMessageIsMine: Bool
+    let lastMessageIsRead: Bool
 
     enum CodingKeys: String, CodingKey {
         case conversationID = "conversation_id"
@@ -320,10 +322,12 @@ private struct ConversationRow: Decodable {
         case unreadCount = "unread_count"
         case isOnline = "is_online"
         case lastSeenAt = "last_seen_at"
+        case lastMessageIsMine = "last_message_is_mine"
+        case lastMessageIsRead = "last_message_is_read"
     }
 
     var conversation: Conversation {
-        Conversation(id: conversationID, participantID: participantID, participantName: participantName, lastMessage: lastMessage, updatedAt: updatedAt, unreadCount: unreadCount, isOnline: isOnline, lastSeenAt: lastSeenAt)
+        Conversation(id: conversationID, participantID: participantID, participantName: participantName, lastMessage: lastMessage, updatedAt: updatedAt, unreadCount: unreadCount, isOnline: isOnline, lastSeenAt: lastSeenAt, lastMessageIsMine: lastMessageIsMine, lastMessageIsRead: lastMessageIsRead)
     }
 }
 

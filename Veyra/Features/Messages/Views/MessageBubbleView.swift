@@ -29,7 +29,7 @@ struct MessageBubbleView: View {
                 HStack(spacing: VeyraSpacing.xs) {
                     Text(message.sentAt, format: .dateTime.hour().minute())
                     if message.direction == .outgoing {
-                        MessageReceiptView(receipt: message.receipt)
+                        MessageReceiptIcon(isRead: message.receipt == .read)
                     }
                 }
                 .font(VeyraTypography.caption)
@@ -44,12 +44,12 @@ struct MessageBubbleView: View {
 
 }
 
-private struct MessageReceiptView: View {
-    let receipt: Message.Receipt
+struct MessageReceiptIcon: View {
+    let isRead: Bool
 
     var body: some View {
         Group {
-            if receipt == .read {
+            if isRead {
                 HStack(spacing: -5) {
                     Image(systemName: "checkmark")
                     Image(systemName: "checkmark")
@@ -61,7 +61,7 @@ private struct MessageReceiptView: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(receipt == .read ? "Read" : "Sent")
+        .accessibilityLabel(isRead ? "Read" : "Sent")
     }
 }
 

@@ -19,6 +19,9 @@ struct ConversationRowView: View {
                 }
 
                 HStack {
+                    if conversation.lastMessageIsMine {
+                        MessageReceiptIcon(isRead: conversation.lastMessageIsRead)
+                    }
                     Text(conversation.lastMessage)
                         .font(VeyraTypography.body)
                         .foregroundStyle(VeyraColor.textSecondary)
