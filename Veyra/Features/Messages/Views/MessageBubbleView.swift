@@ -29,8 +29,7 @@ struct MessageBubbleView: View {
                 HStack(spacing: VeyraSpacing.xs) {
                     Text(message.sentAt, format: .dateTime.hour().minute())
                     if message.direction == .outgoing {
-                        Image(systemName: "checkmark.done")
-                            .foregroundStyle(VeyraColor.accent)
+                        MessageReceiptIcon(isRead: message.receipt == .read)
                     }
                 }
                 .font(VeyraTypography.caption)
@@ -45,10 +44,32 @@ struct MessageBubbleView: View {
 
 }
 
+struct MessageReceiptIcon: View {
+    let isRead: Bool
+
+    var body: some View {
+        Group {
+            if isRead {
+                HStack(spacing: -5) {
+                    Image(systemName: "checkmark")
+                    Image(systemName: "checkmark")
+                }
+                .foregroundStyle(VeyraColor.accent)
+            } else {
+                Image(systemName: "checkmark")
+                    .foregroundStyle(VeyraColor.textSecondary)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(isRead ? "Read" : "Sent")
+    }
+}
+
 #Preview("Message bubbles") {
     VStack {
         MessageBubbleView(message: Message(text: "How are you today?", direction: .incoming), participantName: "Jessica Miller")
         MessageBubbleView(message: Message(text: "Finished work just now. And you?", direction: .outgoing), participantName: "Jessica Miller")
+        MessageBubbleView(message: Message(text: "This one was read.", direction: .outgoing, receipt: .read), participantName: "Jessica Miller")
     }
     .padding()
     .background(VeyraColor.background)

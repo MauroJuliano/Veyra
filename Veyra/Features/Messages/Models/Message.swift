@@ -6,16 +6,23 @@ struct Message: Identifiable, Hashable {
         case outgoing
     }
 
+    enum Receipt: Hashable {
+        case sent
+        case read
+    }
+
     let id: UUID
     let text: String
     let sentAt: Date
     let direction: Direction
+    let receipt: Receipt
 
-    init(id: UUID = UUID(), text: String, sentAt: Date = .now, direction: Direction) {
+    init(id: UUID = UUID(), text: String, sentAt: Date = .now, direction: Direction, receipt: Receipt = .sent) {
         self.id = id
         self.text = text
         self.sentAt = sentAt
         self.direction = direction
+        self.receipt = receipt
     }
 }
 

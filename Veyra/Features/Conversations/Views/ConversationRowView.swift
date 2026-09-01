@@ -13,9 +13,11 @@ struct ConversationRowView: View {
                         .font(VeyraTypography.bodyEmphasized)
                         .foregroundStyle(VeyraColor.textPrimary)
                     Spacer()
-                    Text(conversation.updatedAt, format: .relative(presentation: .named))
-                        .font(VeyraTypography.caption)
-                        .foregroundStyle(VeyraColor.textSecondary)
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(conversation.updatedAt, format: .relative(presentation: .named))
+                            .font(VeyraTypography.caption)
+                            .foregroundStyle(VeyraColor.textSecondary)
+                    }
                 }
 
                 HStack {
@@ -32,6 +34,11 @@ struct ConversationRowView: View {
                             .background(VeyraColor.accent)
                             .clipShape(Circle())
                             .accessibilityLabel("\(conversation.unreadCount) unread messages")
+                    }
+
+                    if conversation.lastMessageIsMine {
+                        MessageReceiptIcon(isRead: conversation.lastMessageIsRead)
+                            .font(VeyraTypography.caption)
                     }
                 }
             }

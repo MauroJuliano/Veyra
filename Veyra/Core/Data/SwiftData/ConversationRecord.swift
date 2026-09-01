@@ -9,6 +9,8 @@ final class ConversationRecord {
     var updatedAt: Date
     var unreadCount: Int
     var isOnline: Bool
+    var lastMessageIsMine: Bool = false
+    var lastMessageIsRead: Bool = false
 
     init(conversation: Conversation) {
         id = conversation.id
@@ -17,6 +19,8 @@ final class ConversationRecord {
         updatedAt = conversation.updatedAt
         unreadCount = conversation.unreadCount
         isOnline = conversation.isOnline
+        lastMessageIsMine = conversation.lastMessageIsMine
+        lastMessageIsRead = conversation.lastMessageIsRead
     }
 
     var conversation: Conversation {
@@ -26,7 +30,9 @@ final class ConversationRecord {
             lastMessage: lastMessage,
             updatedAt: updatedAt,
             unreadCount: unreadCount,
-            isOnline: isOnline
+            isOnline: isOnline,
+            lastMessageIsMine: lastMessageIsMine,
+            lastMessageIsRead: lastMessageIsRead
         )
     }
 
@@ -36,5 +42,7 @@ final class ConversationRecord {
         updatedAt = conversation.updatedAt
         unreadCount = conversation.unreadCount
         isOnline = conversation.isOnline
+        lastMessageIsMine = conversation.lastMessageIsMine
+        lastMessageIsRead = conversation.lastMessageIsRead
     }
 }
