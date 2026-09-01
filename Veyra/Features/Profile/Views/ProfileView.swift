@@ -53,14 +53,14 @@ struct ProfileView: View {
                 Text("You will return to the login screen.")
             }
         }
-        .preferredColorScheme(.light)
+        .preferredColorScheme(.dark)
     }
 
     private var header: some View {
         HStack {
             Text("Profile")
                 .font(.system(size: 32, weight: .bold, design: .rounded))
-                .foregroundStyle(Color.primary)
+                .foregroundStyle(VeyraColor.textPrimary)
             Spacer()
         }
         .padding(.top, VeyraSpacing.md)
@@ -73,7 +73,7 @@ struct ProfileView: View {
                 Image(systemName: "checkmark.seal.fill")
                     .font(.title3)
                     .foregroundStyle(profileAccent)
-                    .background(Circle().fill(.white).padding(2))
+                    .background(Circle().fill(VeyraColor.surface).padding(2))
             }
 
             VStack(alignment: .leading, spacing: VeyraSpacing.xs) {
@@ -100,16 +100,15 @@ struct ProfileView: View {
             }
         }
         .padding(VeyraSpacing.md)
-        .background(Color.white.opacity(0.78))
+        .background { GlassBackground(cornerRadius: 28, tintOpacity: 0.1, glowOpacity: 0.1) }
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-        .overlay { RoundedRectangle(cornerRadius: 28).stroke(Color.white.opacity(0.8)) }
     }
 
     private func settingsSection(title: String, items: [SettingsItem]) -> some View {
         VStack(alignment: .leading, spacing: VeyraSpacing.sm) {
             Text(title)
                 .font(VeyraTypography.bodyEmphasized)
-                .foregroundStyle(Color.black.opacity(0.5))
+                .foregroundStyle(VeyraColor.textSecondary)
                 .padding(.leading, VeyraSpacing.xs)
 
             VStack(spacing: 0) {
@@ -121,7 +120,7 @@ struct ProfileView: View {
                     }
                 }
             }
-            .background(Color.white.opacity(0.8))
+            .background { GlassBackground(cornerRadius: 24, tintOpacity: 0.07, glowOpacity: 0.08) }
             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         }
     }
@@ -142,7 +141,7 @@ struct ProfileView: View {
             Spacer()
             Image(systemName: "chevron.right")
                 .font(.caption.bold())
-                .foregroundStyle(Color.black.opacity(0.3))
+                .foregroundStyle(VeyraColor.textSecondary)
         }
         .padding(.horizontal, VeyraSpacing.md)
         .frame(minHeight: 76)
@@ -159,24 +158,31 @@ struct ProfileView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 14))
                 Text("Log out").font(VeyraTypography.bodyEmphasized).foregroundStyle(Color.red.opacity(0.8))
                 Spacer()
-                Image(systemName: "chevron.right").foregroundStyle(Color.black.opacity(0.3))
+                Image(systemName: "chevron.right").foregroundStyle(VeyraColor.textSecondary)
             }
             .padding(.horizontal, VeyraSpacing.md)
             .frame(height: 70)
-            .background(Color.white.opacity(0.8))
+            .background { GlassBackground(cornerRadius: 24, tintOpacity: 0.06, glowOpacity: 0.06) }
             .clipShape(RoundedRectangle(cornerRadius: 24))
         }
         .buttonStyle(.plain)
     }
 
-    private var profileAccent: Color { Color(red: 0.52, green: 0.40, blue: 0.78) }
+    private var profileAccent: Color { VeyraColor.accent }
 
     private var profileBackground: some View {
-        LinearGradient(
-            colors: [Color(red: 0.97, green: 0.95, blue: 1), Color(red: 1, green: 0.97, blue: 0.98), Color(red: 0.97, green: 0.96, blue: 1)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
+        ZStack {
+            LinearGradient(
+                colors: [VeyraColor.background, VeyraColor.accentMuted.opacity(0.7), VeyraColor.background],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            Circle()
+                .fill(VeyraColor.accent.opacity(0.14))
+                .frame(width: 320, height: 320)
+                .blur(radius: 110)
+                .offset(x: 150, y: -260)
+        }
         .ignoresSafeArea()
     }
 
