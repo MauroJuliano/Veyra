@@ -20,11 +20,20 @@ The current milestone includes local authentication, remembered sessions, editab
 
 - SwiftUI
 - SwiftData
+- Supabase Swift via Swift Package Manager
 - Swift Testing
 - Repository-based data access with dependency injection
 - Apple frameworks only
 
-The project intentionally has no CocoaPods, third-party packages, or backend dependency. Conversations are persisted locally with SwiftData.
+The project intentionally has no CocoaPods. Its only application dependency is the official Supabase Swift SDK, managed with Swift Package Manager. Conversations remain persisted locally with SwiftData while Supabase is introduced incrementally as the remote backend. Local repositories remain available for previews, tests, and offline-oriented development.
+
+## Supabase configuration
+
+1. Copy `Veyra/Configuration/Secrets.xcconfig.example` to `Veyra/Configuration/Secrets.xcconfig`.
+2. Add the project URL and publishable key from the Supabase dashboard.
+3. Never add a `service_role` key or database password to the iOS project.
+
+The local secrets file is ignored by Git. Builds without it remain valid, but remote Supabase features stay unavailable.
 
 ## Design system
 
