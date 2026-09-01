@@ -9,11 +9,13 @@
 /* Begin PBXBuildFile section */
 		0338B32735B6527A4987F2B0 /* DesignSystemCatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92D1807482AB6926E4DA3AFB /* DesignSystemCatalogView.swift */; };
 		0C7B4565867628A8A7E73B6E /* Conversation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5698CE11ECAE96D995835FCD /* Conversation.swift */; };
+		0D96BD4C565FD57122AF6B01 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4875B03CC2A5078E3B2831 /* LoginView.swift */; };
 		12C821102DA87163D75754D4 /* ConversationListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B94A5909B940AD5D3ADBDB05 /* ConversationListViewModel.swift */; };
 		14497BE77041C7B0A71FA6A0 /* SwiftDataConversationRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF646664F27E3856206D966C /* SwiftDataConversationRepositoryTests.swift */; };
 		1A05F76268540B8DBBDF8D9B /* NewConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5917AB74FE9969FED29ED57E /* NewConversationView.swift */; };
 		1C05F92851F0DF88FF1FD371 /* Contact.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D3DEB07FE517FDFC254469 /* Contact.swift */; };
 		2F5A1E8DC77B696C08789C3F /* AppRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = E810F31ADEB4011D2EC7D5EF /* AppRoute.swift */; };
+		308E1B8940EC5869C03CF983 /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CF5736F5D2BE299C077CE7C /* LoginViewModel.swift */; };
 		3C20A3D616AFF95F6F424150 /* ConversationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0E79AFD1721697118A5B30F /* ConversationRepository.swift */; };
 		43ACD9B7B96AD843FE8E4420 /* VeyraRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612257922E48B3ACB47078A3 /* VeyraRadius.swift */; };
 		44755A60DDB5415B6345E48C /* MessagePreviewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DF296E5214CCEBFA8ABE939 /* MessagePreviewData.swift */; };
@@ -37,6 +39,7 @@
 		861B06509E4A9B740264E765 /* ConversationRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E91305B16B77EBDDB5AF62A /* ConversationRecord.swift */; };
 		880A32328EAACEC3D916197A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 208DF70C250EDFE8C75411CE /* Foundation.framework */; };
 		8CD8A037A2DD7E127629FE32 /* AppDependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF36A65784567611871F8863 /* AppDependencies.swift */; };
+		93D497AFF6DB00982DB6A4C2 /* LoginViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E812827318A22C6360199016 /* LoginViewModelTests.swift */; };
 		95A91251246566BEA392862D /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B6EEED8A124464784C2B17 /* Message.swift */; };
 		95DD681F3B9F64C813E31A9F /* AvatarInitialsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BF8B6FD286458DDB74C22F1 /* AvatarInitialsTests.swift */; };
 		9B311E6D5BCF803CF646E063 /* VeyraPrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D907300CAB7511CAFB4C0D7 /* VeyraPrimaryButton.swift */; };
@@ -76,12 +79,14 @@
 		498246899EA244F2F82A14F1 /* RepositoryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RepositoryTests.swift; sourceTree = "<group>"; };
 		5698CE11ECAE96D995835FCD /* Conversation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Conversation.swift; sourceTree = "<group>"; };
 		5917AB74FE9969FED29ED57E /* NewConversationView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NewConversationView.swift; sourceTree = "<group>"; };
+		5CF5736F5D2BE299C077CE7C /* LoginViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
 		612257922E48B3ACB47078A3 /* VeyraRadius.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraRadius.swift; sourceTree = "<group>"; };
 		67E4FA0E7A4E39541CF5B110 /* MessageBubbleView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessageBubbleView.swift; sourceTree = "<group>"; };
 		6B4C091B2C571B56F0C49F39 /* ConversationListViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationListViewModelTests.swift; sourceTree = "<group>"; };
 		778776CB7DBCAB1C013FD617 /* Veyra.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Veyra.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		79FC21B9F9899BED11DEF736 /* VeyraTypography.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraTypography.swift; sourceTree = "<group>"; };
 		7B110D4A85DA09EF80C1A7D2 /* AppMetadata.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppMetadata.swift; sourceTree = "<group>"; };
+		7F4875B03CC2A5078E3B2831 /* LoginView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		815CF3D51D8A2E92364C8777 /* VeyraApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraApp.swift; sourceTree = "<group>"; };
 		8DF296E5214CCEBFA8ABE939 /* MessagePreviewData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessagePreviewData.swift; sourceTree = "<group>"; };
 		92D1807482AB6926E4DA3AFB /* DesignSystemCatalogView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DesignSystemCatalogView.swift; sourceTree = "<group>"; };
@@ -103,6 +108,7 @@
 		E0EAA93FD7CD9802592B73FA /* ConversationPreviewData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationPreviewData.swift; sourceTree = "<group>"; };
 		E4959CA35782AD866F12C222 /* NewConversationViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NewConversationViewModelTests.swift; sourceTree = "<group>"; };
 		E810F31ADEB4011D2EC7D5EF /* AppRoute.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppRoute.swift; sourceTree = "<group>"; };
+		E812827318A22C6360199016 /* LoginViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LoginViewModelTests.swift; sourceTree = "<group>"; };
 		E827789E667ED520D1F288BC /* VeyraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VeyraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED09F370FA57E9D2202E653F /* AppRootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
 		FF36A65784567611871F8863 /* AppDependencies.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppDependencies.swift; sourceTree = "<group>"; };
@@ -200,6 +206,15 @@
 			name = iOS;
 			sourceTree = "<group>";
 		};
+		472B3893225101D5C846BCE7 /* Presentation */ = {
+			isa = PBXGroup;
+			children = (
+				5CF5736F5D2BE299C077CE7C /* LoginViewModel.swift */,
+			);
+			name = Presentation;
+			path = Presentation;
+			sourceTree = "<group>";
+		};
 		52F35888B0023302ABF8F350 /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -256,6 +271,7 @@
 			children = (
 				B7F33F1CEFEA5169702DB93D /* Conversations */,
 				D62F192FE2C61BF9C279E612 /* Messages */,
+				D7BA5F00FE6D5579086D0425 /* Authentication */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -316,8 +332,18 @@
 				E4959CA35782AD866F12C222 /* NewConversationViewModelTests.swift */,
 				498246899EA244F2F82A14F1 /* RepositoryTests.swift */,
 				AF646664F27E3856206D966C /* SwiftDataConversationRepositoryTests.swift */,
+				E812827318A22C6360199016 /* LoginViewModelTests.swift */,
 			);
 			path = VeyraTests;
+			sourceTree = "<group>";
+		};
+		C6EF2562A069E5ABF7120BD0 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				7F4875B03CC2A5078E3B2831 /* LoginView.swift */,
+			);
+			name = Views;
+			path = Views;
 			sourceTree = "<group>";
 		};
 		CD51C17E867393530457834D = {
@@ -356,6 +382,16 @@
 				52F35888B0023302ABF8F350 /* Views */,
 			);
 			path = Messages;
+			sourceTree = "<group>";
+		};
+		D7BA5F00FE6D5579086D0425 /* Authentication */ = {
+			isa = PBXGroup;
+			children = (
+				472B3893225101D5C846BCE7 /* Presentation */,
+				C6EF2562A069E5ABF7120BD0 /* Views */,
+			);
+			name = Authentication;
+			path = Authentication;
 			sourceTree = "<group>";
 		};
 		EC94D5BA68BF5A79522EEAB5 /* Veyra */ = {
@@ -492,6 +528,7 @@
 				E5340791E020E8DF098FD36E /* NewConversationViewModelTests.swift in Sources */,
 				4EAC419DBDE02E852844EE82 /* RepositoryTests.swift in Sources */,
 				14497BE77041C7B0A71FA6A0 /* SwiftDataConversationRepositoryTests.swift in Sources */,
+				93D497AFF6DB00982DB6A4C2 /* LoginViewModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -532,6 +569,8 @@
 				8CD8A037A2DD7E127629FE32 /* AppDependencies.swift in Sources */,
 				861B06509E4A9B740264E765 /* ConversationRecord.swift in Sources */,
 				7C0D872ADBC557FB5919A320 /* SwiftDataConversationRepository.swift in Sources */,
+				308E1B8940EC5869C03CF983 /* LoginViewModel.swift in Sources */,
+				0D96BD4C565FD57122AF6B01 /* LoginView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
