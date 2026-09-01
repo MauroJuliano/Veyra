@@ -4,18 +4,24 @@ import Observation
 @Observable
 final class MessageTimelineViewModel {
     private let conversationID: UUID
+    private let participantID: UUID?
     private let repository: (any RemoteChatRepository)?
     private(set) var messages: [Message]
     var draft = ""
     private(set) var isLoading = false
     private(set) var isSending = false
     private(set) var isParticipantTyping = false
+    private(set) var isParticipantActive: Bool
+    private(set) var participantLastSeenAt: Date?
     private(set) var errorMessage: String?
     private var typingStopTask: Task<Void, Never>?
     private var participantTypingTimeoutTask: Task<Void, Never>?
 
-    init(conversationID: UUID = UUID(), repository: (any RemoteChatRepository)? = nil, messages: [Message]) {
+    init(conversationID: UUID = UUID(), participantID: UUID? = nil, isParticipantActive: Bool = false, participantLastSeenAt: Date? = nil, repository: (any RemoteChatRepository)? = nil, messages: [Message]) {
         self.conversationID = conversationID
+        self.participantID = participantID
+        self.isParticipantActive = isParticipantActive
+        self.participantLastSeenAt = participantLastSeenAt
         self.repository = repository
         self.messages = messages.sorted { $0.sentAt < $1.sentAt }
     }
@@ -58,7 +64,7 @@ final class MessageTimelineViewModel {
         }
 
         do {
-            let events = try await repository.messageEvents(conversationID: conversationID)
+            let events = try await repository.messageEvents(conversationID: conversationID, participantID: participantID)
 
             for await event in events {
                 guard !Task.isCancelled else { return }
@@ -68,6 +74,9 @@ final class MessageTimelineViewModel {
                     try await repository.markConversationRead(conversationID: conversationID)
                 case let .typingChanged(isTyping):
                     updateParticipantTyping(isTyping)
+                case let .presenceChanged(isActive, lastSeenAt):
+                    isParticipantActive = isActive
+                    participantLastSeenAt = lastSeenAt
                 }
             }
         } catch is CancellationError {

@@ -9,6 +9,9 @@ struct MessageTimelineView: View {
         self.conversation = conversation
         _viewModel = State(initialValue: MessageTimelineViewModel(
             conversationID: conversation.id,
+            participantID: conversation.participantID,
+            isParticipantActive: conversation.isOnline,
+            participantLastSeenAt: conversation.lastSeenAt,
             repository: repository,
             messages: messages ?? (repository == nil ? MessagePreviewData.messages(for: conversation) : [])
         ))
@@ -82,12 +85,12 @@ struct MessageTimelineView: View {
         .toolbar {
             ToolbarItem(placement: .principal) {
                 HStack(spacing: VeyraSpacing.sm) {
-                    VeyraAvatar(name: conversation.participantName, size: .small, showsOnlineIndicator: conversation.isOnline)
+                    VeyraAvatar(name: conversation.participantName, size: .small, showsOnlineIndicator: viewModel.isParticipantActive)
                     VStack(alignment: .leading, spacing: 1) {
                         Text(conversation.participantName)
                             .font(VeyraTypography.bodyEmphasized)
                             .foregroundStyle(VeyraColor.textPrimary)
-                        Text(conversation.isOnline ? "Online" : "Offline")
+                        Text(participantStatus)
                             .font(VeyraTypography.caption)
                             .foregroundStyle(VeyraColor.textSecondary)
                     }
@@ -120,6 +123,12 @@ struct MessageTimelineView: View {
             get: { messagePendingDeletion != nil },
             set: { if !$0 { messagePendingDeletion = nil } }
         )
+    }
+
+    private var participantStatus: String {
+        if viewModel.isParticipantActive { return "Active" }
+        guard let lastSeenAt = viewModel.participantLastSeenAt else { return "Offline" }
+        return "Last seen at \(lastSeenAt.formatted(date: .omitted, time: .shortened))"
     }
 }
 

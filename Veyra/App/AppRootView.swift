@@ -70,6 +70,7 @@ struct AppRootView: View {
         .toolbarBackground(VeyraColor.surface, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
         .preferredColorScheme(.dark)
+        .task { await dependencies.remoteChat?.maintainPresence() }
     }
 
 }
