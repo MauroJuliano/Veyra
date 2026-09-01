@@ -72,6 +72,8 @@ final class MessageTimelineViewModel {
                 case .contentChanged:
                     await refreshMessages(using: repository)
                     try await repository.markConversationRead(conversationID: conversationID)
+                case .readReceiptChanged:
+                    await refreshMessages(using: repository)
                 case let .typingChanged(isTyping):
                     updateParticipantTyping(isTyping)
                 case let .presenceChanged(isActive, lastSeenAt):

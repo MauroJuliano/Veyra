@@ -24,6 +24,7 @@ enum ConversationEvent: Sendable {
 
 enum MessageEvent: Sendable {
     case contentChanged
+    case readReceiptChanged
     case typingChanged(Bool)
     case presenceChanged(isActive: Bool, lastSeenAt: Date?)
 }
@@ -77,10 +78,7 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
     func fetchMessages(conversationID: UUID) async throws -> [Message] {
         let currentUserID = try await client.auth.session.user.id
         let rows: [MessageRow] = try await client
-            .from("messages")
-            .select()
-            .eq("conversation_id", value: conversationID)
-            .order("created_at", ascending: true)
+            .rpc("list_conversation_messages", params: ["target_conversation_id": conversationID])
             .execute()
             .value
         return rows.map { $0.message(currentUserID: currentUserID) }
@@ -144,6 +142,11 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             filter: .eq("conversation_id", value: conversationID)
         )
         let presenceChanges = messagesChannel.postgresChange(AnyAction.self, table: "user_presence")
+        let readChanges = messagesChannel.postgresChange(
+            AnyAction.self,
+            table: "conversation_members",
+            filter: .eq("conversation_id", value: conversationID)
+        )
 
         // Message synchronization is essential and must not depend on the
         // optional typing channel being authorized or available.
@@ -177,11 +180,18 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
                     }
                 }
             }
+            let readTask = Task {
+                for await _ in readChanges {
+                    guard !Task.isCancelled else { break }
+                    continuation.yield(.readReceiptChanged)
+                }
+            }
 
             continuation.onTermination = { [client] _ in
                 messagesTask.cancel()
                 typingTask.cancel()
                 presenceTask.cancel()
+                readTask.cancel()
                 Task {
                     await client.removeChannel(messagesChannel)
                 }
@@ -384,16 +394,24 @@ private struct MessageRow: Decodable {
     let senderID: UUID
     let body: String
     let createdAt: Date
+    let isRead: Bool?
 
     enum CodingKeys: String, CodingKey {
         case id, body
         case conversationID = "conversation_id"
         case senderID = "sender_id"
         case createdAt = "created_at"
+        case isRead = "is_read"
     }
 
     func message(currentUserID: UUID) -> Message {
-        Message(id: id, text: body, sentAt: createdAt, direction: senderID == currentUserID ? .outgoing : .incoming)
+        Message(
+            id: id,
+            text: body,
+            sentAt: createdAt,
+            direction: senderID == currentUserID ? .outgoing : .incoming,
+            receipt: isRead == true ? .read : .sent
+        )
     }
 }
 

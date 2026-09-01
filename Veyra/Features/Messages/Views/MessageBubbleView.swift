@@ -29,8 +29,9 @@ struct MessageBubbleView: View {
                 HStack(spacing: VeyraSpacing.xs) {
                     Text(message.sentAt, format: .dateTime.hour().minute())
                     if message.direction == .outgoing {
-                        Image(systemName: "checkmark.done")
-                            .foregroundStyle(VeyraColor.accent)
+                        Image(systemName: message.receipt == .read ? "checkmark.done" : "checkmark")
+                            .foregroundStyle(message.receipt == .read ? VeyraColor.accent : VeyraColor.textSecondary)
+                            .accessibilityLabel(message.receipt == .read ? "Read" : "Sent")
                     }
                 }
                 .font(VeyraTypography.caption)
