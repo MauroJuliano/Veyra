@@ -51,12 +51,8 @@ struct ConversationListView: View {
                                     ConversationRowView(conversation: conversation)
                                 }
                                 .buttonStyle(.plain)
-                                .background(.ultraThinMaterial)
-                                .clipShape(RoundedRectangle(cornerRadius: VeyraRadius.medium))
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: VeyraRadius.medium)
-                                        .stroke(VeyraColor.divider.opacity(0.65), lineWidth: 1)
-                                }
+                                .background { GlassBackground() }
+                                .clipShape(RoundedRectangle(cornerRadius: 18))
                             }
                         }
                         .padding(.horizontal, VeyraSpacing.md)
@@ -123,8 +119,8 @@ struct ConversationListView: View {
         }
         .padding(.horizontal, VeyraSpacing.md)
         .frame(minHeight: 52)
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: VeyraRadius.large))
+        .background { GlassBackground(glowOpacity: 0.1) }
+        .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 }
 

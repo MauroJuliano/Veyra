@@ -19,16 +19,12 @@ struct MessageBubbleView: View {
                     .padding(.horizontal, VeyraSpacing.md)
                     .padding(.vertical, VeyraSpacing.sm)
                     .background {
-                        RoundedRectangle(cornerRadius: VeyraRadius.medium)
-                            .fill(.ultraThinMaterial)
-                            .overlay {
-                                if message.direction == .outgoing {
-                                    RoundedRectangle(cornerRadius: VeyraRadius.medium)
-                                        .fill(VeyraColor.accent.opacity(0.22))
-                                }
-                            }
+                        GlassBackground(
+                            tintOpacity: message.direction == .outgoing ? 0.2 : 0.08,
+                            glowOpacity: message.direction == .outgoing ? 0.2 : 0.08
+                        )
                     }
-                    .clipShape(RoundedRectangle(cornerRadius: VeyraRadius.medium))
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
 
                 HStack(spacing: VeyraSpacing.xs) {
                     Text(message.sentAt, format: .dateTime.hour().minute())

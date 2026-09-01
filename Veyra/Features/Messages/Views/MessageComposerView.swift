@@ -20,8 +20,8 @@ struct MessageComposerView: View {
             .foregroundStyle(VeyraColor.textSecondary)
             .padding(.horizontal, VeyraSpacing.md)
             .padding(.vertical, 10)
-            .background(VeyraColor.surfaceElevated)
-            .clipShape(RoundedRectangle(cornerRadius: VeyraRadius.large))
+            .background { GlassBackground(tintOpacity: 0.1, glowOpacity: 0.1) }
+            .clipShape(RoundedRectangle(cornerRadius: 18))
 
             composerButton(systemImage: "paperplane.fill", label: "Send message", action: onSend)
                 .disabled(!canSend)
