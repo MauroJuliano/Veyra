@@ -13,15 +13,18 @@ struct ConversationRowView: View {
                         .font(VeyraTypography.bodyEmphasized)
                         .foregroundStyle(VeyraColor.textPrimary)
                     Spacer()
-                    Text(conversation.updatedAt, format: .relative(presentation: .named))
-                        .font(VeyraTypography.caption)
-                        .foregroundStyle(VeyraColor.textSecondary)
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(conversation.updatedAt, format: .relative(presentation: .named))
+                            .font(VeyraTypography.caption)
+                            .foregroundStyle(VeyraColor.textSecondary)
+                        if conversation.lastMessageIsMine {
+                            MessageReceiptIcon(isRead: conversation.lastMessageIsRead)
+                                .font(VeyraTypography.caption)
+                        }
+                    }
                 }
 
                 HStack {
-                    if conversation.lastMessageIsMine {
-                        MessageReceiptIcon(isRead: conversation.lastMessageIsRead)
-                    }
                     Text(conversation.lastMessage)
                         .font(VeyraTypography.body)
                         .foregroundStyle(VeyraColor.textSecondary)
