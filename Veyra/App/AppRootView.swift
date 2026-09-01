@@ -1,21 +1,34 @@
 import SwiftUI
 
 struct AppRootView: View {
+    private enum AuthenticationRoute: Equatable {
+        case login
+        case registration
+        case authenticated
+    }
+
     private let dependencies: AppDependencies
-    @State private var isAuthenticated = false
+    @State private var authenticationRoute = AuthenticationRoute.login
 
     init(dependencies: AppDependencies = AppDependencies()) {
         self.dependencies = dependencies
     }
 
     var body: some View {
-        if isAuthenticated {
+        if authenticationRoute == .authenticated {
             authenticatedContent
                 .transition(.opacity)
+        } else if authenticationRoute == .registration {
+            RegistrationView(
+                onBack: { withAnimation(.easeInOut) { authenticationRoute = .login } },
+                onRegistered: { withAnimation(.easeInOut) { authenticationRoute = .authenticated } }
+            )
+            .transition(.opacity)
         } else {
-            LoginView {
-                withAnimation(.easeInOut) { isAuthenticated = true }
-            }
+            LoginView(
+                onAuthenticated: { withAnimation(.easeInOut) { authenticationRoute = .authenticated } },
+                onCreateAccount: { withAnimation(.easeInOut) { authenticationRoute = .registration } }
+            )
             .transition(.opacity)
         }
     }

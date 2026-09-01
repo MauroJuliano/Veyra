@@ -3,10 +3,12 @@ import SwiftUI
 struct LoginView: View {
     @State private var viewModel: LoginViewModel
     let onAuthenticated: () -> Void
+    let onCreateAccount: () -> Void
 
-    init(viewModel: LoginViewModel = LoginViewModel(), onAuthenticated: @escaping () -> Void) {
+    init(viewModel: LoginViewModel = LoginViewModel(), onAuthenticated: @escaping () -> Void, onCreateAccount: @escaping () -> Void = {}) {
         _viewModel = State(initialValue: viewModel)
         self.onAuthenticated = onAuthenticated
+        self.onCreateAccount = onCreateAccount
     }
 
     var body: some View {
@@ -17,6 +19,18 @@ struct LoginView: View {
                 VStack(spacing: VeyraSpacing.lg) {
                     header
                     loginCard
+                    Button(action: onCreateAccount) {
+                        HStack {
+                            Text("New here?").foregroundStyle(VeyraColor.textSecondary)
+                            Text("Create an account").foregroundStyle(VeyraColor.accent).fontWeight(.semibold)
+                            Spacer()
+                            Image(systemName: "arrow.right")
+                        }
+                        .padding(.horizontal, VeyraSpacing.lg)
+                        .frame(height: 68)
+                        .background { GlassBackground(cornerRadius: 22, tintOpacity: 0.08, glowOpacity: 0.1) }
+                        .clipShape(RoundedRectangle(cornerRadius: 22))
+                    }
                     footer
                 }
                 .padding(.horizontal, VeyraSpacing.lg)
