@@ -17,10 +17,6 @@ struct ConversationRowView: View {
                         Text(conversation.updatedAt, format: .relative(presentation: .named))
                             .font(VeyraTypography.caption)
                             .foregroundStyle(VeyraColor.textSecondary)
-                        if conversation.lastMessageIsMine {
-                            MessageReceiptIcon(isRead: conversation.lastMessageIsRead)
-                                .font(VeyraTypography.caption)
-                        }
                     }
                 }
 
@@ -38,6 +34,11 @@ struct ConversationRowView: View {
                             .background(VeyraColor.accent)
                             .clipShape(Circle())
                             .accessibilityLabel("\(conversation.unreadCount) unread messages")
+                    }
+
+                    if conversation.lastMessageIsMine {
+                        MessageReceiptIcon(isRead: conversation.lastMessageIsRead)
+                            .font(VeyraTypography.caption)
                     }
                 }
             }
