@@ -130,6 +130,11 @@ final class MessageTimelineViewModel {
     }
 
     @MainActor
+    func reportImageSelectionError(_ error: any Error) {
+        errorMessage = error.localizedDescription
+    }
+
+    @MainActor
     func draftDidChange() {
         guard repository != nil else { return }
         typingStopTask?.cancel()

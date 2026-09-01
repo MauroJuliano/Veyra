@@ -120,7 +120,11 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
 
     func sendImage(_ data: Data, conversationID: UUID) async throws -> Message {
         let currentUserID = try await client.auth.session.user.id
-        let path = "\(currentUserID.uuidString)/\(conversationID.uuidString)/\(UUID().uuidString).jpg"
+        let path = [
+            currentUserID.uuidString.lowercased(),
+            conversationID.uuidString.lowercased(),
+            "\(UUID().uuidString.lowercased()).jpg"
+        ].joined(separator: "/")
         let bucket = client.storage.from("chat-media")
         try await bucket.upload(path, data: data, options: FileOptions(contentType: "image/jpeg"))
         let imageURL = try await bucket.createSignedURL(path: path, expiresIn: 3_600)

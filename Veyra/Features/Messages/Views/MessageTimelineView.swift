@@ -147,12 +147,23 @@ struct MessageTimelineView: View {
     private func sendSelectedPhoto(_ item: PhotosPickerItem?) {
         guard let item else { return }
         Task {
-            if let data = try? await item.loadTransferable(type: Data.self) {
+            do {
+                guard let data = try await item.loadTransferable(type: Data.self) else {
+                    throw ImageSelectionError.noData
+                }
                 await viewModel.sendImage(data)
+            } catch {
+                viewModel.reportImageSelectionError(error)
             }
             selectedPhoto = nil
         }
     }
+}
+
+private enum ImageSelectionError: LocalizedError {
+    case noData
+
+    var errorDescription: String? { "The selected image could not be loaded." }
 }
 
 #Preview("Timeline - Dark") {
