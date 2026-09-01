@@ -20,71 +20,95 @@ struct MessageTimelineView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                LazyVStack(spacing: VeyraSpacing.sm) {
-                    if viewModel.isLoading { ProgressView().padding() }
-                    if let errorMessage = viewModel.errorMessage {
-                        Text(errorMessage).font(VeyraTypography.caption).foregroundStyle(VeyraColor.danger)
-                    }
-                    ForEach(viewModel.days) { day in
-                        Text(day.date, format: .dateTime.day().month(.wide))
-                            .font(VeyraTypography.caption)
-                            .foregroundStyle(VeyraColor.textPrimary)
-                            .padding(.horizontal, VeyraSpacing.md)
-                            .padding(.vertical, VeyraSpacing.xs)
-                            .background(VeyraColor.surfaceElevated)
-                            .clipShape(Capsule())
-                            .padding(.vertical, VeyraSpacing.md)
-                        ForEach(day.messages) { message in
-                            MessageBubbleView(message: message, participantName: conversation.participantName)
-                                .contextMenu {
-                                    if message.direction == .outgoing {
-                                        Button("Delete message", systemImage: "trash", role: .destructive) {
-                                            messagePendingDeletion = message
-                                        }
-                                    }
-                                }
-                        }
-                    }
-                }
-                .padding(VeyraSpacing.md)
+        chatContent
+            .background { chatBackground }
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(.hidden, for: .tabBar)
+            .toolbarBackground(VeyraColor.surface.opacity(0.96), for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar { chatToolbar }
+            .task { await viewModel.observeMessages() }
+            .onChange(of: viewModel.draft) { _, _ in viewModel.draftDidChange() }
+            .onChange(of: selectedPhoto) { _, item in sendSelectedPhoto(item) }
+            .onDisappear { Task { await viewModel.stopTyping() } }
+            .animation(.easeInOut(duration: 0.2), value: viewModel.isParticipantTyping)
+            .alert("Delete message?", isPresented: deletionAlertIsPresented, presenting: messagePendingDeletion) { message in
+                Button("Delete", role: .destructive) { Task { await viewModel.delete(message) } }
+                Button("Cancel", role: .cancel) {}
+            } message: { _ in
+                Text("This message will be removed for everyone in the conversation.")
             }
-            .defaultScrollAnchor(.bottom)
-            .scrollDismissesKeyboard(.interactively)
-            .dismissKeyboardOnTap()
+    }
 
+    private var chatContent: some View {
+        VStack(spacing: 0) {
+            messageList
             Divider().overlay(VeyraColor.divider)
-            if viewModel.isParticipantTyping {
-                HStack(spacing: VeyraSpacing.sm) {
-                    VeyraAvatar(name: conversation.participantName, size: .small)
-                    Text("\(conversation.participantName) is typing…")
-                        .font(VeyraTypography.caption)
-                        .foregroundStyle(VeyraColor.textSecondary)
-                    Spacer()
-                }
-                .padding(.horizontal, VeyraSpacing.md)
-                .padding(.top, VeyraSpacing.sm)
-                .transition(.opacity.combined(with: .move(edge: .bottom)))
-            }
-            MessageComposerView(text: $viewModel.draft, canSend: viewModel.canSend && !viewModel.isSending, selectedPhoto: $selectedPhoto) {
-                Task { await viewModel.send() }
-            }
-        }
-        .background {
-            LinearGradient(
-                colors: [VeyraColor.accentMuted.opacity(0.55), VeyraColor.background, VeyraColor.background],
-                startPoint: .topTrailing,
-                endPoint: .bottomLeading
+            typingIndicator
+            MessageComposerView(
+                text: $viewModel.draft,
+                canSend: viewModel.canSend && !viewModel.isSending,
+                onSend: { Task { await viewModel.send() } },
+                selectedPhoto: $selectedPhoto
             )
-            .ignoresSafeArea()
         }
-        .navigationTitle("")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.hidden, for: .tabBar)
-        .toolbarBackground(VeyraColor.surface.opacity(0.96), for: .navigationBar)
-        .toolbarBackground(.visible, for: .navigationBar)
-        .toolbar {
+    }
+
+    private var messageList: some View {
+        ScrollView {
+            LazyVStack(spacing: VeyraSpacing.sm) {
+                if viewModel.isLoading { ProgressView().padding() }
+                if let errorMessage = viewModel.errorMessage {
+                    Text(errorMessage).font(VeyraTypography.caption).foregroundStyle(VeyraColor.danger)
+                }
+                ForEach(viewModel.days) { day in
+                    Text(day.date, format: .dateTime.day().month(.wide))
+                        .font(VeyraTypography.caption)
+                        .foregroundStyle(VeyraColor.textPrimary)
+                        .padding(.horizontal, VeyraSpacing.md)
+                        .padding(.vertical, VeyraSpacing.xs)
+                        .background(VeyraColor.surfaceElevated)
+                        .clipShape(Capsule())
+                        .padding(.vertical, VeyraSpacing.md)
+                    ForEach(day.messages) { message in
+                        MessageBubbleView(message: message, participantName: conversation.participantName)
+                            .contextMenu {
+                                if message.direction == .outgoing {
+                                    Button("Delete message", systemImage: "trash", role: .destructive) { messagePendingDeletion = message }
+                                }
+                            }
+                    }
+                }
+            }
+            .padding(VeyraSpacing.md)
+        }
+        .defaultScrollAnchor(.bottom)
+        .scrollDismissesKeyboard(.interactively)
+        .dismissKeyboardOnTap()
+    }
+
+    @ViewBuilder private var typingIndicator: some View {
+        if viewModel.isParticipantTyping {
+            HStack(spacing: VeyraSpacing.sm) {
+                VeyraAvatar(name: conversation.participantName, size: .small)
+                Text("\(conversation.participantName) is typing…")
+                    .font(VeyraTypography.caption)
+                    .foregroundStyle(VeyraColor.textSecondary)
+                Spacer()
+            }
+            .padding(.horizontal, VeyraSpacing.md)
+            .padding(.top, VeyraSpacing.sm)
+            .transition(.opacity.combined(with: .move(edge: .bottom)))
+        }
+    }
+
+    private var chatBackground: some View {
+        LinearGradient(colors: [VeyraColor.accentMuted.opacity(0.55), VeyraColor.background, VeyraColor.background], startPoint: .topTrailing, endPoint: .bottomLeading)
+            .ignoresSafeArea()
+    }
+
+    @ToolbarContentBuilder private var chatToolbar: some ToolbarContent {
             ToolbarItem(placement: .principal) {
                 HStack(spacing: VeyraSpacing.sm) {
                     VeyraAvatar(name: conversation.participantName, size: .small, showsOnlineIndicator: viewModel.isParticipantActive)
@@ -105,22 +129,6 @@ struct MessageTimelineView: View {
                 Button(action: {}) { Image(systemName: "video") }
                     .accessibilityLabel("Start video call")
             }
-        }
-        .task { await viewModel.observeMessages() }
-        .onChange(of: viewModel.draft) { _, _ in viewModel.draftDidChange() }
-        .onChange(of: selectedPhoto) { _, item in
-            sendSelectedPhoto(item)
-        }
-        .onDisappear { Task { await viewModel.stopTyping() } }
-        .animation(.easeInOut(duration: 0.2), value: viewModel.isParticipantTyping)
-        .alert("Delete message?", isPresented: deletionAlertIsPresented, presenting: messagePendingDeletion) { message in
-            Button("Delete", role: .destructive) {
-                Task { await viewModel.delete(message) }
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: { _ in
-            Text("This message will be removed for everyone in the conversation.")
-        }
     }
 
     private var deletionAlertIsPresented: Binding<Bool> {
