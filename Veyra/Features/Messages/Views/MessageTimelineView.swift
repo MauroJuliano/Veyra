@@ -4,15 +4,23 @@ struct MessageTimelineView: View {
     let conversation: Conversation
     @State private var viewModel: MessageTimelineViewModel
 
-    init(conversation: Conversation, messages: [Message]? = nil) {
+    init(conversation: Conversation, repository: (any RemoteChatRepository)? = nil, messages: [Message]? = nil) {
         self.conversation = conversation
-        _viewModel = State(initialValue: MessageTimelineViewModel(messages: messages ?? MessagePreviewData.messages(for: conversation)))
+        _viewModel = State(initialValue: MessageTimelineViewModel(
+            conversationID: conversation.id,
+            repository: repository,
+            messages: messages ?? (repository == nil ? MessagePreviewData.messages(for: conversation) : [])
+        ))
     }
 
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
                 LazyVStack(spacing: VeyraSpacing.sm) {
+                    if viewModel.isLoading { ProgressView().padding() }
+                    if let errorMessage = viewModel.errorMessage {
+                        Text(errorMessage).font(VeyraTypography.caption).foregroundStyle(VeyraColor.danger)
+                    }
                     ForEach(viewModel.days) { day in
                         Text(day.date, format: .dateTime.day().month(.wide))
                             .font(VeyraTypography.caption)
@@ -33,7 +41,9 @@ struct MessageTimelineView: View {
             .scrollDismissesKeyboard(.interactively)
 
             Divider().overlay(VeyraColor.divider)
-            MessageComposerView(text: $viewModel.draft, canSend: viewModel.canSend, onSend: viewModel.send)
+            MessageComposerView(text: $viewModel.draft, canSend: viewModel.canSend && !viewModel.isSending) {
+                Task { await viewModel.send() }
+            }
         }
         .background {
             LinearGradient(
@@ -70,6 +80,7 @@ struct MessageTimelineView: View {
                     .accessibilityLabel("Start video call")
             }
         }
+        .task { await viewModel.load() }
     }
 }
 

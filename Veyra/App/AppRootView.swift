@@ -47,13 +47,12 @@ struct AppRootView: View {
         TabView {
             NavigationStack {
                 ConversationListView(
-                    viewModel: ConversationListViewModel(repository: dependencies.conversations),
-                    contactRepository: dependencies.contacts
+                    viewModel: ConversationListViewModel(repository: dependencies.conversations, remoteRepository: dependencies.remoteChat)
                 )
                 .navigationDestination(for: AppRoute.self) { route in
                     switch route {
                     case let .conversation(conversation):
-                        MessageTimelineView(conversation: conversation)
+                        MessageTimelineView(conversation: conversation, repository: dependencies.remoteChat)
                     }
                 }
             }
