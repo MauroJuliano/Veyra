@@ -150,6 +150,7 @@
 		E812827318A22C6360199016 /* LoginViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LoginViewModelTests.swift; sourceTree = "<group>"; };
 		E827789E667ED520D1F288BC /* VeyraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VeyraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED09F370FA57E9D2202E653F /* AppRootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
+		F5B95E0AB67F2F623383C13E /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FF36A65784567611871F8863 /* AppDependencies.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppDependencies.swift; sourceTree = "<group>"; };
 		FF5389180DA0846CECDD8509 /* MessageTimelineView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessageTimelineView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -460,6 +461,7 @@
 			children = (
 				5819FAF79B8D19C6656AC295 /* Base.xcconfig */,
 				B6CB6E0F746BFB96C7862450 /* Secrets.xcconfig.example */,
+				F5B95E0AB67F2F623383C13E /* Info.plist */,
 			);
 			name = Configuration;
 			path = Configuration;
@@ -850,6 +852,7 @@
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = LMTRNCP347;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Veyra/Configuration/Info.plist;
 				INFOPLIST_KEY_SupabasePublishableKey = "$(SUPABASE_PUBLISHABLE_KEY)";
 				INFOPLIST_KEY_SupabaseURL = "$(SUPABASE_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -880,6 +883,7 @@
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = LMTRNCP347;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Veyra/Configuration/Info.plist;
 				INFOPLIST_KEY_SupabasePublishableKey = "$(SUPABASE_PUBLISHABLE_KEY)";
 				INFOPLIST_KEY_SupabaseURL = "$(SUPABASE_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
