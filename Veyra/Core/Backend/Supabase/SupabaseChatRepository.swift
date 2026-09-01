@@ -28,7 +28,6 @@ enum MessageEvent: Sendable {
 
 final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
     private let client: SupabaseClient
-    private let messageChannels = MessageChannelStore()
 
     init(client: SupabaseClient) { self.client = client }
 
@@ -133,27 +132,19 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
     func messageEvents(conversationID: UUID) async throws -> AsyncStream<MessageEvent> {
         let currentUserID = try await client.auth.session.user.id
         let messagesChannel = client.channel("messages:\(conversationID.uuidString)")
-        let typingChannel = client.channel("conversation:\(conversationID.uuidString)") { config in
-            config.isPrivate = true
-        }
         // Supabase does not reliably apply column filters to DELETE payloads.
         // RLS still limits events to the signed-in user's conversations, and
         // the timeline refetch below keeps this conversation consistent.
         let changes = messagesChannel.postgresChange(AnyAction.self, table: "messages")
-        let typingChanges = typingChannel.broadcastStream(event: "typing")
+        let typingChanges = messagesChannel.postgresChange(
+            AnyAction.self,
+            table: "typing_status",
+            filter: .eq("conversation_id", value: conversationID)
+        )
 
         // Message synchronization is essential and must not depend on the
         // optional typing channel being authorized or available.
         try await messagesChannel.subscribeWithError()
-
-        let activeTypingChannel: RealtimeChannelV2?
-        do {
-            try await typingChannel.subscribeWithError()
-            await messageChannels.store(typingChannel, for: conversationID)
-            activeTypingChannel = typingChannel
-        } catch {
-            activeTypingChannel = nil
-        }
 
         return AsyncStream { continuation in
             let messagesTask = Task {
@@ -163,35 +154,37 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
                 }
             }
             let typingTask = Task {
-                for await payload in typingChanges {
+                for await _ in typingChanges {
                     guard !Task.isCancelled else { break }
-                    guard payload["user_id"]?.stringValue != currentUserID.uuidString,
-                          let isTyping = payload["is_typing"]?.boolValue else { continue }
+                    let isTyping = (try? await self.fetchParticipantTyping(
+                        conversationID: conversationID,
+                        currentUserID: currentUserID
+                    )) ?? false
                     continuation.yield(.typingChanged(isTyping))
                 }
             }
 
-            continuation.onTermination = { [client, messageChannels] _ in
+            continuation.onTermination = { [client] _ in
                 messagesTask.cancel()
                 typingTask.cancel()
                 Task {
-                    await messageChannels.remove(conversationID)
                     await client.removeChannel(messagesChannel)
-                    if let activeTypingChannel {
-                        await client.removeChannel(activeTypingChannel)
-                    }
                 }
             }
         }
     }
 
     func setTyping(_ isTyping: Bool, conversationID: UUID) async throws {
-        guard let channel = await messageChannels.channel(for: conversationID) else { return }
         let currentUserID = try await client.auth.session.user.id
-        try await channel.broadcast(
-            event: "typing",
-            message: TypingPayload(userID: currentUserID, isTyping: isTyping)
-        )
+        try await client
+            .from("typing_status")
+            .upsert(TypingStatusRow(
+                conversationID: conversationID,
+                userID: currentUserID,
+                isTyping: isTyping,
+                updatedAt: .now
+            ))
+            .execute()
     }
 
     func conversationEvents() async throws -> AsyncStream<ConversationEvent> {
@@ -223,11 +216,15 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
                 var onlineUserIDs = Set<UUID>()
                 for await change in presenceChanges {
                     guard !Task.isCancelled else { break }
-                    for key in change.joins.keys {
-                        if let userID = UUID(uuidString: key) { onlineUserIDs.insert(userID) }
+                    for presence in change.joins.values {
+                        if let payload = try? presence.decodeState(as: PresencePayload.self) {
+                            onlineUserIDs.insert(payload.userID)
+                        }
                     }
-                    for key in change.leaves.keys {
-                        if let userID = UUID(uuidString: key) { onlineUserIDs.remove(userID) }
+                    for presence in change.leaves.values {
+                        if let payload = try? presence.decodeState(as: PresencePayload.self) {
+                            onlineUserIDs.remove(payload.userID)
+                        }
                     }
                     continuation.yield(.presenceChanged(onlineUserIDs))
                 }
@@ -241,21 +238,16 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             }
         }
     }
-}
 
-private actor MessageChannelStore {
-    private var channels: [UUID: RealtimeChannelV2] = [:]
-
-    func store(_ channel: RealtimeChannelV2, for conversationID: UUID) {
-        channels[conversationID] = channel
-    }
-
-    func channel(for conversationID: UUID) -> RealtimeChannelV2? {
-        channels[conversationID]
-    }
-
-    func remove(_ conversationID: UUID) {
-        channels[conversationID] = nil
+    private func fetchParticipantTyping(conversationID: UUID, currentUserID: UUID) async throws -> Bool {
+        let rows: [TypingStatusRow] = try await client
+            .from("typing_status")
+            .select()
+            .eq("conversation_id", value: conversationID)
+            .neq("user_id", value: currentUserID)
+            .execute()
+            .value
+        return rows.contains { $0.isTyping && $0.updatedAt > Date().addingTimeInterval(-3) }
     }
 }
 
@@ -318,13 +310,17 @@ private struct PresencePayload: Codable {
     }
 }
 
-private struct TypingPayload: Codable {
+private struct TypingStatusRow: Codable {
+    let conversationID: UUID
     let userID: UUID
     let isTyping: Bool
+    let updatedAt: Date
 
     enum CodingKeys: String, CodingKey {
+        case conversationID = "conversation_id"
         case userID = "user_id"
         case isTyping = "is_typing"
+        case updatedAt = "updated_at"
     }
 }
 
