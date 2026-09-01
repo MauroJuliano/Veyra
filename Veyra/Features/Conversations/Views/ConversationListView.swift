@@ -80,7 +80,7 @@ struct ConversationListView: View {
                 return viewModel.errorMessage ?? "Unable to start this conversation."
             }
         }
-        .task { await viewModel.load() }
+        .task { await viewModel.observeConversations() }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 VeyraAvatar(name: "Mauro Juliano", size: .small)

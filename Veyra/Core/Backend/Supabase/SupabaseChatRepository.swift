@@ -7,6 +7,13 @@ protocol RemoteChatRepository: Sendable {
     func fetchMessages(conversationID: UUID) async throws -> [Message]
     func sendMessage(_ text: String, conversationID: UUID) async throws -> Message
     func messageEvents(conversationID: UUID) async throws -> AsyncStream<Void>
+    func conversationEvents() async throws -> AsyncStream<ConversationEvent>
+    func markConversationRead(conversationID: UUID) async throws
+}
+
+enum ConversationEvent: Sendable {
+    case contentChanged
+    case presenceChanged(Set<UUID>)
 }
 
 final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
@@ -43,6 +50,16 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             .execute()
             .value
         return rows.map { $0.message(currentUserID: currentUserID) }
+    }
+
+    func markConversationRead(conversationID: UUID) async throws {
+        let currentUserID = try await client.auth.session.user.id
+        try await client
+            .from("conversation_members")
+            .update(ReadStateRow(lastReadAt: .now))
+            .eq("conversation_id", value: conversationID)
+            .eq("user_id", value: currentUserID)
+            .execute()
     }
 
     func sendMessage(_ text: String, conversationID: UUID) async throws -> Message {
@@ -83,6 +100,58 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             }
         }
     }
+
+    func conversationEvents() async throws -> AsyncStream<ConversationEvent> {
+        let currentUserID = try await client.auth.session.user.id
+        let channel = client.channel("veyra:online-users") { config in
+            config.presence = PresenceJoinConfig(key: currentUserID.uuidString)
+        }
+        let messageInsertions = channel.postgresChange(InsertAction.self, table: "messages")
+        let membershipUpdates = channel.postgresChange(
+            UpdateAction.self,
+            table: "conversation_members",
+            filter: .eq("user_id", value: currentUserID)
+        )
+        let presenceChanges = channel.presenceChange()
+
+        try await channel.subscribeWithError()
+        try await channel.track(PresencePayload(userID: currentUserID))
+
+        return AsyncStream { continuation in
+            let messagesTask = Task {
+                for await _ in messageInsertions {
+                    guard !Task.isCancelled else { break }
+                    continuation.yield(.contentChanged)
+                }
+            }
+            let membershipsTask = Task {
+                for await _ in membershipUpdates {
+                    guard !Task.isCancelled else { break }
+                    continuation.yield(.contentChanged)
+                }
+            }
+            let presenceTask = Task {
+                var onlineUserIDs = Set<UUID>()
+                for await change in presenceChanges {
+                    guard !Task.isCancelled else { break }
+                    for key in change.joins.keys {
+                        if let userID = UUID(uuidString: key) { onlineUserIDs.insert(userID) }
+                    }
+                    for key in change.leaves.keys {
+                        if let userID = UUID(uuidString: key) { onlineUserIDs.remove(userID) }
+                    }
+                    continuation.yield(.presenceChanged(onlineUserIDs))
+                }
+            }
+
+            continuation.onTermination = { [client] _ in
+                messagesTask.cancel()
+                membershipsTask.cancel()
+                presenceTask.cancel()
+                Task { await client.removeChannel(channel) }
+            }
+        }
+    }
 }
 
 enum ChatRepositoryError: LocalizedError {
@@ -92,6 +161,7 @@ enum ChatRepositoryError: LocalizedError {
 
 private struct ConversationRow: Decodable {
     let conversationID: UUID
+    let participantID: UUID
     let participantName: String
     let lastMessage: String
     let updatedAt: Date
@@ -99,6 +169,7 @@ private struct ConversationRow: Decodable {
 
     enum CodingKeys: String, CodingKey {
         case conversationID = "conversation_id"
+        case participantID = "participant_id"
         case participantName = "participant_name"
         case lastMessage = "last_message"
         case updatedAt = "updated_at"
@@ -106,7 +177,23 @@ private struct ConversationRow: Decodable {
     }
 
     var conversation: Conversation {
-        Conversation(id: conversationID, participantName: participantName, lastMessage: lastMessage, updatedAt: updatedAt, unreadCount: unreadCount)
+        Conversation(id: conversationID, participantID: participantID, participantName: participantName, lastMessage: lastMessage, updatedAt: updatedAt, unreadCount: unreadCount)
+    }
+}
+
+private struct ReadStateRow: Encodable {
+    let lastReadAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case lastReadAt = "last_read_at"
+    }
+}
+
+private struct PresencePayload: Codable {
+    let userID: UUID
+
+    enum CodingKeys: String, CodingKey {
+        case userID = "user_id"
     }
 }
 

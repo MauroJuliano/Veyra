@@ -48,10 +48,12 @@ final class MessageTimelineViewModel {
             // Subscribe before the initial fetch so messages sent during loading are not missed.
             let events = try await repository.messageEvents(conversationID: conversationID)
             await load()
+            try await repository.markConversationRead(conversationID: conversationID)
 
             for await _ in events {
                 guard !Task.isCancelled else { return }
                 await refreshMessages(using: repository)
+                try await repository.markConversationRead(conversationID: conversationID)
             }
         } catch is CancellationError {
             return

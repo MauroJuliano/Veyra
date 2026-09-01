@@ -9,6 +9,7 @@ final class ConversationListViewModel {
     var searchText = ""
     private(set) var isLoading = false
     private(set) var errorMessage: String?
+    private var onlineUserIDs = Set<UUID>()
 
     init(repository: any ConversationRepository = InMemoryConversationRepository(), remoteRepository: (any RemoteChatRepository)? = nil) {
         self.repository = repository
@@ -49,8 +50,31 @@ final class ConversationListViewModel {
         isLoading = true
         defer { isLoading = false }
         do {
-            conversations = try await remoteRepository.fetchConversations()
+            conversations = applyingPresence(to: try await remoteRepository.fetchConversations())
             errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    func observeConversations() async {
+        guard let remoteRepository else { return }
+        do {
+            let events = try await remoteRepository.conversationEvents()
+            await load()
+            for await event in events {
+                guard !Task.isCancelled else { return }
+                switch event {
+                case .contentChanged:
+                    conversations = applyingPresence(to: try await remoteRepository.fetchConversations())
+                case let .presenceChanged(userIDs):
+                    onlineUserIDs = userIDs
+                    conversations = applyingPresence(to: conversations)
+                }
+            }
+        } catch is CancellationError {
+            return
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -69,6 +93,21 @@ final class ConversationListViewModel {
         } catch {
             errorMessage = error.localizedDescription
             return nil
+        }
+    }
+
+
+    private func applyingPresence(to conversations: [Conversation]) -> [Conversation] {
+        conversations.map { conversation in
+            Conversation(
+                id: conversation.id,
+                participantID: conversation.participantID,
+                participantName: conversation.participantName,
+                lastMessage: conversation.lastMessage,
+                updatedAt: conversation.updatedAt,
+                unreadCount: conversation.unreadCount,
+                isOnline: conversation.participantID.map(onlineUserIDs.contains) ?? false
+            )
         }
     }
 }
