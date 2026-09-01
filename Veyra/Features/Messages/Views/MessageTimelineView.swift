@@ -50,6 +50,18 @@ struct MessageTimelineView: View {
             .dismissKeyboardOnTap()
 
             Divider().overlay(VeyraColor.divider)
+            if viewModel.isParticipantTyping {
+                HStack(spacing: VeyraSpacing.sm) {
+                    VeyraAvatar(name: conversation.participantName, size: .small)
+                    Text("\(conversation.participantName) is typing…")
+                        .font(VeyraTypography.caption)
+                        .foregroundStyle(VeyraColor.textSecondary)
+                    Spacer()
+                }
+                .padding(.horizontal, VeyraSpacing.md)
+                .padding(.top, VeyraSpacing.sm)
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
             MessageComposerView(text: $viewModel.draft, canSend: viewModel.canSend && !viewModel.isSending) {
                 Task { await viewModel.send() }
             }
@@ -90,6 +102,9 @@ struct MessageTimelineView: View {
             }
         }
         .task { await viewModel.observeMessages() }
+        .onChange(of: viewModel.draft) { _, _ in viewModel.draftDidChange() }
+        .onDisappear { Task { await viewModel.stopTyping() } }
+        .animation(.easeInOut(duration: 0.2), value: viewModel.isParticipantTyping)
         .alert("Delete message?", isPresented: deletionAlertIsPresented, presenting: messagePendingDeletion) { message in
             Button("Delete", role: .destructive) {
                 Task { await viewModel.delete(message) }

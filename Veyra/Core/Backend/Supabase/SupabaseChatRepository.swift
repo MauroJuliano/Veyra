@@ -7,7 +7,8 @@ protocol RemoteChatRepository: Sendable {
     func startConversation(with contact: Contact) async throws -> Conversation
     func fetchMessages(conversationID: UUID) async throws -> [Message]
     func sendMessage(_ text: String, conversationID: UUID) async throws -> Message
-    func messageEvents(conversationID: UUID) async throws -> AsyncStream<Void>
+    func messageEvents(conversationID: UUID) async throws -> AsyncStream<MessageEvent>
+    func setTyping(_ isTyping: Bool, conversationID: UUID) async throws
     func conversationEvents() async throws -> AsyncStream<ConversationEvent>
     func markConversationRead(conversationID: UUID) async throws
     func deleteMessage(id: UUID) async throws
@@ -20,8 +21,14 @@ enum ConversationEvent: Sendable {
     case presenceChanged(Set<UUID>)
 }
 
+enum MessageEvent: Sendable {
+    case contentChanged
+    case typingChanged(Bool)
+}
+
 final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
     private let client: SupabaseClient
+    private let messageChannels = MessageChannelStore()
 
     init(client: SupabaseClient) { self.client = client }
 
@@ -123,29 +130,54 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
         return rows.map(\.contact)
     }
 
-    func messageEvents(conversationID: UUID) async throws -> AsyncStream<Void> {
-        let channel = client.channel("conversation:\(conversationID.uuidString)")
+    func messageEvents(conversationID: UUID) async throws -> AsyncStream<MessageEvent> {
+        let currentUserID = try await client.auth.session.user.id
+        let channel = client.channel("conversation:\(conversationID.uuidString)") { config in
+            config.isPrivate = true
+        }
         // Supabase does not reliably apply column filters to DELETE payloads.
         // RLS still limits events to the signed-in user's conversations, and
         // the timeline refetch below keeps this conversation consistent.
         let changes = channel.postgresChange(AnyAction.self, table: "messages")
+        let typingChanges = channel.broadcastStream(event: "typing")
 
         try await channel.subscribeWithError()
+        await messageChannels.store(channel, for: conversationID)
 
         return AsyncStream { continuation in
-            let observation = Task {
+            let messagesTask = Task {
                 for await _ in changes {
                     guard !Task.isCancelled else { break }
-                    continuation.yield(())
+                    continuation.yield(.contentChanged)
                 }
-                continuation.finish()
+            }
+            let typingTask = Task {
+                for await payload in typingChanges {
+                    guard !Task.isCancelled else { break }
+                    guard payload["user_id"]?.stringValue != currentUserID.uuidString,
+                          let isTyping = payload["is_typing"]?.boolValue else { continue }
+                    continuation.yield(.typingChanged(isTyping))
+                }
             }
 
-            continuation.onTermination = { [client] _ in
-                observation.cancel()
-                Task { await client.removeChannel(channel) }
+            continuation.onTermination = { [client, messageChannels] _ in
+                messagesTask.cancel()
+                typingTask.cancel()
+                Task {
+                    await messageChannels.remove(conversationID)
+                    await client.removeChannel(channel)
+                }
             }
         }
+    }
+
+    func setTyping(_ isTyping: Bool, conversationID: UUID) async throws {
+        guard let channel = await messageChannels.channel(for: conversationID) else { return }
+        let currentUserID = try await client.auth.session.user.id
+        try await channel.broadcast(
+            event: "typing",
+            message: TypingPayload(userID: currentUserID, isTyping: isTyping)
+        )
     }
 
     func conversationEvents() async throws -> AsyncStream<ConversationEvent> {
@@ -194,6 +226,22 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
                 Task { await client.removeChannel(channel) }
             }
         }
+    }
+}
+
+private actor MessageChannelStore {
+    private var channels: [UUID: RealtimeChannelV2] = [:]
+
+    func store(_ channel: RealtimeChannelV2, for conversationID: UUID) {
+        channels[conversationID] = channel
+    }
+
+    func channel(for conversationID: UUID) -> RealtimeChannelV2? {
+        channels[conversationID]
+    }
+
+    func remove(_ conversationID: UUID) {
+        channels[conversationID] = nil
     }
 }
 
@@ -253,6 +301,16 @@ private struct PresencePayload: Codable {
 
     enum CodingKeys: String, CodingKey {
         case userID = "user_id"
+    }
+}
+
+private struct TypingPayload: Codable {
+    let userID: UUID
+    let isTyping: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case userID = "user_id"
+        case isTyping = "is_typing"
     }
 }
 

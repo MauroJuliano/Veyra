@@ -9,7 +9,10 @@ final class MessageTimelineViewModel {
     var draft = ""
     private(set) var isLoading = false
     private(set) var isSending = false
+    private(set) var isParticipantTyping = false
     private(set) var errorMessage: String?
+    private var typingStopTask: Task<Void, Never>?
+    private var participantTypingTimeoutTask: Task<Void, Never>?
 
     init(conversationID: UUID = UUID(), repository: (any RemoteChatRepository)? = nil, messages: [Message]) {
         self.conversationID = conversationID
@@ -50,10 +53,15 @@ final class MessageTimelineViewModel {
             await load()
             try await repository.markConversationRead(conversationID: conversationID)
 
-            for await _ in events {
+            for await event in events {
                 guard !Task.isCancelled else { return }
-                await refreshMessages(using: repository)
-                try await repository.markConversationRead(conversationID: conversationID)
+                switch event {
+                case .contentChanged:
+                    await refreshMessages(using: repository)
+                    try await repository.markConversationRead(conversationID: conversationID)
+                case let .typingChanged(isTyping):
+                    updateParticipantTyping(isTyping)
+                }
             }
         } catch is CancellationError {
             return
@@ -74,6 +82,8 @@ final class MessageTimelineViewModel {
         isSending = true
         defer { isSending = false }
         do {
+            typingStopTask?.cancel()
+            try await repository.setTyping(false, conversationID: conversationID)
             let message = try await repository.sendMessage(text, conversationID: conversationID)
             appendIfNeeded(message)
             draft = ""
@@ -81,6 +91,28 @@ final class MessageTimelineViewModel {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    @MainActor
+    func draftDidChange() {
+        guard repository != nil else { return }
+        typingStopTask?.cancel()
+
+        let hasText = !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        Task { try? await repository?.setTyping(hasText, conversationID: conversationID) }
+        guard hasText else { return }
+
+        typingStopTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(1.5))
+            guard !Task.isCancelled, let self else { return }
+            try? await self.repository?.setTyping(false, conversationID: self.conversationID)
+        }
+    }
+
+    @MainActor
+    func stopTyping() async {
+        typingStopTask?.cancel()
+        try? await repository?.setTyping(false, conversationID: conversationID)
     }
 
     @MainActor
@@ -115,5 +147,18 @@ final class MessageTimelineViewModel {
         guard !messages.contains(where: { $0.id == message.id }) else { return }
         messages.append(message)
         messages.sort { $0.sentAt < $1.sentAt }
+    }
+
+    @MainActor
+    private func updateParticipantTyping(_ isTyping: Bool) {
+        participantTypingTimeoutTask?.cancel()
+        isParticipantTyping = isTyping
+        guard isTyping else { return }
+
+        participantTypingTimeoutTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(3))
+            guard !Task.isCancelled else { return }
+            self?.isParticipantTyping = false
+        }
     }
 }
