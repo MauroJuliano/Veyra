@@ -4,8 +4,8 @@ The migrations in this directory define the backend contract used by the iOS app
 
 ## Apply the schema
 
-For the current hosted project, open **Supabase Dashboard → SQL Editor**, paste the
-contents of `migrations/20260901020000_create_chat_schema.sql`, and run it once.
+For the current hosted project, open **Supabase Dashboard → SQL Editor** and run
+the files in `migrations` once, in filename order.
 
 The migration creates:
 

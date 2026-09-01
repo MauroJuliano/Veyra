@@ -4,14 +4,8 @@ struct ConversationListView: View {
     @State private var viewModel: ConversationListViewModel
     @State private var presentsNewConversation = false
     @State private var selectedConversation: Conversation?
-    private let contactRepository: any ContactRepository
-
-    init(
-        viewModel: ConversationListViewModel = ConversationListViewModel(),
-        contactRepository: any ContactRepository = InMemoryContactRepository()
-    ) {
+    init(viewModel: ConversationListViewModel = ConversationListViewModel()) {
         _viewModel = State(initialValue: viewModel)
-        self.contactRepository = contactRepository
     }
 
     var body: some View {
@@ -37,7 +31,9 @@ struct ConversationListView: View {
             .padding(.bottom, VeyraSpacing.md)
 
             Group {
-                if viewModel.filteredConversations.isEmpty {
+                if viewModel.isLoading && viewModel.conversations.isEmpty {
+                    ProgressView("Loading conversations…")
+                } else if viewModel.filteredConversations.isEmpty {
                     ContentUnavailableView {
                         Label(viewModel.hasSearchQuery ? "No conversations found" : "No conversations yet", systemImage: viewModel.hasSearchQuery ? "magnifyingglass" : "message")
                     } description: {
@@ -72,14 +68,19 @@ struct ConversationListView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(item: $selectedConversation) { conversation in
-            MessageTimelineView(conversation: conversation, messages: [])
+            MessageTimelineView(conversation: conversation, repository: viewModel.chatRepository, messages: [])
         }
         .sheet(isPresented: $presentsNewConversation) {
-            NewConversationView(viewModel: NewConversationViewModel(repository: contactRepository)) { conversation in
-                viewModel.add(conversation)
-                selectedConversation = conversation
+            NewConversationView { email in
+                if let conversation = await viewModel.startConversation(email: email) {
+                    presentsNewConversation = false
+                    selectedConversation = conversation
+                    return nil
+                }
+                return viewModel.errorMessage ?? "Unable to start this conversation."
             }
         }
+        .task { await viewModel.observeConversations() }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 VeyraAvatar(name: "Mauro Juliano", size: .small)

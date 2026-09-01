@@ -2,12 +2,13 @@ import Foundation
 import Testing
 @testable import Veyra
 
+@MainActor
 struct MessageTimelineViewModelTests {
-    @Test func sendsTrimmedOutgoingMessageAndClearsDraft() {
+    @Test func sendsTrimmedOutgoingMessageAndClearsDraft() async {
         let viewModel = MessageTimelineViewModel(messages: [])
         viewModel.draft = "  Hello  "
 
-        viewModel.send()
+        await viewModel.send()
 
         #expect(viewModel.messages.count == 1)
         #expect(viewModel.messages[0].text == "Hello")
@@ -15,11 +16,11 @@ struct MessageTimelineViewModelTests {
         #expect(viewModel.draft.isEmpty)
     }
 
-    @Test func ignoresEmptyDraft() {
+    @Test func ignoresEmptyDraft() async {
         let viewModel = MessageTimelineViewModel(messages: [])
         viewModel.draft = "  \n "
 
-        viewModel.send()
+        await viewModel.send()
 
         #expect(viewModel.messages.isEmpty)
     }

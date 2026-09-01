@@ -19,6 +19,7 @@
 		1AA8567C7E0EC69A7D58B631 /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C09556DC67E480428C19D11 /* ProfileStore.swift */; };
 		1C05F92851F0DF88FF1FD371 /* Contact.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D3DEB07FE517FDFC254469 /* Contact.swift */; };
 		21E1D7AA0375B9CEF432EE59 /* RegistrationViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 441519C505B18A6B80C92E7B /* RegistrationViewModelTests.swift */; };
+		22DF7CAC4857A4E841AF5D26 /* SupabaseChatRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2CE854CD6EA2E1365260700 /* SupabaseChatRepository.swift */; };
 		23FCEECB26B15CE7739308A0 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38DAB0E23CBA856810C467B /* SessionStore.swift */; };
 		2F5A1E8DC77B696C08789C3F /* AppRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = E810F31ADEB4011D2EC7D5EF /* AppRoute.swift */; };
 		308E1B8940EC5869C03CF983 /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CF5736F5D2BE299C077CE7C /* LoginViewModel.swift */; };
@@ -141,6 +142,7 @@
 		B94A5909B940AD5D3ADBDB05 /* ConversationListViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationListViewModel.swift; sourceTree = "<group>"; };
 		C2E49A4879773A3660F32692 /* ConversationListView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationListView.swift; sourceTree = "<group>"; };
 		C2F212E6EB3EFE613A12BF21 /* ContactPreviewData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactPreviewData.swift; sourceTree = "<group>"; };
+		D2CE854CD6EA2E1365260700 /* SupabaseChatRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SupabaseChatRepository.swift; sourceTree = "<group>"; };
 		DDF0E692A9671F543EED8718 /* MessageTimelineViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessageTimelineViewModel.swift; sourceTree = "<group>"; };
 		E0E79AFD1721697118A5B30F /* ConversationRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationRepository.swift; sourceTree = "<group>"; };
 		E0EAA93FD7CD9802592B73FA /* ConversationPreviewData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationPreviewData.swift; sourceTree = "<group>"; };
@@ -472,6 +474,7 @@
 			children = (
 				9429A6F0A5F3BA4C90324820 /* SupabaseConfiguration.swift */,
 				B56D78C652AAAB9D315E96DF /* SupabaseClientProvider.swift */,
+				D2CE854CD6EA2E1365260700 /* SupabaseChatRepository.swift */,
 			);
 			name = Supabase;
 			path = Supabase;
@@ -747,6 +750,7 @@
 				B357F0C51503990DB506D527 /* AuthenticationService.swift in Sources */,
 				475F1FB2211E48F55A1A51E6 /* AuthenticationCoordinator.swift in Sources */,
 				77843A999695668DF91E5BE9 /* EmailConfirmationView.swift in Sources */,
+				22DF7CAC4857A4E841AF5D26 /* SupabaseChatRepository.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
