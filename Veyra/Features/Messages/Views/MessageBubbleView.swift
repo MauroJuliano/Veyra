@@ -3,6 +3,7 @@ import SwiftUI
 struct MessageBubbleView: View {
     let message: Message
     let participantName: String
+    var onImageTap: (URL) -> Void = { _ in }
 
     var body: some View {
         HStack(alignment: .bottom, spacing: VeyraSpacing.sm) {
@@ -15,13 +16,20 @@ struct MessageBubbleView: View {
             VStack(alignment: message.direction == .incoming ? .leading : .trailing, spacing: VeyraSpacing.xs) {
                 Group {
                     if let imageURL = message.imageURL {
-                        AsyncImage(url: imageURL) { image in
-                            image.resizable().scaledToFill()
-                        } placeholder: {
-                            ProgressView()
+                        Button { onImageTap(imageURL) } label: {
+                            AsyncImage(url: imageURL) { image in
+                                image.resizable().scaledToFill()
+                            } placeholder: {
+                                ProgressView()
+                            }
+                            .frame(width: 220, height: 220)
+                            .clipped()
                         }
-                        .frame(width: 220, height: 220)
-                        .clipped()
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Open image")
+                    } else if message.isSticker {
+                        Text(message.text)
+                            .font(.system(size: 64))
                     } else {
                         Text(message.text)
                             .padding(.horizontal, VeyraSpacing.md)
@@ -31,10 +39,12 @@ struct MessageBubbleView: View {
                     .font(VeyraTypography.body)
                     .foregroundStyle(VeyraColor.textPrimary)
                     .background {
-                        GlassBackground(
-                            tintOpacity: message.direction == .outgoing ? 0.2 : 0.08,
-                            glowOpacity: message.direction == .outgoing ? 0.2 : 0.08
-                        )
+                        if !message.isSticker {
+                            GlassBackground(
+                                tintOpacity: message.direction == .outgoing ? 0.2 : 0.08,
+                                glowOpacity: message.direction == .outgoing ? 0.2 : 0.08
+                            )
+                        }
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 18))
 

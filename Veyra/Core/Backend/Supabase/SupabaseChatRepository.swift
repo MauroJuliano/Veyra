@@ -353,7 +353,10 @@ private struct ConversationRow: Decodable {
     }
 
     var conversation: Conversation {
-        Conversation(id: conversationID, participantID: participantID, participantName: participantName, lastMessage: lastMessage, updatedAt: updatedAt, unreadCount: unreadCount, isOnline: isOnline, lastSeenAt: lastSeenAt, lastMessageIsMine: lastMessageIsMine, lastMessageIsRead: lastMessageIsRead)
+        let preview = lastMessage.hasPrefix("[sticker]")
+            ? "Sticker \(lastMessage.dropFirst("[sticker]".count))"
+            : lastMessage
+        return Conversation(id: conversationID, participantID: participantID, participantName: participantName, lastMessage: preview, updatedAt: updatedAt, unreadCount: unreadCount, isOnline: isOnline, lastSeenAt: lastSeenAt, lastMessageIsMine: lastMessageIsMine, lastMessageIsRead: lastMessageIsRead)
     }
 }
 
@@ -437,13 +440,16 @@ private struct MessageRow: Decodable {
     }
 
     func message(currentUserID: UUID, imageURL: URL?) -> Message {
-        Message(
+        let stickerPrefix = "[sticker]"
+        let isSticker = body.hasPrefix(stickerPrefix)
+        return Message(
             id: id,
-            text: body,
+            text: isSticker ? String(body.dropFirst(stickerPrefix.count)) : body,
             sentAt: createdAt,
             direction: senderID == currentUserID ? .outgoing : .incoming,
             receipt: isRead == true ? .read : .sent,
-            imageURL: imageURL
+            imageURL: imageURL,
+            isSticker: isSticker
         )
     }
 }

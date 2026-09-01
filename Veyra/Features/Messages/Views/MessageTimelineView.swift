@@ -6,6 +6,7 @@ struct MessageTimelineView: View {
     @State private var viewModel: MessageTimelineViewModel
     @State private var messagePendingDeletion: Message?
     @State private var selectedPhoto: PhotosPickerItem?
+    @State private var selectedImage: FullScreenImage?
 
     init(conversation: Conversation, repository: (any RemoteChatRepository)? = nil, messages: [Message]? = nil) {
         self.conversation = conversation
@@ -39,6 +40,9 @@ struct MessageTimelineView: View {
             } message: { _ in
                 Text("This message will be removed for everyone in the conversation.")
             }
+            .fullScreenCover(item: $selectedImage) { image in
+                FullScreenImageView(url: image.url) { selectedImage = nil }
+            }
     }
 
     private var chatContent: some View {
@@ -50,7 +54,8 @@ struct MessageTimelineView: View {
                 text: $viewModel.draft,
                 canSend: viewModel.canSend && !viewModel.isSending,
                 onSend: { Task { await viewModel.send() } },
-                selectedPhoto: $selectedPhoto
+                selectedPhoto: $selectedPhoto,
+                onSendSticker: { sticker in Task { await viewModel.sendSticker(sticker) } }
             )
         }
     }
@@ -72,7 +77,9 @@ struct MessageTimelineView: View {
                         .clipShape(Capsule())
                         .padding(.vertical, VeyraSpacing.md)
                     ForEach(day.messages) { message in
-                        MessageBubbleView(message: message, participantName: conversation.participantName)
+                        MessageBubbleView(message: message, participantName: conversation.participantName) { url in
+                            selectedImage = FullScreenImage(url: url)
+                        }
                             .contextMenu {
                                 if message.direction == .outgoing {
                                     Button("Delete message", systemImage: "trash", role: .destructive) { messagePendingDeletion = message }
@@ -164,6 +171,35 @@ private enum ImageSelectionError: LocalizedError {
     case noData
 
     var errorDescription: String? { "The selected image could not be loaded." }
+}
+
+private struct FullScreenImage: Identifiable {
+    let id = UUID()
+    let url: URL
+}
+
+private struct FullScreenImageView: View {
+    let url: URL
+    let dismiss: () -> Void
+
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            Color.black.ignoresSafeArea().onTapGesture(perform: dismiss)
+            AsyncImage(url: url) { image in
+                image.resizable().scaledToFit()
+            } placeholder: {
+                ProgressView().tint(.white)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            Button(action: dismiss) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.largeTitle)
+                    .foregroundStyle(.white)
+            }
+            .padding()
+        }
+    }
 }
 
 #Preview("Timeline - Dark") {

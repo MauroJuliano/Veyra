@@ -6,6 +6,10 @@ struct MessageComposerView: View {
     let canSend: Bool
     let onSend: () -> Void
     @Binding var selectedPhoto: PhotosPickerItem?
+    let onSendSticker: (String) -> Void
+
+    private let emojis = ["😀", "😂", "😍", "🥰", "😎", "😭", "🤔", "👍", "❤️", "🔥"]
+    private let stickers = ["🎉", "👏", "💯", "🚀", "✨", "🙌"]
 
     var body: some View {
         HStack(alignment: .bottom, spacing: VeyraSpacing.sm) {
@@ -24,8 +28,21 @@ struct MessageComposerView: View {
                     .lineLimit(1...5)
                 Button(action: {}) { Image(systemName: "mic") }
                     .accessibilityLabel("Record audio")
-                Button(action: {}) { Image(systemName: "face.smiling") }
-                    .accessibilityLabel("Choose emoji")
+                Menu {
+                    Section("Emojis") {
+                        ForEach(emojis, id: \.self) { emoji in
+                            Button(emoji) { text.append(emoji) }
+                        }
+                    }
+                    Section("Stickers") {
+                        ForEach(stickers, id: \.self) { sticker in
+                            Button(sticker) { onSendSticker(sticker) }
+                        }
+                    }
+                } label: {
+                    Image(systemName: "face.smiling")
+                }
+                .accessibilityLabel("Choose emoji or sticker")
             }
             .foregroundStyle(VeyraColor.textSecondary)
             .padding(.horizontal, VeyraSpacing.md)
