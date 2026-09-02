@@ -8,7 +8,6 @@ struct MessageComposerView: View {
     @Binding var selectedPhoto: PhotosPickerItem?
     let onSendSticker: (String) -> Void
 
-    private let emojis = ["😀", "😂", "😍", "🥰", "😎", "😭", "🤔", "👍", "❤️", "🔥"]
     private let stickers = ["🎉", "👏", "💯", "🚀", "✨", "🙌"]
 
     var body: some View {
@@ -29,20 +28,15 @@ struct MessageComposerView: View {
                 Button(action: {}) { Image(systemName: "mic") }
                     .accessibilityLabel("Record audio")
                 Menu {
-                    Section("Emojis") {
-                        ForEach(emojis, id: \.self) { emoji in
-                            Button(emoji) { text.append(emoji) }
-                        }
-                    }
                     Section("Stickers") {
                         ForEach(stickers, id: \.self) { sticker in
                             Button(sticker) { onSendSticker(sticker) }
                         }
                     }
                 } label: {
-                    Image(systemName: "face.smiling")
+                    Image(systemName: "sparkles")
                 }
-                .accessibilityLabel("Choose emoji or sticker")
+                .accessibilityLabel("Choose sticker")
             }
             .foregroundStyle(VeyraColor.textSecondary)
             .padding(.horizontal, VeyraSpacing.md)
