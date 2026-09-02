@@ -89,6 +89,7 @@ struct AppRootView: View {
     }
 
     private func syncPushToken() async {
+        guard PushNotificationRegistration.isEnabled else { return }
         guard let token = UserDefaults.standard.string(forKey: PushNotificationRegistration.tokenKey) else { return }
         try? await dependencies.remoteChat?.registerPushToken(token)
     }

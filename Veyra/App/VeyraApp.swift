@@ -35,9 +35,13 @@ final class VeyraAppDelegate: NSObject, UIApplicationDelegate {
 
 enum PushNotificationRegistration {
     static let tokenKey = "veyra.apnsDeviceToken"
+    static var isEnabled: Bool {
+        Bundle.main.object(forInfoDictionaryKey: "PushNotificationsEnabled") as? Bool == true
+    }
 
     @MainActor
     static func requestAuthorization() async {
+        guard isEnabled else { return }
         let center = UNUserNotificationCenter.current()
         let settings = await center.notificationSettings()
         if settings.authorizationStatus == .notDetermined {
