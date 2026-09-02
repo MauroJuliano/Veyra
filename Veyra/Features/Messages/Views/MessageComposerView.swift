@@ -7,6 +7,8 @@ struct MessageComposerView: View {
     let onSend: () -> Void
     @Binding var selectedPhoto: PhotosPickerItem?
     let onSendSticker: (String) -> Void
+    let isReplying: Bool
+    @FocusState private var isTextFieldFocused: Bool
 
     private let stickers = ["🎉", "👏", "💯", "🚀", "✨", "🙌"]
 
@@ -25,6 +27,7 @@ struct MessageComposerView: View {
             HStack(alignment: .bottom, spacing: VeyraSpacing.sm) {
                 TextField("Message...", text: $text, axis: .vertical)
                     .lineLimit(1...5)
+                    .focused($isTextFieldFocused)
                 Button(action: {}) { Image(systemName: "mic") }
                     .accessibilityLabel("Record audio")
                 Menu {
@@ -51,6 +54,9 @@ struct MessageComposerView: View {
         .padding(.horizontal, VeyraSpacing.md)
         .padding(.vertical, VeyraSpacing.sm)
         .background(VeyraColor.surface.opacity(0.96))
+        .onChange(of: isReplying) { _, replying in
+            if replying { isTextFieldFocused = true }
+        }
     }
 
     private func composerButton(systemImage: String, label: String, action: @escaping () -> Void) -> some View {

@@ -208,12 +208,37 @@ final class MessageTimelineViewModel {
     @MainActor
     func toggleReaction(_ emoji: String, on message: Message) async {
         guard let repository else { return }
+        guard let index = messages.firstIndex(where: { $0.id == message.id }) else { return }
+        let previousReactions = messages[index].reactions
+        messages[index].reactions = toggledReactions(previousReactions, emoji: emoji)
         do {
             try await repository.toggleReaction(emoji, messageID: message.id)
             await refreshMessages(using: repository)
         } catch {
+            if let currentIndex = messages.firstIndex(where: { $0.id == message.id }) {
+                messages[currentIndex].reactions = previousReactions
+            }
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func toggledReactions(_ reactions: [Message.Reaction], emoji: String) -> [Message.Reaction] {
+        var result = reactions
+        if let index = result.firstIndex(where: { $0.emoji == emoji }) {
+            let reaction = result[index]
+            if reaction.isSelectedByCurrentUser {
+                if reaction.count == 1 {
+                    result.remove(at: index)
+                } else {
+                    result[index] = Message.Reaction(emoji: emoji, count: reaction.count - 1, isSelectedByCurrentUser: false)
+                }
+            } else {
+                result[index] = Message.Reaction(emoji: emoji, count: reaction.count + 1, isSelectedByCurrentUser: true)
+            }
+        } else {
+            result.append(Message.Reaction(emoji: emoji, count: 1, isSelectedByCurrentUser: true))
+        }
+        return result.sorted { $0.emoji < $1.emoji }
     }
 
     @MainActor

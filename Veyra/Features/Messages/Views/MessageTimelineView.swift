@@ -84,7 +84,8 @@ struct MessageTimelineView: View {
                 canSend: viewModel.canSend && !viewModel.isSending,
                 onSend: { Task { await viewModel.send() } },
                 selectedPhoto: $selectedPhoto,
-                onSendSticker: { sticker in Task { await viewModel.sendSticker(sticker) } }
+                onSendSticker: { sticker in Task { await viewModel.sendSticker(sticker) } },
+                isReplying: viewModel.replyingTo != nil
             )
         }
     }
@@ -124,24 +125,31 @@ struct MessageTimelineView: View {
 
     @ViewBuilder private var replyComposerPreview: some View {
         if let message = viewModel.replyingTo {
-            HStack(spacing: VeyraSpacing.sm) {
-                Rectangle().fill(VeyraColor.accent).frame(width: 3)
+            HStack(spacing: 0) {
+                Rectangle().fill(VeyraColor.accent).frame(width: 4)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Replying to \(message.direction == .outgoing ? "yourself" : conversation.participantName)")
-                        .font(VeyraTypography.caption)
+                    Text(message.direction == .outgoing ? "You" : conversation.participantName)
+                        .font(VeyraTypography.bodyEmphasized)
                         .foregroundStyle(VeyraColor.accent)
                     Text(message.imageURL == nil ? message.text : "Photo")
-                        .font(VeyraTypography.caption)
-                        .foregroundStyle(VeyraColor.textSecondary)
-                        .lineLimit(1)
+                        .font(VeyraTypography.body)
+                        .foregroundStyle(VeyraColor.textPrimary.opacity(0.9))
+                        .lineLimit(2)
                 }
+                .padding(.horizontal, VeyraSpacing.md)
+                .padding(.vertical, VeyraSpacing.sm)
                 Spacer()
-                Button { viewModel.cancelReply() } label: { Image(systemName: "xmark.circle.fill") }
+                Button { viewModel.cancelReply() } label: {
+                    Image(systemName: "xmark.circle")
+                        .font(.title)
+                        .foregroundStyle(VeyraColor.textPrimary)
+                }
                     .accessibilityLabel("Cancel reply")
+                    .padding(.trailing, VeyraSpacing.md)
             }
-            .padding(.horizontal, VeyraSpacing.md)
-            .padding(.vertical, VeyraSpacing.sm)
-            .background(VeyraColor.surface.opacity(0.96))
+            .frame(maxWidth: .infinity, minHeight: 72, alignment: .leading)
+            .background(VeyraColor.surfaceElevated.opacity(0.98))
+            .transition(.move(edge: .bottom).combined(with: .opacity))
         }
     }
 

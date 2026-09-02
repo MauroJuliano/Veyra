@@ -31,7 +31,7 @@ struct Message: Identifiable, Hashable {
     let imageURL: URL?
     let isSticker: Bool
     let replyPreview: ReplyPreview?
-    let reactions: [Reaction]
+    var reactions: [Reaction]
 
     init(id: UUID = UUID(), text: String, sentAt: Date = .now, direction: Direction, receipt: Receipt = .sent, imageURL: URL? = nil, isSticker: Bool = false, replyPreview: ReplyPreview? = nil, reactions: [Reaction] = []) {
         self.id = id
