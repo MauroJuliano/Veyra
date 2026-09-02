@@ -63,14 +63,34 @@ struct AppRootView: View {
             }
                 .tabItem { Label("People", systemImage: "person.2.fill") }
 
-            ProfileView(viewModel: ProfileViewModel(remoteRepository: dependencies.remoteChat), onLogout: { Task { await authentication.signOut() } })
+            ProfileView(viewModel: ProfileViewModel(remoteRepository: dependencies.remoteChat), onLogout: {
+                Task {
+                    if let token = UserDefaults.standard.string(forKey: PushNotificationRegistration.tokenKey) {
+                        try? await dependencies.remoteChat?.unregisterPushToken(token)
+                    }
+                    await authentication.signOut()
+                }
+            })
                 .tabItem { Label("Profile", systemImage: "person.crop.circle.fill") }
         }
         .tint(VeyraColor.accent)
         .toolbarBackground(VeyraColor.surface, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
         .preferredColorScheme(.dark)
-        .task { await dependencies.remoteChat?.maintainPresence() }
+        .task {
+            await PushNotificationRegistration.requestAuthorization()
+            await syncPushToken()
+            await dependencies.remoteChat?.maintainPresence()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .pushTokenDidChange)) { notification in
+            guard let token = notification.object as? String else { return }
+            Task { try? await dependencies.remoteChat?.registerPushToken(token) }
+        }
+    }
+
+    private func syncPushToken() async {
+        guard let token = UserDefaults.standard.string(forKey: PushNotificationRegistration.tokenKey) else { return }
+        try? await dependencies.remoteChat?.registerPushToken(token)
     }
 
 }

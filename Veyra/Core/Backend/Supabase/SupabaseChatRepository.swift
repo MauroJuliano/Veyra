@@ -19,6 +19,8 @@ protocol RemoteChatRepository: Sendable {
     func fetchMyProfile() async throws -> UserProfile
     func updateMyAvatar(_ data: Data) async throws -> UserProfile
     func maintainPresence() async
+    func registerPushToken(_ token: String) async throws
+    func unregisterPushToken(_ token: String) async throws
 }
 
 enum ConversationEvent: Sendable {
@@ -37,6 +39,14 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
     private let client: SupabaseClient
 
     init(client: SupabaseClient) { self.client = client }
+
+    func registerPushToken(_ token: String) async throws {
+        try await client.rpc("register_push_token", params: ["device_token": token]).execute()
+    }
+
+    func unregisterPushToken(_ token: String) async throws {
+        try await client.rpc("unregister_push_token", params: ["device_token": token]).execute()
+    }
 
     func fetchConversations() async throws -> [Conversation] {
         let rows: [ConversationRow] = try await client
