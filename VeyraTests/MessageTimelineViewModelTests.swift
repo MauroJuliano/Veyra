@@ -36,4 +36,27 @@ struct MessageTimelineViewModelTests {
         await viewModel.delete(outgoing)
         #expect(viewModel.messages.map(\.id) == [incoming.id])
     }
+
+    @Test func sendsReplyWithOriginalMessagePreview() async {
+        let original = Message(text: "Original message", direction: .incoming)
+        let viewModel = MessageTimelineViewModel(messages: [original])
+        viewModel.beginReply(to: original)
+        viewModel.draft = "My reply"
+
+        await viewModel.send()
+
+        #expect(viewModel.messages.last?.replyPreview?.messageID == original.id)
+        #expect(viewModel.messages.last?.replyPreview?.text == "Original message")
+        #expect(viewModel.replyingTo == nil)
+    }
+
+    @Test func cancelsReplySelection() {
+        let original = Message(text: "Original message", direction: .incoming)
+        let viewModel = MessageTimelineViewModel(messages: [original])
+
+        viewModel.beginReply(to: original)
+        viewModel.cancelReply()
+
+        #expect(viewModel.replyingTo == nil)
+    }
 }

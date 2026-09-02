@@ -6,13 +6,14 @@ protocol RemoteChatRepository: Sendable {
     func startConversation(withEmail email: String) async throws -> Conversation
     func startConversation(with contact: Contact) async throws -> Conversation
     func fetchMessages(conversationID: UUID) async throws -> [Message]
-    func sendMessage(_ text: String, conversationID: UUID) async throws -> Message
+    func sendMessage(_ text: String, conversationID: UUID, replyingTo messageID: UUID?) async throws -> Message
     func sendImage(_ data: Data, conversationID: UUID) async throws -> Message
     func messageEvents(conversationID: UUID, participantID: UUID?) async throws -> AsyncStream<MessageEvent>
     func setTyping(_ isTyping: Bool, conversationID: UUID) async throws
     func conversationEvents() async throws -> AsyncStream<ConversationEvent>
     func markConversationRead(conversationID: UUID) async throws
     func deleteMessage(id: UUID) async throws
+    func toggleReaction(_ emoji: String, messageID: UUID) async throws
     func deleteConversation(id: UUID) async throws
     func fetchContacts() async throws -> [Contact]
     func fetchMyProfile() async throws -> UserProfile
@@ -112,9 +113,9 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             .execute()
     }
 
-    func sendMessage(_ text: String, conversationID: UUID) async throws -> Message {
+    func sendMessage(_ text: String, conversationID: UUID, replyingTo messageID: UUID? = nil) async throws -> Message {
         let currentUserID = try await client.auth.session.user.id
-        let payload = NewMessageRow(conversationID: conversationID, senderID: currentUserID, body: text)
+        let payload = NewMessageRow(conversationID: conversationID, senderID: currentUserID, body: text, replyToMessageID: messageID)
         let row: MessageRow = try await client
             .from("messages")
             .insert(payload)
@@ -123,6 +124,13 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             .execute()
             .value
         return row.message(currentUserID: currentUserID, imageURL: nil)
+    }
+
+    func toggleReaction(_ emoji: String, messageID: UUID) async throws {
+        try await client.rpc("toggle_message_reaction", params: [
+            "target_message_id": messageID.uuidString,
+            "target_emoji": emoji
+        ]).execute()
     }
 
     func sendImage(_ data: Data, conversationID: UUID) async throws -> Message {
@@ -187,6 +195,7 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
         // RLS still limits events to the signed-in user's conversations, and
         // the timeline refetch below keeps this conversation consistent.
         let changes = messagesChannel.postgresChange(AnyAction.self, table: "messages")
+        let reactionChanges = messagesChannel.postgresChange(AnyAction.self, table: "message_reactions")
         let typingChanges = messagesChannel.postgresChange(
             AnyAction.self,
             table: "typing_status",
@@ -206,6 +215,12 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
         return AsyncStream { continuation in
             let messagesTask = Task {
                 for await _ in changes {
+                    guard !Task.isCancelled else { break }
+                    continuation.yield(.contentChanged)
+                }
+            }
+            let reactionsTask = Task {
+                for await _ in reactionChanges {
                     guard !Task.isCancelled else { break }
                     continuation.yield(.contentChanged)
                 }
@@ -240,6 +255,7 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
 
             continuation.onTermination = { [client] _ in
                 messagesTask.cancel()
+                reactionsTask.cancel()
                 typingTask.cancel()
                 presenceTask.cancel()
                 readTask.cancel()
@@ -476,6 +492,10 @@ private struct MessageRow: Decodable {
     let createdAt: Date
     let isRead: Bool?
     let imagePath: String?
+    let replyToMessageID: UUID?
+    let replyBody: String?
+    let replySenderID: UUID?
+    let reactions: [ReactionRow]?
 
     enum CodingKeys: String, CodingKey {
         case id, body
@@ -484,6 +504,10 @@ private struct MessageRow: Decodable {
         case createdAt = "created_at"
         case isRead = "is_read"
         case imagePath = "image_path"
+        case replyToMessageID = "reply_to_message_id"
+        case replyBody = "reply_body"
+        case replySenderID = "reply_sender_id"
+        case reactions
     }
 
     func message(currentUserID: UUID, imageURL: URL?) -> Message {
@@ -496,9 +520,21 @@ private struct MessageRow: Decodable {
             direction: senderID == currentUserID ? .outgoing : .incoming,
             receipt: isRead == true ? .read : .sent,
             imageURL: imageURL,
-            isSticker: isSticker
+            isSticker: isSticker,
+            replyPreview: replyToMessageID.map {
+                Message.ReplyPreview(messageID: $0, text: replyBody ?? "Message unavailable", isOwnMessage: replySenderID == currentUserID)
+            },
+            reactions: (reactions ?? []).map {
+                Message.Reaction(emoji: $0.emoji, count: $0.count, isSelectedByCurrentUser: $0.selected)
+            }
         )
     }
+}
+
+private struct ReactionRow: Decodable {
+    let emoji: String
+    let count: Int
+    let selected: Bool
 }
 
 private struct NewMessageRow: Encodable {
@@ -506,12 +542,14 @@ private struct NewMessageRow: Encodable {
     let senderID: UUID
     let body: String
     let imagePath: String?
+    let replyToMessageID: UUID?
 
-    init(conversationID: UUID, senderID: UUID, body: String, imagePath: String? = nil) {
+    init(conversationID: UUID, senderID: UUID, body: String, imagePath: String? = nil, replyToMessageID: UUID? = nil) {
         self.conversationID = conversationID
         self.senderID = senderID
         self.body = body
         self.imagePath = imagePath
+        self.replyToMessageID = replyToMessageID
     }
 
     enum CodingKeys: String, CodingKey {
@@ -519,5 +557,6 @@ private struct NewMessageRow: Encodable {
         case senderID = "sender_id"
         case body
         case imagePath = "image_path"
+        case replyToMessageID = "reply_to_message_id"
     }
 }

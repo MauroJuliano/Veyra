@@ -51,6 +51,7 @@ struct MessageTimelineView: View {
             messageList
             Divider().overlay(VeyraColor.divider)
             typingIndicator
+            replyComposerPreview
             MessageComposerView(
                 text: $viewModel.draft,
                 canSend: viewModel.canSend && !viewModel.isSending,
@@ -82,6 +83,12 @@ struct MessageTimelineView: View {
                             selectedImage = FullScreenImage(url: url, canSave: message.direction == .incoming)
                         }
                             .contextMenu {
+                                Button("Reply", systemImage: "arrowshape.turn.up.left") { viewModel.beginReply(to: message) }
+                                Menu("React", systemImage: "face.smiling") {
+                                    ForEach(["❤️", "👍", "😂", "😮", "😢", "🔥"], id: \.self) { emoji in
+                                        Button(emoji) { Task { await viewModel.toggleReaction(emoji, on: message) } }
+                                    }
+                                }
                                 if message.direction == .outgoing {
                                     Button("Delete message", systemImage: "trash", role: .destructive) { messagePendingDeletion = message }
                                 }
@@ -94,6 +101,29 @@ struct MessageTimelineView: View {
         .defaultScrollAnchor(.bottom)
         .scrollDismissesKeyboard(.interactively)
         .dismissKeyboardOnTap()
+    }
+
+    @ViewBuilder private var replyComposerPreview: some View {
+        if let message = viewModel.replyingTo {
+            HStack(spacing: VeyraSpacing.sm) {
+                Rectangle().fill(VeyraColor.accent).frame(width: 3)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Replying to \(message.direction == .outgoing ? "yourself" : conversation.participantName)")
+                        .font(VeyraTypography.caption)
+                        .foregroundStyle(VeyraColor.accent)
+                    Text(message.imageURL == nil ? message.text : "Photo")
+                        .font(VeyraTypography.caption)
+                        .foregroundStyle(VeyraColor.textSecondary)
+                        .lineLimit(1)
+                }
+                Spacer()
+                Button { viewModel.cancelReply() } label: { Image(systemName: "xmark.circle.fill") }
+                    .accessibilityLabel("Cancel reply")
+            }
+            .padding(.horizontal, VeyraSpacing.md)
+            .padding(.vertical, VeyraSpacing.sm)
+            .background(VeyraColor.surface.opacity(0.96))
+        }
     }
 
     @ViewBuilder private var typingIndicator: some View {

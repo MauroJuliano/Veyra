@@ -15,6 +15,21 @@ struct MessageBubbleView: View {
             }
 
             VStack(alignment: message.direction == .incoming ? .leading : .trailing, spacing: VeyraSpacing.xs) {
+                if let reply = message.replyPreview {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(reply.isOwnMessage ? "You" : participantName)
+                            .font(VeyraTypography.caption)
+                            .foregroundStyle(VeyraColor.accent)
+                        Text(reply.text)
+                            .font(VeyraTypography.caption)
+                            .lineLimit(2)
+                            .foregroundStyle(VeyraColor.textSecondary)
+                    }
+                    .padding(VeyraSpacing.sm)
+                    .frame(maxWidth: 220, alignment: .leading)
+                    .background(VeyraColor.accent.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
                 Group {
                     if let imageURL = message.imageURL {
                         Button { onImageTap(imageURL) } label: {
@@ -58,6 +73,19 @@ struct MessageBubbleView: View {
                 .font(VeyraTypography.caption)
                 .foregroundStyle(VeyraColor.textSecondary)
                 .padding(.horizontal, VeyraSpacing.sm)
+
+                if !message.reactions.isEmpty {
+                    HStack(spacing: VeyraSpacing.xs) {
+                        ForEach(message.reactions) { reaction in
+                            Text("\(reaction.emoji) \(reaction.count)")
+                                .font(VeyraTypography.caption)
+                                .padding(.horizontal, VeyraSpacing.sm)
+                                .padding(.vertical, 4)
+                                .background(reaction.isSelectedByCurrentUser ? VeyraColor.accent.opacity(0.28) : VeyraColor.surfaceElevated)
+                                .clipShape(Capsule())
+                        }
+                    }
+                }
             }
 
             if message.direction == .incoming { Spacer(minLength: 64) }

@@ -8,6 +8,7 @@ final class MessageTimelineViewModel {
     private let repository: (any RemoteChatRepository)?
     private(set) var messages: [Message]
     var draft = ""
+    private(set) var replyingTo: Message?
     private(set) var isLoading = false
     private(set) var isSending = false
     private(set) var isParticipantTyping = false
@@ -96,8 +97,12 @@ final class MessageTimelineViewModel {
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
         guard let repository else {
-            messages.append(Message(text: text, direction: .outgoing))
+            let preview = replyingTo.map {
+                Message.ReplyPreview(messageID: $0.id, text: $0.imageURL == nil ? $0.text : "Photo", isOwnMessage: $0.direction == .outgoing)
+            }
+            messages.append(Message(text: text, direction: .outgoing, replyPreview: preview))
             draft = ""
+            replyingTo = nil
             return
         }
         isSending = true
@@ -107,9 +112,10 @@ final class MessageTimelineViewModel {
             // Typing is an optional realtime enhancement and must never block
             // the durable message insert.
             try? await repository.setTyping(false, conversationID: conversationID)
-            let message = try await repository.sendMessage(text, conversationID: conversationID)
+            let message = try await repository.sendMessage(text, conversationID: conversationID, replyingTo: replyingTo?.id)
             appendIfNeeded(message)
             draft = ""
+            replyingTo = nil
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -138,7 +144,8 @@ final class MessageTimelineViewModel {
         isSending = true
         defer { isSending = false }
         do {
-            appendIfNeeded(try await repository.sendMessage("[sticker]\(sticker)", conversationID: conversationID))
+            appendIfNeeded(try await repository.sendMessage("[sticker]\(sticker)", conversationID: conversationID, replyingTo: replyingTo?.id))
+            replyingTo = nil
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -183,6 +190,27 @@ final class MessageTimelineViewModel {
             try await repository.deleteMessage(id: message.id)
             messages.removeAll { $0.id == message.id }
             errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    func beginReply(to message: Message) {
+        replyingTo = message
+    }
+
+    @MainActor
+    func cancelReply() {
+        replyingTo = nil
+    }
+
+    @MainActor
+    func toggleReaction(_ emoji: String, on message: Message) async {
+        guard let repository else { return }
+        do {
+            try await repository.toggleReaction(emoji, messageID: message.id)
+            await refreshMessages(using: repository)
         } catch {
             errorMessage = error.localizedDescription
         }
