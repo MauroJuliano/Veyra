@@ -63,7 +63,7 @@ struct AppRootView: View {
             }
                 .tabItem { Label("People", systemImage: "person.2.fill") }
 
-            ProfileView(onLogout: { Task { await authentication.signOut() } })
+            ProfileView(viewModel: ProfileViewModel(remoteRepository: dependencies.remoteChat), onLogout: { Task { await authentication.signOut() } })
                 .tabItem { Label("Profile", systemImage: "person.crop.circle.fill") }
         }
         .tint(VeyraColor.accent)
@@ -138,7 +138,7 @@ private struct ContactListView: View {
 
     private func contactRow(_ contact: Contact) -> some View {
         HStack(spacing: VeyraSpacing.md) {
-            VeyraAvatar(name: contact.name, showsOnlineIndicator: contact.isOnline)
+            VeyraAvatar(name: contact.name, imageURL: contact.avatarURL, showsOnlineIndicator: contact.isOnline)
             Text(contact.name)
                 .font(VeyraTypography.bodyEmphasized)
                 .foregroundStyle(VeyraColor.textPrimary)

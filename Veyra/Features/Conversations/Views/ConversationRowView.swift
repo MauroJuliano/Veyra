@@ -5,7 +5,7 @@ struct ConversationRowView: View {
 
     var body: some View {
         HStack(spacing: VeyraSpacing.md) {
-            VeyraAvatar(name: conversation.participantName, showsOnlineIndicator: conversation.isOnline)
+            VeyraAvatar(name: conversation.participantName, imageURL: conversation.participantAvatarURL, showsOnlineIndicator: conversation.isOnline)
 
             VStack(alignment: .leading, spacing: VeyraSpacing.xs) {
                 HStack(alignment: .firstTextBaseline) {

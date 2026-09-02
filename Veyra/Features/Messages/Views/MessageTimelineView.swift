@@ -77,7 +77,7 @@ struct MessageTimelineView: View {
                         .clipShape(Capsule())
                         .padding(.vertical, VeyraSpacing.md)
                     ForEach(day.messages) { message in
-                        MessageBubbleView(message: message, participantName: conversation.participantName) { url in
+                        MessageBubbleView(message: message, participantName: conversation.participantName, participantAvatarURL: conversation.participantAvatarURL) { url in
                             selectedImage = FullScreenImage(url: url)
                         }
                             .contextMenu {
@@ -98,7 +98,7 @@ struct MessageTimelineView: View {
     @ViewBuilder private var typingIndicator: some View {
         if viewModel.isParticipantTyping {
             HStack(spacing: VeyraSpacing.sm) {
-                VeyraAvatar(name: conversation.participantName, size: .small)
+                VeyraAvatar(name: conversation.participantName, imageURL: conversation.participantAvatarURL, size: .small)
                 Text("\(conversation.participantName) is typing…")
                     .font(VeyraTypography.caption)
                     .foregroundStyle(VeyraColor.textSecondary)
@@ -118,7 +118,7 @@ struct MessageTimelineView: View {
     @ToolbarContentBuilder private var chatToolbar: some ToolbarContent {
             ToolbarItem(placement: .principal) {
                 HStack(spacing: VeyraSpacing.sm) {
-                    VeyraAvatar(name: conversation.participantName, size: .small, showsOnlineIndicator: viewModel.isParticipantActive)
+                    VeyraAvatar(name: conversation.participantName, imageURL: conversation.participantAvatarURL, size: .small, showsOnlineIndicator: viewModel.isParticipantActive)
                     VStack(alignment: .leading, spacing: 1) {
                         Text(conversation.participantName)
                             .font(VeyraTypography.bodyEmphasized)

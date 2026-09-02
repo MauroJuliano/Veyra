@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 
 struct ProfileView: View {
     private enum Route: String, Hashable {
@@ -27,6 +28,7 @@ struct ProfileView: View {
 
     @State private var confirmsLogout = false
     @State private var viewModel: ProfileViewModel
+    @State private var selectedAvatar: PhotosPickerItem?
     let onLogout: () -> Void
 
     init(viewModel: ProfileViewModel = ProfileViewModel(), onLogout: @escaping () -> Void) {
@@ -64,6 +66,8 @@ struct ProfileView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .task { await viewModel.loadRemoteProfile() }
+        .onChange(of: selectedAvatar) { _, item in updateAvatar(from: item) }
     }
 
     private var header: some View {
@@ -79,11 +83,23 @@ struct ProfileView: View {
     private var profileCard: some View {
         HStack(spacing: VeyraSpacing.md) {
             ZStack(alignment: .bottomTrailing) {
-                VeyraAvatar(name: viewModel.profile.displayName, size: .large)
+                VeyraAvatar(name: viewModel.profile.displayName, imageURL: viewModel.profile.avatarURL, size: .large)
                 Image(systemName: "checkmark.seal.fill")
                     .font(.title3)
                     .foregroundStyle(profileAccent)
                     .background(Circle().fill(VeyraColor.surface).padding(2))
+            }
+            .overlay(alignment: .bottomTrailing) {
+                PhotosPicker(selection: $selectedAvatar, matching: .images) {
+                    Image(systemName: "camera.fill")
+                        .font(.caption)
+                        .foregroundStyle(.white)
+                        .frame(width: 26, height: 26)
+                        .background(VeyraColor.accent)
+                        .clipShape(Circle())
+                }
+                .disabled(viewModel.isUploadingAvatar)
+                .accessibilityLabel("Change profile photo")
             }
 
             VStack(alignment: .leading, spacing: VeyraSpacing.xs) {
@@ -209,6 +225,16 @@ struct ProfileView: View {
             SettingsItem(route: .help, subtitle: "Get help or contact us"),
             SettingsItem(route: .language, subtitle: "Choose your preferred language")
         ]
+    }
+
+    private func updateAvatar(from item: PhotosPickerItem?) {
+        guard let item else { return }
+        Task {
+            if let data = try? await item.loadTransferable(type: Data.self) {
+                await viewModel.updateAvatar(data: data)
+            }
+            selectedAvatar = nil
+        }
     }
 }
 

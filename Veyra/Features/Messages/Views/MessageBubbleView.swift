@@ -3,12 +3,13 @@ import SwiftUI
 struct MessageBubbleView: View {
     let message: Message
     let participantName: String
+    var participantAvatarURL: URL? = nil
     var onImageTap: (URL) -> Void = { _ in }
 
     var body: some View {
         HStack(alignment: .bottom, spacing: VeyraSpacing.sm) {
             if message.direction == .incoming {
-                VeyraAvatar(name: participantName, size: .small)
+                VeyraAvatar(name: participantName, imageURL: participantAvatarURL, size: .small)
             } else {
                 Spacer(minLength: 64)
             }
