@@ -16,13 +16,17 @@ struct Message: Identifiable, Hashable {
     let sentAt: Date
     let direction: Direction
     let receipt: Receipt
+    let imageURL: URL?
+    let isSticker: Bool
 
-    init(id: UUID = UUID(), text: String, sentAt: Date = .now, direction: Direction, receipt: Receipt = .sent) {
+    init(id: UUID = UUID(), text: String, sentAt: Date = .now, direction: Direction, receipt: Receipt = .sent, imageURL: URL? = nil, isSticker: Bool = false) {
         self.id = id
         self.text = text
         self.sentAt = sentAt
         self.direction = direction
         self.receipt = receipt
+        self.imageURL = imageURL
+        self.isSticker = isSticker
     }
 }
 

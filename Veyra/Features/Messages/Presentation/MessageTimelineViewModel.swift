@@ -117,6 +117,40 @@ final class MessageTimelineViewModel {
     }
 
     @MainActor
+    func sendImage(_ data: Data) async {
+        guard let repository else { return }
+        isSending = true
+        defer { isSending = false }
+        do {
+            appendIfNeeded(try await repository.sendImage(data, conversationID: conversationID))
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    func sendSticker(_ sticker: String) async {
+        guard let repository else {
+            messages.append(Message(text: sticker, direction: .outgoing, isSticker: true))
+            return
+        }
+        isSending = true
+        defer { isSending = false }
+        do {
+            appendIfNeeded(try await repository.sendMessage("[sticker]\(sticker)", conversationID: conversationID))
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    func reportImageSelectionError(_ error: any Error) {
+        errorMessage = error.localizedDescription
+    }
+
+    @MainActor
     func draftDidChange() {
         guard repository != nil else { return }
         typingStopTask?.cancel()
