@@ -126,7 +126,7 @@ struct MessageTimelineView: View {
     @ViewBuilder private var replyComposerPreview: some View {
         if let message = viewModel.replyingTo {
             HStack(spacing: 0) {
-                Rectangle().fill(VeyraColor.accent).frame(width: 4)
+                Rectangle().fill(VeyraColor.accent).frame(width: 4, height: 64)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(message.direction == .outgoing ? "You" : conversation.participantName)
                         .font(VeyraTypography.bodyEmphasized)
@@ -134,7 +134,7 @@ struct MessageTimelineView: View {
                     Text(message.imageURL == nil ? message.text : "Photo")
                         .font(VeyraTypography.body)
                         .foregroundStyle(VeyraColor.textPrimary.opacity(0.9))
-                        .lineLimit(2)
+                        .lineLimit(1)
                 }
                 .padding(.horizontal, VeyraSpacing.md)
                 .padding(.vertical, VeyraSpacing.sm)
@@ -147,7 +147,7 @@ struct MessageTimelineView: View {
                     .accessibilityLabel("Cancel reply")
                     .padding(.trailing, VeyraSpacing.md)
             }
-            .frame(maxWidth: .infinity, minHeight: 72, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 64, maxHeight: 64, alignment: .leading)
             .background(VeyraColor.surfaceElevated.opacity(0.98))
             .transition(.move(edge: .bottom).combined(with: .opacity))
         }
