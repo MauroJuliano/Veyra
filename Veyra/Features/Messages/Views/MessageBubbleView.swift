@@ -4,7 +4,9 @@ struct MessageBubbleView: View {
     let message: Message
     let participantName: String
     var participantAvatarURL: URL? = nil
+    var onReply: () -> Void = {}
     var onImageTap: (URL) -> Void = { _ in }
+    @State private var replyDragOffset: CGFloat = 0
 
     var body: some View {
         HStack(alignment: .bottom, spacing: VeyraSpacing.sm) {
@@ -15,6 +17,21 @@ struct MessageBubbleView: View {
             }
 
             VStack(alignment: message.direction == .incoming ? .leading : .trailing, spacing: VeyraSpacing.xs) {
+                if let reply = message.replyPreview {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(reply.isOwnMessage ? "You" : participantName)
+                            .font(VeyraTypography.caption)
+                            .foregroundStyle(VeyraColor.accent)
+                        Text(reply.text)
+                            .font(VeyraTypography.caption)
+                            .lineLimit(2)
+                            .foregroundStyle(VeyraColor.textSecondary)
+                    }
+                    .padding(VeyraSpacing.sm)
+                    .frame(maxWidth: 220, alignment: .leading)
+                    .background(VeyraColor.accent.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
                 Group {
                     if let imageURL = message.imageURL {
                         Button { onImageTap(imageURL) } label: {
@@ -58,11 +75,58 @@ struct MessageBubbleView: View {
                 .font(VeyraTypography.caption)
                 .foregroundStyle(VeyraColor.textSecondary)
                 .padding(.horizontal, VeyraSpacing.sm)
+
+                if !message.reactions.isEmpty {
+                    HStack(spacing: VeyraSpacing.xs) {
+                        ForEach(message.reactions) { reaction in
+                            Text("\(reaction.emoji) \(reaction.count)")
+                                .font(VeyraTypography.caption)
+                                .padding(.horizontal, 9)
+                                .padding(.vertical, 5)
+                                .background(Color.black.opacity(0.82))
+                                .clipShape(Capsule())
+                                .overlay {
+                                    Capsule().stroke(
+                                        reaction.isSelectedByCurrentUser ? VeyraColor.accent : Color.white.opacity(0.14),
+                                        lineWidth: 1
+                                    )
+                                }
+                        }
+                    }
+                    .offset(y: -3)
+                }
             }
 
             if message.direction == .incoming { Spacer(minLength: 64) }
         }
+        .background(alignment: .leading) {
+            Image(systemName: "arrowshape.turn.up.left.fill")
+                .font(.title3)
+                .foregroundStyle(VeyraColor.accent)
+                .frame(width: 44, height: 44)
+                .opacity(min(replyDragOffset / 44, 1))
+                .scaleEffect(0.75 + min(replyDragOffset / 44, 1) * 0.25)
+        }
+        .offset(x: replyDragOffset)
+        .simultaneousGesture(replyGesture)
         .accessibilityElement(children: .combine)
+    }
+
+    private var replyGesture: some Gesture {
+        DragGesture(minimumDistance: 12)
+            .onChanged { value in
+                guard value.translation.width > 0,
+                      abs(value.translation.width) > abs(value.translation.height) else { return }
+                replyDragOffset = min(value.translation.width * 0.7, 68)
+            }
+            .onEnded { value in
+                let shouldReply = value.translation.width >= 58
+                    && abs(value.translation.width) > abs(value.translation.height)
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.78)) {
+                    replyDragOffset = 0
+                }
+                if shouldReply { onReply() }
+            }
     }
 
 }

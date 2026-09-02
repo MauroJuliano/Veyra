@@ -1,6 +1,7 @@
 import SwiftUI
 import PhotosUI
 import Photos
+import UIKit
 
 struct MessageTimelineView: View {
     let conversation: Conversation
@@ -8,6 +9,7 @@ struct MessageTimelineView: View {
     @State private var messagePendingDeletion: Message?
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var selectedImage: FullScreenImage?
+    @State private var messageShowingActions: Message?
 
     init(conversation: Conversation, repository: (any RemoteChatRepository)? = nil, messages: [Message]? = nil) {
         self.conversation = conversation
@@ -44,6 +46,31 @@ struct MessageTimelineView: View {
             .fullScreenCover(item: $selectedImage) { image in
                 FullScreenImageView(url: image.url, canSave: image.canSave) { selectedImage = nil }
             }
+            .overlay {
+                if let message = messageShowingActions {
+                    MessageActionsOverlay(
+                        message: message,
+                        onReact: { emoji in
+                            messageShowingActions = nil
+                            Task { await viewModel.toggleReaction(emoji, on: message) }
+                        },
+                        onReply: {
+                            viewModel.beginReply(to: message)
+                            messageShowingActions = nil
+                        },
+                        onCopy: {
+                            UIPasteboard.general.string = message.text
+                            messageShowingActions = nil
+                        },
+                        onDelete: {
+                            messagePendingDeletion = message
+                            messageShowingActions = nil
+                        },
+                        onDismiss: { messageShowingActions = nil }
+                    )
+                    .transition(.opacity)
+                }
+            }
     }
 
     private var chatContent: some View {
@@ -51,12 +78,14 @@ struct MessageTimelineView: View {
             messageList
             Divider().overlay(VeyraColor.divider)
             typingIndicator
+            replyComposerPreview
             MessageComposerView(
                 text: $viewModel.draft,
                 canSend: viewModel.canSend && !viewModel.isSending,
                 onSend: { Task { await viewModel.send() } },
                 selectedPhoto: $selectedPhoto,
-                onSendSticker: { sticker in Task { await viewModel.sendSticker(sticker) } }
+                onSendSticker: { sticker in Task { await viewModel.sendSticker(sticker) } },
+                isReplying: viewModel.replyingTo != nil
             )
         }
     }
@@ -78,13 +107,16 @@ struct MessageTimelineView: View {
                         .clipShape(Capsule())
                         .padding(.vertical, VeyraSpacing.md)
                     ForEach(day.messages) { message in
-                        MessageBubbleView(message: message, participantName: conversation.participantName, participantAvatarURL: conversation.participantAvatarURL) { url in
+                        MessageBubbleView(
+                            message: message,
+                            participantName: conversation.participantName,
+                            participantAvatarURL: conversation.participantAvatarURL,
+                            onReply: { viewModel.beginReply(to: message) }
+                        ) { url in
                             selectedImage = FullScreenImage(url: url, canSave: message.direction == .incoming)
                         }
-                            .contextMenu {
-                                if message.direction == .outgoing {
-                                    Button("Delete message", systemImage: "trash", role: .destructive) { messagePendingDeletion = message }
-                                }
+                            .onLongPressGesture(minimumDuration: 0.35) {
+                                withAnimation(.easeOut(duration: 0.18)) { messageShowingActions = message }
                             }
                     }
                 }
@@ -94,6 +126,36 @@ struct MessageTimelineView: View {
         .defaultScrollAnchor(.bottom)
         .scrollDismissesKeyboard(.interactively)
         .dismissKeyboardOnTap()
+    }
+
+    @ViewBuilder private var replyComposerPreview: some View {
+        if let message = viewModel.replyingTo {
+            HStack(spacing: 0) {
+                Rectangle().fill(VeyraColor.accent).frame(width: 4, height: 64)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(message.direction == .outgoing ? "You" : conversation.participantName)
+                        .font(VeyraTypography.bodyEmphasized)
+                        .foregroundStyle(VeyraColor.accent)
+                    Text(message.imageURL == nil ? message.text : "Photo")
+                        .font(VeyraTypography.body)
+                        .foregroundStyle(VeyraColor.textPrimary.opacity(0.9))
+                        .lineLimit(1)
+                }
+                .padding(.horizontal, VeyraSpacing.md)
+                .padding(.vertical, VeyraSpacing.sm)
+                Spacer()
+                Button { viewModel.cancelReply() } label: {
+                    Image(systemName: "xmark.circle")
+                        .font(.title)
+                        .foregroundStyle(VeyraColor.textPrimary)
+                }
+                    .accessibilityLabel("Cancel reply")
+                    .padding(.trailing, VeyraSpacing.md)
+            }
+            .frame(maxWidth: .infinity, minHeight: 64, maxHeight: 64, alignment: .leading)
+            .background(VeyraColor.surfaceElevated.opacity(0.98))
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+        }
     }
 
     @ViewBuilder private var typingIndicator: some View {
@@ -165,6 +227,87 @@ struct MessageTimelineView: View {
             }
             selectedPhoto = nil
         }
+    }
+}
+
+private struct MessageActionsOverlay: View {
+    let message: Message
+    let onReact: (String) -> Void
+    let onReply: () -> Void
+    let onCopy: () -> Void
+    let onDelete: () -> Void
+    let onDismiss: () -> Void
+    private let emojis = ["👍", "❤️", "😂", "😮", "😢", "🙏"]
+
+    var body: some View {
+        ZStack {
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .overlay(Color.black.opacity(0.32))
+                .ignoresSafeArea()
+                .onTapGesture(perform: onDismiss)
+
+            VStack(spacing: VeyraSpacing.md) {
+                reactionBar
+                actionMenu
+            }
+            .padding(.horizontal, VeyraSpacing.lg)
+        }
+    }
+
+    private var reactionBar: some View {
+        HStack(spacing: VeyraSpacing.sm) {
+            ForEach(emojis, id: \.self) { emoji in
+                Button { onReact(emoji) } label: {
+                    Text(emoji).font(.system(size: 29))
+                        .frame(width: 38, height: 44)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("React with \(emoji)")
+            }
+            Image(systemName: "plus")
+                .font(.title2.weight(.semibold))
+                .foregroundStyle(.white.opacity(0.7))
+                .frame(width: 42, height: 42)
+                .background(Color.white.opacity(0.12))
+                .clipShape(Circle())
+        }
+        .padding(.horizontal, VeyraSpacing.sm)
+        .padding(.vertical, VeyraSpacing.xs)
+        .background(Color.black.opacity(0.78))
+        .clipShape(Capsule())
+    }
+
+    private var actionMenu: some View {
+        VStack(spacing: 0) {
+            actionButton("Reply", icon: "arrowshape.turn.up.left", action: onReply)
+            Divider().overlay(Color.white.opacity(0.1))
+            if message.imageURL == nil {
+                actionButton("Copy", icon: "doc.on.doc", action: onCopy)
+                Divider().overlay(Color.white.opacity(0.1))
+            }
+            if message.direction == .outgoing {
+                actionButton("Delete", icon: "trash", color: VeyraColor.danger, action: onDelete)
+            }
+        }
+        .background(Color.black.opacity(0.72))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .frame(maxWidth: 310)
+    }
+
+    private func actionButton(_ title: String, icon: String, color: Color = .white, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack {
+                Text(title)
+                Spacer()
+                Image(systemName: icon)
+            }
+            .font(VeyraTypography.body)
+            .foregroundStyle(color)
+            .padding(VeyraSpacing.md)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }
 

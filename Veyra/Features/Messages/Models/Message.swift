@@ -1,6 +1,18 @@
 import Foundation
 
 struct Message: Identifiable, Hashable {
+    struct ReplyPreview: Hashable {
+        let messageID: UUID
+        let text: String
+        let isOwnMessage: Bool
+    }
+
+    struct Reaction: Hashable, Identifiable {
+        let emoji: String
+        let count: Int
+        let isSelectedByCurrentUser: Bool
+        var id: String { emoji }
+    }
     enum Direction: Hashable {
         case incoming
         case outgoing
@@ -18,8 +30,10 @@ struct Message: Identifiable, Hashable {
     let receipt: Receipt
     let imageURL: URL?
     let isSticker: Bool
+    let replyPreview: ReplyPreview?
+    var reactions: [Reaction]
 
-    init(id: UUID = UUID(), text: String, sentAt: Date = .now, direction: Direction, receipt: Receipt = .sent, imageURL: URL? = nil, isSticker: Bool = false) {
+    init(id: UUID = UUID(), text: String, sentAt: Date = .now, direction: Direction, receipt: Receipt = .sent, imageURL: URL? = nil, isSticker: Bool = false, replyPreview: ReplyPreview? = nil, reactions: [Reaction] = []) {
         self.id = id
         self.text = text
         self.sentAt = sentAt
@@ -27,6 +41,8 @@ struct Message: Identifiable, Hashable {
         self.receipt = receipt
         self.imageURL = imageURL
         self.isSticker = isSticker
+        self.replyPreview = replyPreview
+        self.reactions = reactions
     }
 }
 

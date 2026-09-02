@@ -8,6 +8,7 @@ final class MessageTimelineViewModel {
     private let repository: (any RemoteChatRepository)?
     private(set) var messages: [Message]
     var draft = ""
+    private(set) var replyingTo: Message?
     private(set) var isLoading = false
     private(set) var isSending = false
     private(set) var isParticipantTyping = false
@@ -96,8 +97,12 @@ final class MessageTimelineViewModel {
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
         guard let repository else {
-            messages.append(Message(text: text, direction: .outgoing))
+            let preview = replyingTo.map {
+                Message.ReplyPreview(messageID: $0.id, text: $0.imageURL == nil ? $0.text : "Photo", isOwnMessage: $0.direction == .outgoing)
+            }
+            messages.append(Message(text: text, direction: .outgoing, replyPreview: preview))
             draft = ""
+            replyingTo = nil
             return
         }
         isSending = true
@@ -107,9 +112,10 @@ final class MessageTimelineViewModel {
             // Typing is an optional realtime enhancement and must never block
             // the durable message insert.
             try? await repository.setTyping(false, conversationID: conversationID)
-            let message = try await repository.sendMessage(text, conversationID: conversationID)
+            let message = try await repository.sendMessage(text, conversationID: conversationID, replyingTo: replyingTo?.id)
             appendIfNeeded(message)
             draft = ""
+            replyingTo = nil
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -138,7 +144,8 @@ final class MessageTimelineViewModel {
         isSending = true
         defer { isSending = false }
         do {
-            appendIfNeeded(try await repository.sendMessage("[sticker]\(sticker)", conversationID: conversationID))
+            appendIfNeeded(try await repository.sendMessage("[sticker]\(sticker)", conversationID: conversationID, replyingTo: replyingTo?.id))
+            replyingTo = nil
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -186,6 +193,52 @@ final class MessageTimelineViewModel {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    @MainActor
+    func beginReply(to message: Message) {
+        replyingTo = message
+    }
+
+    @MainActor
+    func cancelReply() {
+        replyingTo = nil
+    }
+
+    @MainActor
+    func toggleReaction(_ emoji: String, on message: Message) async {
+        guard let repository else { return }
+        guard let index = messages.firstIndex(where: { $0.id == message.id }) else { return }
+        let previousReactions = messages[index].reactions
+        messages[index].reactions = toggledReactions(previousReactions, emoji: emoji)
+        do {
+            try await repository.toggleReaction(emoji, messageID: message.id)
+            await refreshMessages(using: repository)
+        } catch {
+            if let currentIndex = messages.firstIndex(where: { $0.id == message.id }) {
+                messages[currentIndex].reactions = previousReactions
+            }
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func toggledReactions(_ reactions: [Message.Reaction], emoji: String) -> [Message.Reaction] {
+        var result = reactions
+        if let index = result.firstIndex(where: { $0.emoji == emoji }) {
+            let reaction = result[index]
+            if reaction.isSelectedByCurrentUser {
+                if reaction.count == 1 {
+                    result.remove(at: index)
+                } else {
+                    result[index] = Message.Reaction(emoji: emoji, count: reaction.count - 1, isSelectedByCurrentUser: false)
+                }
+            } else {
+                result[index] = Message.Reaction(emoji: emoji, count: reaction.count + 1, isSelectedByCurrentUser: true)
+            }
+        } else {
+            result.append(Message.Reaction(emoji: emoji, count: 1, isSelectedByCurrentUser: true))
+        }
+        return result.sorted { $0.emoji < $1.emoji }
     }
 
     @MainActor
