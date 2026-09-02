@@ -94,6 +94,21 @@ struct MessageTimelineView: View {
         ScrollView {
             LazyVStack(spacing: VeyraSpacing.sm) {
                 if viewModel.isLoading { ProgressView().padding() }
+                if viewModel.hasEarlierMessages && !viewModel.messages.isEmpty {
+                    Button {
+                        Task { await viewModel.loadEarlierMessages() }
+                    } label: {
+                        if viewModel.isLoadingEarlier {
+                            ProgressView()
+                        } else {
+                            Label("Load earlier messages", systemImage: "clock.arrow.circlepath")
+                        }
+                    }
+                    .font(VeyraTypography.caption)
+                    .foregroundStyle(VeyraColor.accent)
+                    .disabled(viewModel.isLoadingEarlier)
+                    .padding(.vertical, VeyraSpacing.sm)
+                }
                 if let errorMessage = viewModel.errorMessage {
                     Text(errorMessage).font(VeyraTypography.caption).foregroundStyle(VeyraColor.danger)
                 }

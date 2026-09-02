@@ -10,6 +10,8 @@ final class MessageTimelineViewModel {
     var draft = ""
     private(set) var replyingTo: Message?
     private(set) var isLoading = false
+    private(set) var isLoadingEarlier = false
+    private(set) var hasEarlierMessages = true
     private(set) var isSending = false
     private(set) var isParticipantTyping = false
     private(set) var isParticipantActive: Bool
@@ -17,6 +19,7 @@ final class MessageTimelineViewModel {
     private(set) var errorMessage: String?
     private var typingStopTask: Task<Void, Never>?
     private var participantTypingTimeoutTask: Task<Void, Never>?
+    private let pageSize = 50
 
     init(conversationID: UUID = UUID(), participantID: UUID? = nil, isParticipantActive: Bool = false, participantLastSeenAt: Date? = nil, repository: (any RemoteChatRepository)? = nil, messages: [Message]) {
         self.conversationID = conversationID
@@ -25,6 +28,7 @@ final class MessageTimelineViewModel {
         self.participantLastSeenAt = participantLastSeenAt
         self.repository = repository
         self.messages = messages.sorted { $0.sentAt < $1.sentAt }
+        hasEarlierMessages = repository != nil
     }
 
     var days: [MessageDay] {
@@ -43,7 +47,28 @@ final class MessageTimelineViewModel {
         isLoading = true
         defer { isLoading = false }
         do {
-            messages = try await repository.fetchMessages(conversationID: conversationID)
+            let page = try await repository.fetchMessages(conversationID: conversationID, before: nil, limit: pageSize)
+            messages = page.sorted { $0.sentAt < $1.sentAt }
+            hasEarlierMessages = page.count == pageSize
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    func loadEarlierMessages() async {
+        guard let repository, hasEarlierMessages, !isLoadingEarlier, let oldest = messages.first else { return }
+        isLoadingEarlier = true
+        defer { isLoadingEarlier = false }
+        do {
+            let page = try await repository.fetchMessages(
+                conversationID: conversationID,
+                before: oldest.sentAt,
+                limit: pageSize
+            )
+            merge(page)
+            hasEarlierMessages = page.count == pageSize
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -244,7 +269,8 @@ final class MessageTimelineViewModel {
     @MainActor
     private func refreshMessages(using repository: any RemoteChatRepository) async {
         do {
-            messages = try await repository.fetchMessages(conversationID: conversationID)
+            let latest = try await repository.fetchMessages(conversationID: conversationID, before: nil, limit: pageSize)
+            reconcileLatestPage(latest)
             errorMessage = nil
         } catch is CancellationError {
             return
@@ -257,6 +283,24 @@ final class MessageTimelineViewModel {
         guard !messages.contains(where: { $0.id == message.id }) else { return }
         messages.append(message)
         messages.sort { $0.sentAt < $1.sentAt }
+    }
+
+    private func merge(_ incoming: [Message]) {
+        var indexed = Dictionary(uniqueKeysWithValues: messages.map { ($0.id, $0) })
+        for message in incoming { indexed[message.id] = message }
+        messages = indexed.values.sorted { $0.sentAt < $1.sentAt }
+    }
+
+    private func reconcileLatestPage(_ latest: [Message]) {
+        guard latest.count == pageSize, let pageStart = latest.map(\.sentAt).min() else {
+            messages = latest.sorted { $0.sentAt < $1.sentAt }
+            hasEarlierMessages = false
+            return
+        }
+
+        let latestIDs = Set(latest.map(\.id))
+        messages.removeAll { $0.sentAt >= pageStart && !latestIDs.contains($0.id) }
+        merge(latest)
     }
 
     @MainActor
