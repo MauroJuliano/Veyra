@@ -5,7 +5,7 @@ protocol RemoteChatRepository: Sendable {
     func fetchConversations() async throws -> [Conversation]
     func startConversation(withEmail email: String) async throws -> Conversation
     func startConversation(with contact: Contact) async throws -> Conversation
-    func fetchMessages(conversationID: UUID) async throws -> [Message]
+    func fetchMessages(conversationID: UUID, before: Date?, limit: Int) async throws -> [Message]
     func sendMessage(_ text: String, conversationID: UUID, replyingTo messageID: UUID?) async throws -> Message
     func sendImage(_ data: Data, conversationID: UUID) async throws -> Message
     func messageEvents(conversationID: UUID, participantID: UUID?) async throws -> AsyncStream<MessageEvent>
@@ -94,10 +94,15 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
         return conversation
     }
 
-    func fetchMessages(conversationID: UUID) async throws -> [Message] {
+    func fetchMessages(conversationID: UUID, before: Date? = nil, limit: Int = 50) async throws -> [Message] {
         let currentUserID = try await client.auth.session.user.id
+        let parameters = MessagePageParameters(
+            conversationID: conversationID,
+            beforeMessageDate: before,
+            pageSize: min(max(limit, 1), 100)
+        )
         let rows: [MessageRow] = try await client
-            .rpc("list_conversation_messages", params: ["target_conversation_id": conversationID])
+            .rpc("list_conversation_messages", params: parameters)
             .execute()
             .value
         var messages: [Message] = []
@@ -538,6 +543,18 @@ private struct MessageRow: Decodable {
                 Message.Reaction(emoji: $0.emoji, count: $0.count, isSelectedByCurrentUser: $0.selected)
             }
         )
+    }
+}
+
+private struct MessagePageParameters: Encodable {
+    let conversationID: UUID
+    let beforeMessageDate: Date?
+    let pageSize: Int
+
+    enum CodingKeys: String, CodingKey {
+        case conversationID = "target_conversation_id"
+        case beforeMessageDate = "before_message_date"
+        case pageSize = "page_size"
     }
 }
 
