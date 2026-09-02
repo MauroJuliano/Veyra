@@ -11,8 +11,9 @@ struct Conversation: Identifiable, Hashable {
     let lastSeenAt: Date?
     let lastMessageIsMine: Bool
     let lastMessageIsRead: Bool
+    let participantAvatarURL: URL?
 
-    init(id: UUID = UUID(), participantID: UUID? = nil, participantName: String, lastMessage: String, updatedAt: Date, unreadCount: Int = 0, isOnline: Bool = false, lastSeenAt: Date? = nil, lastMessageIsMine: Bool = false, lastMessageIsRead: Bool = false) {
+    init(id: UUID = UUID(), participantID: UUID? = nil, participantName: String, lastMessage: String, updatedAt: Date, unreadCount: Int = 0, isOnline: Bool = false, lastSeenAt: Date? = nil, lastMessageIsMine: Bool = false, lastMessageIsRead: Bool = false, participantAvatarURL: URL? = nil) {
         self.id = id
         self.participantID = participantID
         self.participantName = participantName
@@ -23,5 +24,6 @@ struct Conversation: Identifiable, Hashable {
         self.lastSeenAt = lastSeenAt
         self.lastMessageIsMine = lastMessageIsMine
         self.lastMessageIsRead = lastMessageIsRead
+        self.participantAvatarURL = participantAvatarURL
     }
 }

@@ -39,6 +39,7 @@ enum AvatarInitials {
 struct VeyraAvatar: View {
     let name: String
     var image: Image?
+    var imageURL: URL?
     var size: VeyraAvatarSize = .medium
     var showsOnlineIndicator = false
 
@@ -48,6 +49,12 @@ struct VeyraAvatar: View {
                 image
                     .resizable()
                     .scaledToFill()
+            } else if let imageURL {
+                AsyncImage(url: imageURL) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    ProgressView().tint(VeyraColor.accent)
+                }
             } else {
                 Text(AvatarInitials.make(from: name))
                     .font(size.font)

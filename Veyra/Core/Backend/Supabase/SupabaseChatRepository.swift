@@ -15,6 +15,8 @@ protocol RemoteChatRepository: Sendable {
     func deleteMessage(id: UUID) async throws
     func deleteConversation(id: UUID) async throws
     func fetchContacts() async throws -> [Contact]
+    func fetchMyProfile() async throws -> UserProfile
+    func updateMyAvatar(_ data: Data) async throws -> UserProfile
     func maintainPresence() async
 }
 
@@ -40,7 +42,11 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             .rpc("list_my_conversations")
             .execute()
             .value
-        return rows.map(\.conversation)
+        var conversations: [Conversation] = []
+        for row in rows {
+            conversations.append(row.conversation(avatarURL: try await signedAvatarURL(path: row.avatarPath)))
+        }
+        return conversations
     }
 
     func startConversation(withEmail email: String) async throws -> Conversation {
@@ -62,7 +68,8 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
                 participantName: contact.name,
                 lastMessage: "",
                 updatedAt: .now,
-                isOnline: contact.isOnline
+                isOnline: contact.isOnline,
+                participantAvatarURL: contact.avatarURL
             )
         }
 
@@ -152,7 +159,25 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             .rpc("list_my_contacts")
             .execute()
             .value
-        return rows.map(\.contact)
+        var contacts: [Contact] = []
+        for row in rows {
+            contacts.append(row.contact(avatarURL: try await signedAvatarURL(path: row.avatarPath)))
+        }
+        return contacts
+    }
+
+    func fetchMyProfile() async throws -> UserProfile {
+        let userID = try await client.auth.session.user.id
+        let row: ProfileRow = try await client.from("profiles").select().eq("id", value: userID).single().execute().value
+        return row.profile(avatarURL: try await signedAvatarURL(path: row.avatarPath))
+    }
+
+    func updateMyAvatar(_ data: Data) async throws -> UserProfile {
+        let userID = try await client.auth.session.user.id
+        let path = "\(userID.uuidString.lowercased())/avatar.jpg"
+        try await client.storage.from("avatars").upload(path, data: data, options: FileOptions(contentType: "image/jpeg", upsert: true))
+        try await client.from("profiles").update(AvatarPathRow(avatarPath: path)).eq("id", value: userID).execute()
+        return try await fetchMyProfile()
     }
 
     func messageEvents(conversationID: UUID, participantID: UUID?) async throws -> AsyncStream<MessageEvent> {
@@ -320,6 +345,11 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             lastSeenAt: row.lastSeenAt
         )
     }
+
+    private func signedAvatarURL(path: String?) async throws -> URL? {
+        guard let path else { return nil }
+        return try await client.storage.from("avatars").createSignedURL(path: path, expiresIn: 3_600)
+    }
 }
 
 enum ChatRepositoryError: LocalizedError {
@@ -338,6 +368,7 @@ private struct ConversationRow: Decodable {
     let lastSeenAt: Date?
     let lastMessageIsMine: Bool
     let lastMessageIsRead: Bool
+    let avatarPath: String?
 
     enum CodingKeys: String, CodingKey {
         case conversationID = "conversation_id"
@@ -350,13 +381,14 @@ private struct ConversationRow: Decodable {
         case lastSeenAt = "last_seen_at"
         case lastMessageIsMine = "last_message_is_mine"
         case lastMessageIsRead = "last_message_is_read"
+        case avatarPath = "avatar_path"
     }
 
-    var conversation: Conversation {
+    func conversation(avatarURL: URL?) -> Conversation {
         let preview = lastMessage.hasPrefix("[sticker]")
             ? "Sticker \(lastMessage.dropFirst("[sticker]".count))"
             : lastMessage
-        return Conversation(id: conversationID, participantID: participantID, participantName: participantName, lastMessage: preview, updatedAt: updatedAt, unreadCount: unreadCount, isOnline: isOnline, lastSeenAt: lastSeenAt, lastMessageIsMine: lastMessageIsMine, lastMessageIsRead: lastMessageIsRead)
+        return Conversation(id: conversationID, participantID: participantID, participantName: participantName, lastMessage: preview, updatedAt: updatedAt, unreadCount: unreadCount, isOnline: isOnline, lastSeenAt: lastSeenAt, lastMessageIsMine: lastMessageIsMine, lastMessageIsRead: lastMessageIsRead, participantAvatarURL: avatarURL)
     }
 }
 
@@ -364,16 +396,31 @@ private struct ContactRow: Decodable {
     let contactID: UUID
     let displayName: String
     let conversationID: UUID?
+    let avatarPath: String?
 
     enum CodingKeys: String, CodingKey {
         case contactID = "contact_id"
         case displayName = "display_name"
         case conversationID = "conversation_id"
+        case avatarPath = "avatar_path"
     }
 
-    var contact: Contact {
-        Contact(id: contactID, name: displayName, conversationID: conversationID)
+    func contact(avatarURL: URL?) -> Contact {
+        Contact(id: contactID, name: displayName, conversationID: conversationID, avatarURL: avatarURL)
     }
+}
+
+private struct ProfileRow: Decodable {
+    let displayName: String
+    let username: String?
+    let avatarPath: String?
+    enum CodingKeys: String, CodingKey { case displayName = "display_name"; case username; case avatarPath = "avatar_url" }
+    func profile(avatarURL: URL?) -> UserProfile { UserProfile(displayName: displayName, username: username ?? "veyrauser", avatarURL: avatarURL) }
+}
+
+private struct AvatarPathRow: Encodable {
+    let avatarPath: String
+    enum CodingKeys: String, CodingKey { case avatarPath = "avatar_url" }
 }
 
 private struct ReadStateRow: Encodable {

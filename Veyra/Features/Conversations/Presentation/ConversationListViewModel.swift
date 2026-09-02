@@ -122,7 +122,8 @@ final class ConversationListViewModel {
                 isOnline: conversation.isOnline,
                 lastSeenAt: conversation.lastSeenAt,
                 lastMessageIsMine: conversation.lastMessageIsMine,
-                lastMessageIsRead: conversation.lastMessageIsRead
+                lastMessageIsRead: conversation.lastMessageIsRead,
+                participantAvatarURL: conversation.participantAvatarURL
             )
         }
     }

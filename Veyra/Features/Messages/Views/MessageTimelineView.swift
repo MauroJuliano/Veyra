@@ -1,5 +1,6 @@
 import SwiftUI
 import PhotosUI
+import Photos
 
 struct MessageTimelineView: View {
     let conversation: Conversation
@@ -41,7 +42,7 @@ struct MessageTimelineView: View {
                 Text("This message will be removed for everyone in the conversation.")
             }
             .fullScreenCover(item: $selectedImage) { image in
-                FullScreenImageView(url: image.url) { selectedImage = nil }
+                FullScreenImageView(url: image.url, canSave: image.canSave) { selectedImage = nil }
             }
     }
 
@@ -77,8 +78,8 @@ struct MessageTimelineView: View {
                         .clipShape(Capsule())
                         .padding(.vertical, VeyraSpacing.md)
                     ForEach(day.messages) { message in
-                        MessageBubbleView(message: message, participantName: conversation.participantName) { url in
-                            selectedImage = FullScreenImage(url: url)
+                        MessageBubbleView(message: message, participantName: conversation.participantName, participantAvatarURL: conversation.participantAvatarURL) { url in
+                            selectedImage = FullScreenImage(url: url, canSave: message.direction == .incoming)
                         }
                             .contextMenu {
                                 if message.direction == .outgoing {
@@ -98,7 +99,7 @@ struct MessageTimelineView: View {
     @ViewBuilder private var typingIndicator: some View {
         if viewModel.isParticipantTyping {
             HStack(spacing: VeyraSpacing.sm) {
-                VeyraAvatar(name: conversation.participantName, size: .small)
+                VeyraAvatar(name: conversation.participantName, imageURL: conversation.participantAvatarURL, size: .small)
                 Text("\(conversation.participantName) is typing…")
                     .font(VeyraTypography.caption)
                     .foregroundStyle(VeyraColor.textSecondary)
@@ -118,7 +119,7 @@ struct MessageTimelineView: View {
     @ToolbarContentBuilder private var chatToolbar: some ToolbarContent {
             ToolbarItem(placement: .principal) {
                 HStack(spacing: VeyraSpacing.sm) {
-                    VeyraAvatar(name: conversation.participantName, size: .small, showsOnlineIndicator: viewModel.isParticipantActive)
+                    VeyraAvatar(name: conversation.participantName, imageURL: conversation.participantAvatarURL, size: .small, showsOnlineIndicator: viewModel.isParticipantActive)
                     VStack(alignment: .leading, spacing: 1) {
                         Text(conversation.participantName)
                             .font(VeyraTypography.bodyEmphasized)
@@ -176,11 +177,15 @@ private enum ImageSelectionError: LocalizedError {
 private struct FullScreenImage: Identifiable {
     let id = UUID()
     let url: URL
+    let canSave: Bool
 }
 
 private struct FullScreenImageView: View {
     let url: URL
+    let canSave: Bool
     let dismiss: () -> Void
+    @State private var isSaving = false
+    @State private var saveMessage: String?
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -192,13 +197,77 @@ private struct FullScreenImageView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            Button(action: dismiss) {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.largeTitle)
-                    .foregroundStyle(.white)
+            HStack(spacing: VeyraSpacing.md) {
+                if canSave {
+                    Button { Task { await saveToPhotoLibrary() } } label: {
+                        if isSaving {
+                            ProgressView().tint(.white)
+                        } else {
+                            Image(systemName: "square.and.arrow.down.fill")
+                        }
+                    }
+                    .disabled(isSaving)
+                    .accessibilityLabel("Save image to photos")
+                }
+                Button(action: dismiss) {
+                    Image(systemName: "xmark.circle.fill")
+                }
             }
+            .font(.largeTitle)
+            .foregroundStyle(.white)
             .padding()
         }
+        .alert("Photo", isPresented: saveAlertIsPresented) {
+            Button("OK") {}
+        } message: {
+            Text(saveMessage ?? "")
+        }
+    }
+
+    private var saveAlertIsPresented: Binding<Bool> {
+        Binding(get: { saveMessage != nil }, set: { if !$0 { saveMessage = nil } })
+    }
+
+    @MainActor
+    private func saveToPhotoLibrary() async {
+        isSaving = true
+        defer { isSaving = false }
+        do {
+            let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
+            guard status == .authorized || status == .limited else {
+                saveMessage = "Allow photo access in Settings to save received images."
+                return
+            }
+            let (data, _) = try await URLSession.shared.data(from: url)
+            try await saveImageData(data)
+            saveMessage = "Image saved to Photos."
+        } catch {
+            saveMessage = "The image could not be saved. \(error.localizedDescription)"
+        }
+    }
+
+    private func saveImageData(_ data: Data) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            PHPhotoLibrary.shared().performChanges {
+                PHAssetCreationRequest.forAsset().addResource(with: .photo, data: data, options: nil)
+            } completionHandler: { success, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else if success {
+                    continuation.resume(returning: ())
+                } else {
+                    continuation.resume(throwing: PhotoSaveError.unknownFailure)
+                }
+            }
+        }
+    }
+}
+
+private enum PhotoSaveError: LocalizedError {
+    case unknownFailure
+
+    var errorDescription: String? {
+        "Photos did not complete the save operation."
     }
 }
 

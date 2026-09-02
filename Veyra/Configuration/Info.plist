@@ -6,5 +6,7 @@
 	<string>$(SUPABASE_PUBLISHABLE_KEY)</string>
 	<key>SupabaseURL</key>
 	<string>$(SUPABASE_URL)</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Veyra saves received chat images to your photo library when you request it.</string>
 </dict>
 </plist>
