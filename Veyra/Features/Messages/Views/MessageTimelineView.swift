@@ -348,7 +348,7 @@ private struct FullScreenImageView: View {
     var body: some View {
         ZStack(alignment: .topTrailing) {
             Color.black.ignoresSafeArea().onTapGesture(perform: dismiss)
-            AsyncImage(url: url) { image in
+            VeyraCachedImage(url: url) { image in
                 image.resizable().scaledToFit()
             } placeholder: {
                 ProgressView().tint(.white)

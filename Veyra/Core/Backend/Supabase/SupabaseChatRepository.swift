@@ -197,7 +197,7 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
 
     func updateMyAvatar(_ data: Data) async throws -> UserProfile {
         let userID = try await client.auth.session.user.id
-        let path = "\(userID.uuidString.lowercased())/avatar.jpg"
+        let path = "\(userID.uuidString.lowercased())/\(UUID().uuidString.lowercased()).jpg"
         try await client.storage.from("avatars").upload(path, data: data, options: FileOptions(contentType: "image/jpeg", upsert: true))
         try await client.from("profiles").update(AvatarPathRow(avatarPath: path)).eq("id", value: userID).execute()
         return try await fetchMyProfile()

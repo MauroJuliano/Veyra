@@ -35,7 +35,7 @@ struct MessageBubbleView: View {
                 Group {
                     if let imageURL = message.imageURL {
                         Button { onImageTap(imageURL) } label: {
-                            AsyncImage(url: imageURL) { image in
+                            VeyraCachedImage(url: imageURL) { image in
                                 image.resizable().scaledToFill()
                             } placeholder: {
                                 ProgressView()
