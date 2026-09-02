@@ -79,12 +79,19 @@ struct MessageBubbleView: View {
                         ForEach(message.reactions) { reaction in
                             Text("\(reaction.emoji) \(reaction.count)")
                                 .font(VeyraTypography.caption)
-                                .padding(.horizontal, VeyraSpacing.sm)
-                                .padding(.vertical, 4)
-                                .background(reaction.isSelectedByCurrentUser ? VeyraColor.accent.opacity(0.28) : VeyraColor.surfaceElevated)
+                                .padding(.horizontal, 9)
+                                .padding(.vertical, 5)
+                                .background(Color.black.opacity(0.82))
                                 .clipShape(Capsule())
+                                .overlay {
+                                    Capsule().stroke(
+                                        reaction.isSelectedByCurrentUser ? VeyraColor.accent : Color.white.opacity(0.14),
+                                        lineWidth: 1
+                                    )
+                                }
                         }
                     }
+                    .offset(y: -3)
                 }
             }
 
