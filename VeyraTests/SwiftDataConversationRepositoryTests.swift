@@ -26,4 +26,41 @@ struct SwiftDataConversationRepositoryTests {
         #expect(conversations.count == 1)
         #expect(conversations[0].lastMessage == "Updated")
     }
+
+    @Test func persistsCompleteMessageOffline() throws {
+        let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: ConversationRecord.self, LocalMessageRecord.self, configurations: configuration)
+        let repository = SwiftDataConversationRepository(container: container)
+        let conversationID = UUID()
+        let originalID = UUID()
+        let message = Message(
+            text: "Offline reply",
+            direction: .outgoing,
+            receipt: .read,
+            replyPreview: .init(messageID: originalID, text: "Original", isOwnMessage: false),
+            reactions: [.init(emoji: "❤️", count: 2, isSelectedByCurrentUser: true)]
+        )
+
+        repository.saveMessages([message], conversationID: conversationID)
+        let restored = repository.fetchMessages(conversationID: conversationID, before: nil, limit: 50)
+
+        #expect(restored == [message])
+    }
+
+    @Test func keepsOnlyMostRecentTwoHundredMessages() throws {
+        let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: ConversationRecord.self, LocalMessageRecord.self, configurations: configuration)
+        let repository = SwiftDataConversationRepository(container: container)
+        let conversationID = UUID()
+        let messages = (0..<205).map {
+            Message(text: "Message \($0)", sentAt: Date(timeIntervalSince1970: TimeInterval($0)), direction: .incoming)
+        }
+
+        repository.saveMessages(messages, conversationID: conversationID)
+        let restored = repository.fetchMessages(conversationID: conversationID, before: nil, limit: 300)
+
+        #expect(restored.count == 200)
+        #expect(restored.first?.text == "Message 5")
+        #expect(restored.last?.text == "Message 204")
+    }
 }

@@ -52,14 +52,14 @@ struct AppRootView: View {
                 .navigationDestination(for: AppRoute.self) { route in
                     switch route {
                     case let .conversation(conversation):
-                        MessageTimelineView(conversation: conversation, repository: dependencies.remoteChat)
+                        MessageTimelineView(conversation: conversation, repository: dependencies.remoteChat, cache: dependencies.messageCache)
                     }
                 }
             }
             .tabItem { Label("Chats", systemImage: "bubble.left.and.bubble.right.fill") }
 
             NavigationStack {
-                ContactListView(repository: dependencies.remoteChat)
+                ContactListView(repository: dependencies.remoteChat, messageCache: dependencies.messageCache)
             }
                 .tabItem { Label("People", systemImage: "person.2.fill") }
 
@@ -98,6 +98,7 @@ struct AppRootView: View {
 
 private struct ContactListView: View {
     let repository: (any RemoteChatRepository)?
+    let messageCache: any MessageCacheRepository
     @State private var contacts: [Contact] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
@@ -153,7 +154,7 @@ private struct ContactListView: View {
         .task { await load() }
         .refreshable { await load() }
         .navigationDestination(item: $selectedConversation) { conversation in
-            MessageTimelineView(conversation: conversation, repository: repository, messages: [])
+            MessageTimelineView(conversation: conversation, repository: repository, cache: messageCache, messages: [])
         }
     }
 

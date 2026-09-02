@@ -11,7 +11,7 @@ struct MessageTimelineView: View {
     @State private var selectedImage: FullScreenImage?
     @State private var messageShowingActions: Message?
 
-    init(conversation: Conversation, repository: (any RemoteChatRepository)? = nil, messages: [Message]? = nil) {
+    init(conversation: Conversation, repository: (any RemoteChatRepository)? = nil, cache: any MessageCacheRepository = InMemoryMessageCacheRepository(), messages: [Message]? = nil) {
         self.conversation = conversation
         _viewModel = State(initialValue: MessageTimelineViewModel(
             conversationID: conversation.id,
@@ -19,6 +19,7 @@ struct MessageTimelineView: View {
             isParticipantActive: conversation.isOnline,
             participantLastSeenAt: conversation.lastSeenAt,
             repository: repository,
+            cache: cache,
             messages: messages ?? (repository == nil ? MessagePreviewData.messages(for: conversation) : [])
         ))
     }

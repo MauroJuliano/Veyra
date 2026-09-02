@@ -2,23 +2,30 @@ final class AppDependencies {
     let conversations: any ConversationRepository
     let contacts: any ContactRepository
     let remoteChat: (any RemoteChatRepository)?
+    let messageCache: any MessageCacheRepository
 
     init(
         conversations: any ConversationRepository,
         contacts: any ContactRepository,
-        remoteChat: (any RemoteChatRepository)? = nil
+        remoteChat: (any RemoteChatRepository)? = nil,
+        messageCache: any MessageCacheRepository = InMemoryMessageCacheRepository()
     ) {
         self.conversations = conversations
         self.contacts = contacts
         self.remoteChat = remoteChat
+        self.messageCache = messageCache
     }
 
     convenience init() {
         let conversations: any ConversationRepository
+        let messageCache: any MessageCacheRepository
         do {
-            conversations = try SwiftDataConversationRepository()
+            let swiftData = try SwiftDataConversationRepository()
+            conversations = swiftData
+            messageCache = swiftData
         } catch {
             conversations = InMemoryConversationRepository()
+            messageCache = InMemoryMessageCacheRepository()
         }
         let remoteChat: (any RemoteChatRepository)?
         if let configuration = try? SupabaseConfiguration.from() {
@@ -29,7 +36,8 @@ final class AppDependencies {
         self.init(
             conversations: conversations,
             contacts: InMemoryContactRepository(),
-            remoteChat: remoteChat
+            remoteChat: remoteChat,
+            messageCache: messageCache
         )
     }
 }
