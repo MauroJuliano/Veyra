@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-final class SwiftDataConversationRepository: ConversationRepository {
+final class SwiftDataConversationRepository: ConversationRepository, ContactRepository, MessageCacheRepository {
     private let container: ModelContainer
     private let context: ModelContext
 
@@ -13,11 +13,12 @@ final class SwiftDataConversationRepository: ConversationRepository {
             seed.forEach { context.insert(ConversationRecord(conversation: $0)) }
             try? context.save()
         }
+        removeLegacyPreviewConversations()
     }
 
-    convenience init(isStoredInMemoryOnly: Bool = false, seed: [Conversation] = ConversationPreviewData.conversations) throws {
+    convenience init(isStoredInMemoryOnly: Bool = false, seed: [Conversation] = []) throws {
         let configuration = ModelConfiguration(isStoredInMemoryOnly: isStoredInMemoryOnly)
-        let container = try ModelContainer(for: ConversationRecord.self, configurations: configuration)
+        let container = try ModelContainer(for: ConversationRecord.self, ContactRecord.self, LocalMessageRecord.self, configurations: configuration)
         self.init(container: container, seed: seed)
     }
 
@@ -39,6 +40,85 @@ final class SwiftDataConversationRepository: ConversationRepository {
         } else {
             context.insert(ConversationRecord(conversation: conversation))
         }
+        try? context.save()
+    }
+
+    func fetchContacts() -> [Contact] {
+        let descriptor = FetchDescriptor<ContactRecord>(sortBy: [SortDescriptor(\.name)])
+        return ((try? context.fetch(descriptor)) ?? []).map(\.contact)
+    }
+
+    func saveContacts(_ contacts: [Contact]) {
+        let incomingIDs = Set(contacts.map(\.id))
+        let existing = (try? context.fetch(FetchDescriptor<ContactRecord>())) ?? []
+        existing.filter { !incomingIDs.contains($0.id) }.forEach(context.delete)
+
+        for contact in contacts {
+            if let record = existing.first(where: { $0.id == contact.id }) {
+                record.update(with: contact)
+            } else {
+                context.insert(ContactRecord(contact: contact))
+            }
+        }
+        try? context.save()
+    }
+
+    func fetchMessages(conversationID: UUID, before: Date?, limit: Int) -> [Message] {
+        let identifier = conversationID
+        let boundary = before ?? .distantFuture
+        var descriptor = FetchDescriptor<LocalMessageRecord>(
+            predicate: #Predicate { $0.conversationID == identifier && $0.sentAt < boundary },
+            sortBy: [SortDescriptor(\.sentAt, order: .reverse)]
+        )
+        descriptor.fetchLimit = limit
+        return ((try? context.fetch(descriptor)) ?? []).map(\.message).sorted { $0.sentAt < $1.sentAt }
+    }
+
+    func saveMessages(_ messages: [Message], conversationID: UUID) {
+        for message in messages {
+            let identifier = message.id
+            let descriptor = FetchDescriptor<LocalMessageRecord>(predicate: #Predicate { $0.id == identifier })
+            if let record = try? context.fetch(descriptor).first {
+                record.update(with: message, conversationID: conversationID)
+            } else {
+                context.insert(LocalMessageRecord(message: message, conversationID: conversationID))
+            }
+        }
+        trimMessages(conversationID: conversationID)
+        try? context.save()
+    }
+
+    func deleteMessage(id: UUID) {
+        let identifier = id
+        let descriptor = FetchDescriptor<LocalMessageRecord>(predicate: #Predicate { $0.id == identifier })
+        if let record = try? context.fetch(descriptor).first { context.delete(record) }
+        try? context.save()
+    }
+
+    private func trimMessages(conversationID: UUID) {
+        let identifier = conversationID
+        let descriptor = FetchDescriptor<LocalMessageRecord>(
+            predicate: #Predicate { $0.conversationID == identifier },
+            sortBy: [SortDescriptor(\.sentAt, order: .reverse)]
+        )
+        guard let records = try? context.fetch(descriptor), records.count > 200 else { return }
+        records.dropFirst(200).forEach(context.delete)
+    }
+
+    private func removeLegacyPreviewConversations() {
+        let previewSignatures: Set<String> = [
+            "Ana Lima|Vamos revisar o protótipo amanhã?",
+            "Lucas Rocha|A nova navegação ficou muito boa.",
+            "Marina Costa|Te envio as referências mais tarde.",
+            "Rafael Alves|Obrigado pela ajuda!"
+        ]
+        let descriptor = FetchDescriptor<ConversationRecord>()
+        guard let records = try? context.fetch(descriptor) else { return }
+        let legacyRecords = records.filter {
+            previewSignatures.contains("\($0.participantName)|\($0.lastMessage)")
+        }
+        guard !legacyRecords.isEmpty else { return }
+        legacyRecords.forEach(context.delete)
         try? context.save()
     }
 }

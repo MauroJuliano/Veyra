@@ -13,7 +13,7 @@ final class ConversationListViewModel {
     init(repository: any ConversationRepository = InMemoryConversationRepository(), remoteRepository: (any RemoteChatRepository)? = nil) {
         self.repository = repository
         self.remoteRepository = remoteRepository
-        conversations = remoteRepository == nil ? repository.fetchConversations() : []
+        conversations = repository.fetchConversations()
     }
 
     convenience init(conversations: [Conversation]) {
@@ -49,7 +49,9 @@ final class ConversationListViewModel {
         isLoading = true
         defer { isLoading = false }
         do {
-            conversations = applyingPresence(to: try await remoteRepository.fetchConversations())
+            let remoteConversations = applyingPresence(to: try await remoteRepository.fetchConversations())
+            remoteConversations.forEach(repository.save)
+            conversations = remoteConversations
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -59,14 +61,16 @@ final class ConversationListViewModel {
     @MainActor
     func observeConversations() async {
         guard let remoteRepository else { return }
+        await load()
         do {
             let events = try await remoteRepository.conversationEvents()
-            await load()
             for await event in events {
                 guard !Task.isCancelled else { return }
                 switch event {
                 case .contentChanged:
-                    conversations = applyingPresence(to: try await remoteRepository.fetchConversations())
+                    let remoteConversations = applyingPresence(to: try await remoteRepository.fetchConversations())
+                    remoteConversations.forEach(repository.save)
+                    conversations = remoteConversations
                 case .presenceChanged:
                     break
                 }
@@ -85,7 +89,10 @@ final class ConversationListViewModel {
         defer { isLoading = false }
         do {
             let conversation = try await remoteRepository.startConversation(withEmail: email)
-            conversations = try await remoteRepository.fetchConversations()
+            repository.save(conversation)
+            let remoteConversations = try await remoteRepository.fetchConversations()
+            remoteConversations.forEach(repository.save)
+            conversations = remoteConversations
             errorMessage = nil
             return conversation
         } catch {

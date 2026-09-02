@@ -6,6 +6,7 @@ final class MessageTimelineViewModel {
     private let conversationID: UUID
     private let participantID: UUID?
     private let repository: (any RemoteChatRepository)?
+    private let cache: any MessageCacheRepository
     private(set) var messages: [Message]
     var draft = ""
     private(set) var replyingTo: Message?
@@ -21,12 +22,13 @@ final class MessageTimelineViewModel {
     private var participantTypingTimeoutTask: Task<Void, Never>?
     private let pageSize = 50
 
-    init(conversationID: UUID = UUID(), participantID: UUID? = nil, isParticipantActive: Bool = false, participantLastSeenAt: Date? = nil, repository: (any RemoteChatRepository)? = nil, messages: [Message]) {
+    init(conversationID: UUID = UUID(), participantID: UUID? = nil, isParticipantActive: Bool = false, participantLastSeenAt: Date? = nil, repository: (any RemoteChatRepository)? = nil, cache: any MessageCacheRepository = InMemoryMessageCacheRepository(), messages: [Message]) {
         self.conversationID = conversationID
         self.participantID = participantID
         self.isParticipantActive = isParticipantActive
         self.participantLastSeenAt = participantLastSeenAt
         self.repository = repository
+        self.cache = cache
         self.messages = messages.sorted { $0.sentAt < $1.sentAt }
         hasEarlierMessages = repository != nil
     }
@@ -43,16 +45,21 @@ final class MessageTimelineViewModel {
 
     @MainActor
     func load() async {
+        let cached = cache.fetchMessages(conversationID: conversationID, before: nil, limit: pageSize)
+        if messages.isEmpty && !cached.isEmpty { messages = cached }
+        hasEarlierMessages = cached.count == pageSize
         guard let repository else { return }
         isLoading = true
         defer { isLoading = false }
         do {
             let page = try await repository.fetchMessages(conversationID: conversationID, before: nil, limit: pageSize)
-            messages = page.sorted { $0.sentAt < $1.sentAt }
+            let removedIDs = reconcileLatestPage(page)
+            removedIDs.forEach { cache.deleteMessage(id: $0) }
+            cache.saveMessages(page, conversationID: conversationID)
             hasEarlierMessages = page.count == pageSize
             errorMessage = nil
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = cached.isEmpty ? error.localizedDescription : nil
         }
     }
 
@@ -68,21 +75,28 @@ final class MessageTimelineViewModel {
                 limit: pageSize
             )
             merge(page)
+            cache.saveMessages(page, conversationID: conversationID)
             hasEarlierMessages = page.count == pageSize
             errorMessage = nil
         } catch {
-            errorMessage = error.localizedDescription
+            let cachedPage = cache.fetchMessages(conversationID: conversationID, before: oldest.sentAt, limit: pageSize)
+            if cachedPage.isEmpty {
+                errorMessage = error.localizedDescription
+            } else {
+                merge(cachedPage)
+                hasEarlierMessages = cachedPage.count == pageSize
+                errorMessage = nil
+            }
         }
     }
 
     @MainActor
     func observeMessages() async {
-        guard let repository else { return }
-
         // The persisted timeline must load independently from Realtime. A
         // temporary WebSocket failure should only pause live updates, never
         // leave an existing conversation empty.
         await load()
+        guard let repository else { return }
         do {
             try await repository.markConversationRead(conversationID: conversationID)
         } catch {
@@ -139,6 +153,7 @@ final class MessageTimelineViewModel {
             try? await repository.setTyping(false, conversationID: conversationID)
             let message = try await repository.sendMessage(text, conversationID: conversationID, replyingTo: replyingTo?.id)
             appendIfNeeded(message)
+            cache.saveMessages([message], conversationID: conversationID)
             draft = ""
             replyingTo = nil
             errorMessage = nil
@@ -153,7 +168,9 @@ final class MessageTimelineViewModel {
         isSending = true
         defer { isSending = false }
         do {
-            appendIfNeeded(try await repository.sendImage(data, conversationID: conversationID))
+            let message = try await repository.sendImage(data, conversationID: conversationID)
+            appendIfNeeded(message)
+            cache.saveMessages([message], conversationID: conversationID)
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -169,7 +186,9 @@ final class MessageTimelineViewModel {
         isSending = true
         defer { isSending = false }
         do {
-            appendIfNeeded(try await repository.sendMessage("[sticker]\(sticker)", conversationID: conversationID, replyingTo: replyingTo?.id))
+            let message = try await repository.sendMessage("[sticker]\(sticker)", conversationID: conversationID, replyingTo: replyingTo?.id)
+            appendIfNeeded(message)
+            cache.saveMessages([message], conversationID: conversationID)
             replyingTo = nil
             errorMessage = nil
         } catch {
@@ -209,6 +228,7 @@ final class MessageTimelineViewModel {
         guard message.direction == .outgoing else { return }
         guard let repository else {
             messages.removeAll { $0.id == message.id }
+            cache.deleteMessage(id: message.id)
             return
         }
         do {
@@ -270,7 +290,9 @@ final class MessageTimelineViewModel {
     private func refreshMessages(using repository: any RemoteChatRepository) async {
         do {
             let latest = try await repository.fetchMessages(conversationID: conversationID, before: nil, limit: pageSize)
-            reconcileLatestPage(latest)
+            let removedIDs = reconcileLatestPage(latest)
+            removedIDs.forEach { cache.deleteMessage(id: $0) }
+            cache.saveMessages(latest, conversationID: conversationID)
             errorMessage = nil
         } catch is CancellationError {
             return
@@ -291,16 +313,20 @@ final class MessageTimelineViewModel {
         messages = indexed.values.sorted { $0.sentAt < $1.sentAt }
     }
 
-    private func reconcileLatestPage(_ latest: [Message]) {
+    private func reconcileLatestPage(_ latest: [Message]) -> Set<UUID> {
         guard latest.count == pageSize, let pageStart = latest.map(\.sentAt).min() else {
+            let removedIDs = Set(messages.map(\.id)).subtracting(latest.map(\.id))
             messages = latest.sorted { $0.sentAt < $1.sentAt }
             hasEarlierMessages = false
-            return
+            return removedIDs
         }
 
         let latestIDs = Set(latest.map(\.id))
+        let removedIDs = Set(messages.filter { $0.sentAt >= pageStart }.map(\.id)).subtracting(latestIDs)
         messages.removeAll { $0.sentAt >= pageStart && !latestIDs.contains($0.id) }
         merge(latest)
+        hasEarlierMessages = true
+        return removedIDs
     }
 
     @MainActor

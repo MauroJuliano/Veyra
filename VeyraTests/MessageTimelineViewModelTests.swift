@@ -4,6 +4,24 @@ import Testing
 
 @MainActor
 struct MessageTimelineViewModelTests {
+    @Test func loadsCachedMessagesWithoutRemoteRepository() async {
+        let conversationID = UUID()
+        let cachedMessage = Message(text: "Available offline", direction: .incoming)
+        let cache = InMemoryMessageCacheRepository()
+        cache.saveMessages([cachedMessage], conversationID: conversationID)
+        let viewModel = MessageTimelineViewModel(
+            conversationID: conversationID,
+            repository: nil,
+            cache: cache,
+            messages: []
+        )
+
+        await viewModel.observeMessages()
+
+        #expect(viewModel.messages.map(\.id) == [cachedMessage.id])
+        #expect(viewModel.errorMessage == nil)
+    }
+
     @Test func sendsTrimmedOutgoingMessageAndClearsDraft() async {
         let viewModel = MessageTimelineViewModel(messages: [])
         viewModel.draft = "  Hello  "

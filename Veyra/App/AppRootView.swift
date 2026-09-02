@@ -47,19 +47,20 @@ struct AppRootView: View {
         TabView {
             NavigationStack {
                 ConversationListView(
-                    viewModel: ConversationListViewModel(repository: dependencies.conversations, remoteRepository: dependencies.remoteChat)
+                    viewModel: ConversationListViewModel(repository: dependencies.conversations, remoteRepository: dependencies.remoteChat),
+                    messageCache: dependencies.messageCache
                 )
                 .navigationDestination(for: AppRoute.self) { route in
                     switch route {
                     case let .conversation(conversation):
-                        MessageTimelineView(conversation: conversation, repository: dependencies.remoteChat)
+                        MessageTimelineView(conversation: conversation, repository: dependencies.remoteChat, cache: dependencies.messageCache)
                     }
                 }
             }
             .tabItem { Label("Chats", systemImage: "bubble.left.and.bubble.right.fill") }
 
             NavigationStack {
-                ContactListView(repository: dependencies.remoteChat)
+                ContactListView(repository: dependencies.remoteChat, localRepository: dependencies.contacts, messageCache: dependencies.messageCache)
             }
                 .tabItem { Label("People", systemImage: "person.2.fill") }
 
@@ -98,12 +99,21 @@ struct AppRootView: View {
 
 private struct ContactListView: View {
     let repository: (any RemoteChatRepository)?
-    @State private var contacts: [Contact] = []
+    let localRepository: any ContactRepository
+    let messageCache: any MessageCacheRepository
+    @State private var contacts: [Contact]
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var searchText = ""
     @State private var selectedConversation: Conversation?
     @State private var openingContactID: UUID?
+
+    init(repository: (any RemoteChatRepository)?, localRepository: any ContactRepository, messageCache: any MessageCacheRepository) {
+        self.repository = repository
+        self.localRepository = localRepository
+        self.messageCache = messageCache
+        _contacts = State(initialValue: localRepository.fetchContacts())
+    }
 
     private var filteredContacts: [Contact] {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -153,7 +163,7 @@ private struct ContactListView: View {
         .task { await load() }
         .refreshable { await load() }
         .navigationDestination(item: $selectedConversation) { conversation in
-            MessageTimelineView(conversation: conversation, repository: repository, messages: [])
+            MessageTimelineView(conversation: conversation, repository: repository, cache: messageCache, messages: [])
         }
     }
 
@@ -174,7 +184,9 @@ private struct ContactListView: View {
         isLoading = true
         defer { isLoading = false }
         do {
-            contacts = try await repository.fetchContacts()
+            let remoteContacts = try await repository.fetchContacts()
+            localRepository.saveContacts(remoteContacts)
+            contacts = remoteContacts
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
