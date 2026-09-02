@@ -13,9 +13,10 @@ final class SwiftDataConversationRepository: ConversationRepository, MessageCach
             seed.forEach { context.insert(ConversationRecord(conversation: $0)) }
             try? context.save()
         }
+        removeLegacyPreviewConversations()
     }
 
-    convenience init(isStoredInMemoryOnly: Bool = false, seed: [Conversation] = ConversationPreviewData.conversations) throws {
+    convenience init(isStoredInMemoryOnly: Bool = false, seed: [Conversation] = []) throws {
         let configuration = ModelConfiguration(isStoredInMemoryOnly: isStoredInMemoryOnly)
         let container = try ModelContainer(for: ConversationRecord.self, LocalMessageRecord.self, configurations: configuration)
         self.init(container: container, seed: seed)
@@ -82,5 +83,22 @@ final class SwiftDataConversationRepository: ConversationRepository, MessageCach
         )
         guard let records = try? context.fetch(descriptor), records.count > 200 else { return }
         records.dropFirst(200).forEach(context.delete)
+    }
+
+    private func removeLegacyPreviewConversations() {
+        let previewSignatures: Set<String> = [
+            "Ana Lima|Vamos revisar o protótipo amanhã?",
+            "Lucas Rocha|A nova navegação ficou muito boa.",
+            "Marina Costa|Te envio as referências mais tarde.",
+            "Rafael Alves|Obrigado pela ajuda!"
+        ]
+        let descriptor = FetchDescriptor<ConversationRecord>()
+        guard let records = try? context.fetch(descriptor) else { return }
+        let legacyRecords = records.filter {
+            previewSignatures.contains("\($0.participantName)|\($0.lastMessage)")
+        }
+        guard !legacyRecords.isEmpty else { return }
+        legacyRecords.forEach(context.delete)
+        try? context.save()
     }
 }

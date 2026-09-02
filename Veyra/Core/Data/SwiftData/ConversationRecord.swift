@@ -4,46 +4,58 @@ import SwiftData
 @Model
 final class ConversationRecord {
     @Attribute(.unique) var id: UUID
+    var participantID: UUID?
     var participantName: String
     var lastMessage: String
     var updatedAt: Date
     var unreadCount: Int
     var isOnline: Bool
+    var lastSeenAt: Date?
     var lastMessageIsMine: Bool = false
     var lastMessageIsRead: Bool = false
+    var participantAvatarURLString: String?
 
     init(conversation: Conversation) {
         id = conversation.id
+        participantID = conversation.participantID
         participantName = conversation.participantName
         lastMessage = conversation.lastMessage
         updatedAt = conversation.updatedAt
         unreadCount = conversation.unreadCount
         isOnline = conversation.isOnline
+        lastSeenAt = conversation.lastSeenAt
         lastMessageIsMine = conversation.lastMessageIsMine
         lastMessageIsRead = conversation.lastMessageIsRead
+        participantAvatarURLString = conversation.participantAvatarURL?.absoluteString
     }
 
     var conversation: Conversation {
         Conversation(
             id: id,
+            participantID: participantID,
             participantName: participantName,
             lastMessage: lastMessage,
             updatedAt: updatedAt,
             unreadCount: unreadCount,
             isOnline: isOnline,
+            lastSeenAt: lastSeenAt,
             lastMessageIsMine: lastMessageIsMine,
-            lastMessageIsRead: lastMessageIsRead
+            lastMessageIsRead: lastMessageIsRead,
+            participantAvatarURL: participantAvatarURLString.flatMap(URL.init(string:))
         )
     }
 
     func update(with conversation: Conversation) {
+        participantID = conversation.participantID
         participantName = conversation.participantName
         lastMessage = conversation.lastMessage
         updatedAt = conversation.updatedAt
         unreadCount = conversation.unreadCount
         isOnline = conversation.isOnline
+        lastSeenAt = conversation.lastSeenAt
         lastMessageIsMine = conversation.lastMessageIsMine
         lastMessageIsRead = conversation.lastMessageIsRead
+        participantAvatarURLString = conversation.participantAvatarURL?.absoluteString
     }
 }
 

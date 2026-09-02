@@ -27,6 +27,42 @@ struct SwiftDataConversationRepositoryTests {
         #expect(conversations[0].lastMessage == "Updated")
     }
 
+    @Test func persistsConversationParticipantAndAvatarMetadata() throws {
+        let repository = try SwiftDataConversationRepository(isStoredInMemoryOnly: true)
+        let participantID = UUID()
+        let avatarURL = try #require(URL(string: "https://example.com/avatar.jpg"))
+        let lastSeenAt = Date(timeIntervalSince1970: 1_000)
+        let conversation = Conversation(
+            participantID: participantID,
+            participantName: "Real contact",
+            lastMessage: "Hello",
+            updatedAt: .now,
+            lastSeenAt: lastSeenAt,
+            participantAvatarURL: avatarURL
+        )
+
+        repository.save(conversation)
+        let restored = try #require(repository.fetchConversations().first)
+
+        #expect(restored.participantID == participantID)
+        #expect(restored.lastSeenAt == lastSeenAt)
+        #expect(restored.participantAvatarURL == avatarURL)
+    }
+
+    @Test func removesLegacyPreviewConversations() throws {
+        let preview = Conversation(
+            participantName: "Ana Lima",
+            lastMessage: "Vamos revisar o protótipo amanhã?",
+            updatedAt: .now
+        )
+        let real = Conversation(participantName: "Ana Lima", lastMessage: "A real message", updatedAt: .now)
+        let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: ConversationRecord.self, LocalMessageRecord.self, configurations: configuration)
+        let repository = SwiftDataConversationRepository(container: container, seed: [preview, real])
+
+        #expect(repository.fetchConversations().map(\.id) == [real.id])
+    }
+
     @Test func persistsCompleteMessageOffline() throws {
         let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: ConversationRecord.self, LocalMessageRecord.self, configurations: configuration)
