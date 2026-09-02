@@ -45,9 +45,10 @@ final class MessageTimelineViewModel {
 
     @MainActor
     func load() async {
-        guard let repository else { return }
         let cached = cache.fetchMessages(conversationID: conversationID, before: nil, limit: pageSize)
         if messages.isEmpty && !cached.isEmpty { messages = cached }
+        hasEarlierMessages = cached.count == pageSize
+        guard let repository else { return }
         isLoading = true
         defer { isLoading = false }
         do {
@@ -91,12 +92,11 @@ final class MessageTimelineViewModel {
 
     @MainActor
     func observeMessages() async {
-        guard let repository else { return }
-
         // The persisted timeline must load independently from Realtime. A
         // temporary WebSocket failure should only pause live updates, never
         // leave an existing conversation empty.
         await load()
+        guard let repository else { return }
         do {
             try await repository.markConversationRead(conversationID: conversationID)
         } catch {

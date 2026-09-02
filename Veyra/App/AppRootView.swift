@@ -47,7 +47,8 @@ struct AppRootView: View {
         TabView {
             NavigationStack {
                 ConversationListView(
-                    viewModel: ConversationListViewModel(repository: dependencies.conversations, remoteRepository: dependencies.remoteChat)
+                    viewModel: ConversationListViewModel(repository: dependencies.conversations, remoteRepository: dependencies.remoteChat),
+                    messageCache: dependencies.messageCache
                 )
                 .navigationDestination(for: AppRoute.self) { route in
                     switch route {

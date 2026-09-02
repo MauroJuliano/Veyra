@@ -3,6 +3,17 @@ import Testing
 @testable import Veyra
 
 struct ConversationListViewModelTests {
+    @Test func startsWithLocallyCachedConversationsWhenRemoteExists() {
+        let conversation = Conversation(participantName: "Offline contact", lastMessage: "Cached", updatedAt: .now)
+        let localRepository = InMemoryConversationRepository(conversations: [conversation])
+        let viewModel = ConversationListViewModel(
+            repository: localRepository,
+            remoteRepository: OfflineRemoteChatRepository()
+        )
+
+        #expect(viewModel.conversations.map(\.id) == [conversation.id])
+    }
+
     @Test func sortsConversationsByMostRecentFirst() {
         let oldest = Conversation(participantName: "Oldest", lastMessage: "First", updatedAt: Date(timeIntervalSince1970: 100))
         let newest = Conversation(participantName: "Newest", lastMessage: "Second", updatedAt: Date(timeIntervalSince1970: 200))
@@ -49,4 +60,26 @@ struct ConversationListViewModelTests {
 
         #expect(viewModel.conversations.isEmpty)
     }
+}
+
+private struct OfflineRemoteChatRepository: RemoteChatRepository {
+    func fetchConversations() async throws -> [Conversation] { throw URLError(.notConnectedToInternet) }
+    func startConversation(withEmail email: String) async throws -> Conversation { throw URLError(.notConnectedToInternet) }
+    func startConversation(with contact: Contact) async throws -> Conversation { throw URLError(.notConnectedToInternet) }
+    func fetchMessages(conversationID: UUID, before: Date?, limit: Int) async throws -> [Message] { throw URLError(.notConnectedToInternet) }
+    func sendMessage(_ text: String, conversationID: UUID, replyingTo messageID: UUID?) async throws -> Message { throw URLError(.notConnectedToInternet) }
+    func sendImage(_ data: Data, conversationID: UUID) async throws -> Message { throw URLError(.notConnectedToInternet) }
+    func messageEvents(conversationID: UUID, participantID: UUID?) async throws -> AsyncStream<MessageEvent> { throw URLError(.notConnectedToInternet) }
+    func setTyping(_ isTyping: Bool, conversationID: UUID) async throws { throw URLError(.notConnectedToInternet) }
+    func conversationEvents() async throws -> AsyncStream<ConversationEvent> { throw URLError(.notConnectedToInternet) }
+    func markConversationRead(conversationID: UUID) async throws { throw URLError(.notConnectedToInternet) }
+    func deleteMessage(id: UUID) async throws { throw URLError(.notConnectedToInternet) }
+    func toggleReaction(_ emoji: String, messageID: UUID) async throws { throw URLError(.notConnectedToInternet) }
+    func deleteConversation(id: UUID) async throws { throw URLError(.notConnectedToInternet) }
+    func fetchContacts() async throws -> [Contact] { throw URLError(.notConnectedToInternet) }
+    func fetchMyProfile() async throws -> UserProfile { throw URLError(.notConnectedToInternet) }
+    func updateMyAvatar(_ data: Data) async throws -> UserProfile { throw URLError(.notConnectedToInternet) }
+    func maintainPresence() async {}
+    func registerPushToken(_ token: String) async throws { throw URLError(.notConnectedToInternet) }
+    func unregisterPushToken(_ token: String) async throws { throw URLError(.notConnectedToInternet) }
 }
