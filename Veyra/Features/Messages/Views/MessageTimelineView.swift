@@ -107,7 +107,12 @@ struct MessageTimelineView: View {
                         .clipShape(Capsule())
                         .padding(.vertical, VeyraSpacing.md)
                     ForEach(day.messages) { message in
-                        MessageBubbleView(message: message, participantName: conversation.participantName, participantAvatarURL: conversation.participantAvatarURL) { url in
+                        MessageBubbleView(
+                            message: message,
+                            participantName: conversation.participantName,
+                            participantAvatarURL: conversation.participantAvatarURL,
+                            onReply: { viewModel.beginReply(to: message) }
+                        ) { url in
                             selectedImage = FullScreenImage(url: url, canSave: message.direction == .incoming)
                         }
                             .onLongPressGesture(minimumDuration: 0.35) {

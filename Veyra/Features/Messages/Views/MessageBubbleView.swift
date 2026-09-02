@@ -4,7 +4,9 @@ struct MessageBubbleView: View {
     let message: Message
     let participantName: String
     var participantAvatarURL: URL? = nil
+    var onReply: () -> Void = {}
     var onImageTap: (URL) -> Void = { _ in }
+    @State private var replyDragOffset: CGFloat = 0
 
     var body: some View {
         HStack(alignment: .bottom, spacing: VeyraSpacing.sm) {
@@ -97,7 +99,34 @@ struct MessageBubbleView: View {
 
             if message.direction == .incoming { Spacer(minLength: 64) }
         }
+        .background(alignment: .leading) {
+            Image(systemName: "arrowshape.turn.up.left.fill")
+                .font(.title3)
+                .foregroundStyle(VeyraColor.accent)
+                .frame(width: 44, height: 44)
+                .opacity(min(replyDragOffset / 44, 1))
+                .scaleEffect(0.75 + min(replyDragOffset / 44, 1) * 0.25)
+        }
+        .offset(x: replyDragOffset)
+        .simultaneousGesture(replyGesture)
         .accessibilityElement(children: .combine)
+    }
+
+    private var replyGesture: some Gesture {
+        DragGesture(minimumDistance: 12)
+            .onChanged { value in
+                guard value.translation.width > 0,
+                      abs(value.translation.width) > abs(value.translation.height) else { return }
+                replyDragOffset = min(value.translation.width * 0.7, 68)
+            }
+            .onEnded { value in
+                let shouldReply = value.translation.width >= 58
+                    && abs(value.translation.width) > abs(value.translation.height)
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.78)) {
+                    replyDragOffset = 0
+                }
+                if shouldReply { onReply() }
+            }
     }
 
 }
