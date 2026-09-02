@@ -60,6 +60,37 @@ final class ConversationRecord {
 }
 
 @Model
+final class ContactRecord {
+    @Attribute(.unique) var id: UUID
+    var name: String
+    var conversationID: UUID?
+    var avatarURLString: String?
+
+    init(contact: Contact) {
+        id = contact.id
+        name = contact.name
+        conversationID = contact.conversationID
+        avatarURLString = contact.avatarURL?.absoluteString
+    }
+
+    var contact: Contact {
+        Contact(
+            id: id,
+            name: name,
+            isOnline: false,
+            conversationID: conversationID,
+            avatarURL: avatarURLString.flatMap(URL.init(string:))
+        )
+    }
+
+    func update(with contact: Contact) {
+        name = contact.name
+        conversationID = contact.conversationID
+        avatarURLString = contact.avatarURL?.absoluteString
+    }
+}
+
+@Model
 final class LocalMessageRecord {
     @Attribute(.unique) var id: UUID
     var conversationID: UUID

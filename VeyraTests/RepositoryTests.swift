@@ -18,4 +18,13 @@ struct RepositoryTests {
 
         #expect(repository.fetchContacts().map(\.name) == ["Ana", "Zoe"])
     }
+
+    @Test func contactRepositoryReplacesCachedContacts() {
+        let repository = InMemoryContactRepository(contacts: [Contact(name: "Old")])
+        let current = Contact(name: "Current")
+
+        repository.saveContacts([current])
+
+        #expect(repository.fetchContacts().map(\.id) == [current.id])
+    }
 }

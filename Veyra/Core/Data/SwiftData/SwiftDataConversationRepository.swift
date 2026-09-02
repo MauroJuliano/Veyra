@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-final class SwiftDataConversationRepository: ConversationRepository, MessageCacheRepository {
+final class SwiftDataConversationRepository: ConversationRepository, ContactRepository, MessageCacheRepository {
     private let container: ModelContainer
     private let context: ModelContext
 
@@ -18,7 +18,7 @@ final class SwiftDataConversationRepository: ConversationRepository, MessageCach
 
     convenience init(isStoredInMemoryOnly: Bool = false, seed: [Conversation] = []) throws {
         let configuration = ModelConfiguration(isStoredInMemoryOnly: isStoredInMemoryOnly)
-        let container = try ModelContainer(for: ConversationRecord.self, LocalMessageRecord.self, configurations: configuration)
+        let container = try ModelContainer(for: ConversationRecord.self, ContactRecord.self, LocalMessageRecord.self, configurations: configuration)
         self.init(container: container, seed: seed)
     }
 
@@ -39,6 +39,26 @@ final class SwiftDataConversationRepository: ConversationRepository, MessageCach
             record.update(with: conversation)
         } else {
             context.insert(ConversationRecord(conversation: conversation))
+        }
+        try? context.save()
+    }
+
+    func fetchContacts() -> [Contact] {
+        let descriptor = FetchDescriptor<ContactRecord>(sortBy: [SortDescriptor(\.name)])
+        return ((try? context.fetch(descriptor)) ?? []).map(\.contact)
+    }
+
+    func saveContacts(_ contacts: [Contact]) {
+        let incomingIDs = Set(contacts.map(\.id))
+        let existing = (try? context.fetch(FetchDescriptor<ContactRecord>())) ?? []
+        existing.filter { !incomingIDs.contains($0.id) }.forEach(context.delete)
+
+        for contact in contacts {
+            if let record = existing.first(where: { $0.id == contact.id }) {
+                record.update(with: contact)
+            } else {
+                context.insert(ContactRecord(contact: contact))
+            }
         }
         try? context.save()
     }

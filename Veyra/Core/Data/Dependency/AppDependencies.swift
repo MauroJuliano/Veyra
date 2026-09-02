@@ -18,13 +18,16 @@ final class AppDependencies {
 
     convenience init() {
         let conversations: any ConversationRepository
+        let contacts: any ContactRepository
         let messageCache: any MessageCacheRepository
         do {
             let swiftData = try SwiftDataConversationRepository()
             conversations = swiftData
+            contacts = swiftData
             messageCache = swiftData
         } catch {
             conversations = InMemoryConversationRepository()
+            contacts = InMemoryContactRepository()
             messageCache = InMemoryMessageCacheRepository()
         }
         let remoteChat: (any RemoteChatRepository)?
@@ -35,7 +38,7 @@ final class AppDependencies {
         }
         self.init(
             conversations: conversations,
-            contacts: InMemoryContactRepository(),
+            contacts: contacts,
             remoteChat: remoteChat,
             messageCache: messageCache
         )

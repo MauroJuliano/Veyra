@@ -60,7 +60,7 @@ struct AppRootView: View {
             .tabItem { Label("Chats", systemImage: "bubble.left.and.bubble.right.fill") }
 
             NavigationStack {
-                ContactListView(repository: dependencies.remoteChat, messageCache: dependencies.messageCache)
+                ContactListView(repository: dependencies.remoteChat, localRepository: dependencies.contacts, messageCache: dependencies.messageCache)
             }
                 .tabItem { Label("People", systemImage: "person.2.fill") }
 
@@ -99,13 +99,21 @@ struct AppRootView: View {
 
 private struct ContactListView: View {
     let repository: (any RemoteChatRepository)?
+    let localRepository: any ContactRepository
     let messageCache: any MessageCacheRepository
-    @State private var contacts: [Contact] = []
+    @State private var contacts: [Contact]
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var searchText = ""
     @State private var selectedConversation: Conversation?
     @State private var openingContactID: UUID?
+
+    init(repository: (any RemoteChatRepository)?, localRepository: any ContactRepository, messageCache: any MessageCacheRepository) {
+        self.repository = repository
+        self.localRepository = localRepository
+        self.messageCache = messageCache
+        _contacts = State(initialValue: localRepository.fetchContacts())
+    }
 
     private var filteredContacts: [Contact] {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -176,7 +184,9 @@ private struct ContactListView: View {
         isLoading = true
         defer { isLoading = false }
         do {
-            contacts = try await repository.fetchContacts()
+            let remoteContacts = try await repository.fetchContacts()
+            localRepository.saveContacts(remoteContacts)
+            contacts = remoteContacts
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription

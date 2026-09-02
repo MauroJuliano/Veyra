@@ -57,7 +57,7 @@ struct SwiftDataConversationRepositoryTests {
         )
         let real = Conversation(participantName: "Ana Lima", lastMessage: "A real message", updatedAt: .now)
         let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: ConversationRecord.self, LocalMessageRecord.self, configurations: configuration)
+        let container = try ModelContainer(for: ConversationRecord.self, ContactRecord.self, LocalMessageRecord.self, configurations: configuration)
         let repository = SwiftDataConversationRepository(container: container, seed: [preview, real])
 
         #expect(repository.fetchConversations().map(\.id) == [real.id])
@@ -98,5 +98,20 @@ struct SwiftDataConversationRepositoryTests {
         #expect(restored.count == 200)
         #expect(restored.first?.text == "Message 5")
         #expect(restored.last?.text == "Message 204")
+    }
+
+    @Test func persistsContactNameAndAvatarOffline() throws {
+        let repository = try SwiftDataConversationRepository(isStoredInMemoryOnly: true)
+        let avatarURL = try #require(URL(string: "https://example.com/contact.jpg"))
+        let contact = Contact(name: "Saved contact", conversationID: UUID(), avatarURL: avatarURL)
+
+        repository.saveContacts([contact])
+        let restored = try #require(repository.fetchContacts().first)
+
+        #expect(restored.id == contact.id)
+        #expect(restored.name == contact.name)
+        #expect(restored.conversationID == contact.conversationID)
+        #expect(restored.avatarURL == avatarURL)
+        #expect(restored.isOnline == false)
     }
 }
