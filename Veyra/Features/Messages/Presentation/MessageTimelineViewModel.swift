@@ -103,31 +103,32 @@ final class MessageTimelineViewModel {
             errorMessage = error.localizedDescription
         }
 
-        do {
-            let events = try await repository.messageEvents(conversationID: conversationID, participantID: participantID)
+        while !Task.isCancelled {
+            do {
+                let events = try await repository.messageEvents(conversationID: conversationID, participantID: participantID)
+                await retryQueuedMessages()
 
-            for await event in events {
-                guard !Task.isCancelled else { return }
-                switch event {
-                case .contentChanged:
-                    await refreshMessages(using: repository)
-                    try await repository.markConversationRead(conversationID: conversationID)
-                case .readReceiptChanged:
-                    await refreshMessages(using: repository)
-                case let .typingChanged(isTyping):
-                    updateParticipantTyping(isTyping)
-                case let .presenceChanged(isActive, lastSeenAt):
-                    isParticipantActive = isActive
-                    participantLastSeenAt = lastSeenAt
+                for await event in events {
+                    guard !Task.isCancelled else { return }
+                    switch event {
+                    case .contentChanged:
+                        await refreshMessages(using: repository)
+                        await retryQueuedMessages()
+                        try await repository.markConversationRead(conversationID: conversationID)
+                    case .readReceiptChanged:
+                        await refreshMessages(using: repository)
+                    case let .typingChanged(isTyping):
+                        updateParticipantTyping(isTyping)
+                    case let .presenceChanged(isActive, lastSeenAt):
+                        isParticipantActive = isActive
+                        participantLastSeenAt = lastSeenAt
+                    }
                 }
+            } catch is CancellationError {
+                return
+            } catch {
+                try? await Task.sleep(for: .seconds(3))
             }
-        } catch is CancellationError {
-            return
-        } catch {
-            // Keep the loaded timeline usable when live updates are
-            // temporarily unavailable. Sending and manual navigation still
-            // use the durable REST endpoints.
-            return
         }
     }
 
@@ -135,8 +136,9 @@ final class MessageTimelineViewModel {
     func send() async {
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
+        let reply = replyingTo
         guard let repository else {
-            let preview = replyingTo.map {
+            let preview = reply.map {
                 Message.ReplyPreview(messageID: $0.id, text: $0.imageURL == nil ? $0.text : "Photo", isOwnMessage: $0.direction == .outgoing)
             }
             messages.append(Message(text: text, direction: .outgoing, replyPreview: preview))
@@ -144,6 +146,14 @@ final class MessageTimelineViewModel {
             replyingTo = nil
             return
         }
+        let preview = reply.map {
+            Message.ReplyPreview(messageID: $0.id, text: $0.imageURL == nil ? $0.text : "Photo", isOwnMessage: $0.direction == .outgoing)
+        }
+        let pending = Message(text: text, direction: .outgoing, replyPreview: preview, deliveryState: .sending)
+        appendIfNeeded(pending)
+        cache.saveMessages([pending], conversationID: conversationID)
+        draft = ""
+        replyingTo = nil
         isSending = true
         defer { isSending = false }
         do {
@@ -151,14 +161,40 @@ final class MessageTimelineViewModel {
             // Typing is an optional realtime enhancement and must never block
             // the durable message insert.
             try? await repository.setTyping(false, conversationID: conversationID)
-            let message = try await repository.sendMessage(text, conversationID: conversationID, replyingTo: replyingTo?.id)
+            let message = try await repository.sendMessage(text, conversationID: conversationID, replyingTo: reply?.id, clientMessageID: pending.id)
+            removeLocalMessage(id: pending.id)
             appendIfNeeded(message)
             cache.saveMessages([message], conversationID: conversationID)
-            draft = ""
-            replyingTo = nil
             errorMessage = nil
         } catch {
+            updateDeliveryState(id: pending.id, state: .failed)
             errorMessage = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    func retry(_ message: Message) async {
+        guard message.direction == .outgoing, message.deliveryState == .failed, let repository else { return }
+        updateDeliveryState(id: message.id, state: .sending)
+        do {
+            let body = message.isSticker ? "[sticker]\(message.text)" : message.text
+            let sent = try await repository.sendMessage(body, conversationID: conversationID, replyingTo: message.replyPreview?.messageID, clientMessageID: message.id)
+            removeLocalMessage(id: message.id)
+            appendIfNeeded(sent)
+            cache.saveMessages([sent], conversationID: conversationID)
+            errorMessage = nil
+        } catch {
+            updateDeliveryState(id: message.id, state: .failed)
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    private func retryQueuedMessages() async {
+        let queued = messages.filter { $0.direction == .outgoing && $0.deliveryState == .failed }
+        for message in queued {
+            guard !Task.isCancelled else { return }
+            await retry(message)
         }
     }
 
@@ -183,15 +219,20 @@ final class MessageTimelineViewModel {
             messages.append(Message(text: sticker, direction: .outgoing, isSticker: true))
             return
         }
+        let pending = Message(text: sticker, direction: .outgoing, isSticker: true, deliveryState: .sending)
+        appendIfNeeded(pending)
+        cache.saveMessages([pending], conversationID: conversationID)
         isSending = true
         defer { isSending = false }
         do {
-            let message = try await repository.sendMessage("[sticker]\(sticker)", conversationID: conversationID, replyingTo: replyingTo?.id)
+            let message = try await repository.sendMessage("[sticker]\(sticker)", conversationID: conversationID, replyingTo: replyingTo?.id, clientMessageID: pending.id)
+            removeLocalMessage(id: pending.id)
             appendIfNeeded(message)
             cache.saveMessages([message], conversationID: conversationID)
             replyingTo = nil
             errorMessage = nil
         } catch {
+            updateDeliveryState(id: pending.id, state: .failed)
             errorMessage = error.localizedDescription
         }
     }
@@ -307,6 +348,17 @@ final class MessageTimelineViewModel {
         messages.sort { $0.sentAt < $1.sentAt }
     }
 
+    private func updateDeliveryState(id: UUID, state: Message.DeliveryState) {
+        guard let index = messages.firstIndex(where: { $0.id == id }) else { return }
+        messages[index].deliveryState = state
+        cache.saveMessages([messages[index]], conversationID: conversationID)
+    }
+
+    private func removeLocalMessage(id: UUID) {
+        messages.removeAll { $0.id == id }
+        cache.deleteMessage(id: id)
+    }
+
     private func merge(_ incoming: [Message]) {
         var indexed = Dictionary(uniqueKeysWithValues: messages.map { ($0.id, $0) })
         for message in incoming { indexed[message.id] = message }
@@ -314,16 +366,17 @@ final class MessageTimelineViewModel {
     }
 
     private func reconcileLatestPage(_ latest: [Message]) -> Set<UUID> {
+        let queued = messages.filter { $0.direction == .outgoing && $0.deliveryState != .sent }
         guard latest.count == pageSize, let pageStart = latest.map(\.sentAt).min() else {
-            let removedIDs = Set(messages.map(\.id)).subtracting(latest.map(\.id))
-            messages = latest.sorted { $0.sentAt < $1.sentAt }
+            let removedIDs = Set(messages.filter { $0.deliveryState == .sent }.map(\.id)).subtracting(latest.map(\.id))
+            messages = (latest + queued).sorted { $0.sentAt < $1.sentAt }
             hasEarlierMessages = false
             return removedIDs
         }
 
         let latestIDs = Set(latest.map(\.id))
-        let removedIDs = Set(messages.filter { $0.sentAt >= pageStart }.map(\.id)).subtracting(latestIDs)
-        messages.removeAll { $0.sentAt >= pageStart && !latestIDs.contains($0.id) }
+        let removedIDs = Set(messages.filter { $0.sentAt >= pageStart && $0.deliveryState == .sent }.map(\.id)).subtracting(latestIDs)
+        messages.removeAll { $0.sentAt >= pageStart && $0.deliveryState == .sent && !latestIDs.contains($0.id) }
         merge(latest)
         hasEarlierMessages = true
         return removedIDs

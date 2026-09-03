@@ -6,6 +6,7 @@ struct MessageBubbleView: View {
     var participantAvatarURL: URL? = nil
     var onReply: () -> Void = {}
     var onImageTap: (URL) -> Void = { _ in }
+    var onRetry: () -> Void = {}
     @State private var replyDragOffset: CGFloat = 0
 
     var body: some View {
@@ -69,7 +70,17 @@ struct MessageBubbleView: View {
                 HStack(spacing: VeyraSpacing.xs) {
                     Text(message.sentAt, format: .dateTime.hour().minute())
                     if message.direction == .outgoing {
-                        MessageReceiptIcon(isRead: message.receipt == .read)
+                        if message.deliveryState == .failed {
+                            Button(action: onRetry) {
+                                Image(systemName: "arrow.clockwise.circle.fill")
+                                    .foregroundStyle(VeyraColor.danger)
+                            }
+                            .accessibilityLabel("Retry sending")
+                        } else if message.deliveryState == .sending {
+                            ProgressView().controlSize(.mini)
+                        } else {
+                            MessageReceiptIcon(isRead: message.receipt == .read)
+                        }
                     }
                 }
                 .font(VeyraTypography.caption)

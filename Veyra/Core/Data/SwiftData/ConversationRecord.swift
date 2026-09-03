@@ -64,12 +64,14 @@ final class ContactRecord {
     @Attribute(.unique) var id: UUID
     var name: String
     var conversationID: UUID?
+    var bio: String?
     var avatarURLString: String?
 
     init(contact: Contact) {
         id = contact.id
         name = contact.name
         conversationID = contact.conversationID
+        bio = contact.bio
         avatarURLString = contact.avatarURL?.absoluteString
     }
 
@@ -79,6 +81,7 @@ final class ContactRecord {
             name: name,
             isOnline: false,
             conversationID: conversationID,
+            bio: bio,
             avatarURL: avatarURLString.flatMap(URL.init(string:))
         )
     }
@@ -86,6 +89,7 @@ final class ContactRecord {
     func update(with contact: Contact) {
         name = contact.name
         conversationID = contact.conversationID
+        bio = contact.bio
         avatarURLString = contact.avatarURL?.absoluteString
     }
 }
@@ -104,6 +108,7 @@ final class LocalMessageRecord {
     var replyText: String?
     var replyIsOwnMessage: Bool?
     var reactionsData: Data
+    var deliveryStateRaw: String = "sent"
 
     init(message: Message, conversationID: UUID) {
         id = message.id
@@ -118,10 +123,13 @@ final class LocalMessageRecord {
         replyText = message.replyPreview?.text
         replyIsOwnMessage = message.replyPreview?.isOwnMessage
         reactionsData = (try? JSONEncoder().encode(message.reactions.map(CachedReaction.init))) ?? Data()
+        deliveryStateRaw = message.deliveryState.rawValue
     }
 
     var message: Message {
         let reactions = ((try? JSONDecoder().decode([CachedReaction].self, from: reactionsData)) ?? []).map(\.reaction)
+        let storedDeliveryState = Message.DeliveryState(rawValue: deliveryStateRaw) ?? .sent
+        let restoredDeliveryState: Message.DeliveryState = storedDeliveryState == .sending ? .failed : storedDeliveryState
         let reply = replyMessageID.map {
             Message.ReplyPreview(messageID: $0, text: replyText ?? "Message unavailable", isOwnMessage: replyIsOwnMessage ?? false)
         }
@@ -134,7 +142,8 @@ final class LocalMessageRecord {
             imageURL: imageURLString.flatMap(URL.init(string:)),
             isSticker: isSticker,
             replyPreview: reply,
-            reactions: reactions
+            reactions: reactions,
+            deliveryState: restoredDeliveryState
         )
     }
 
@@ -150,6 +159,7 @@ final class LocalMessageRecord {
         replyText = message.replyPreview?.text
         replyIsOwnMessage = message.replyPreview?.isOwnMessage
         reactionsData = (try? JSONEncoder().encode(message.reactions.map(CachedReaction.init))) ?? Data()
+        deliveryStateRaw = message.deliveryState.rawValue
     }
 }
 

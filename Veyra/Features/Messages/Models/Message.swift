@@ -23,6 +23,12 @@ struct Message: Identifiable, Hashable {
         case read
     }
 
+    enum DeliveryState: String, Hashable {
+        case sending
+        case sent
+        case failed
+    }
+
     let id: UUID
     let text: String
     let sentAt: Date
@@ -32,8 +38,9 @@ struct Message: Identifiable, Hashable {
     let isSticker: Bool
     let replyPreview: ReplyPreview?
     var reactions: [Reaction]
+    var deliveryState: DeliveryState
 
-    init(id: UUID = UUID(), text: String, sentAt: Date = .now, direction: Direction, receipt: Receipt = .sent, imageURL: URL? = nil, isSticker: Bool = false, replyPreview: ReplyPreview? = nil, reactions: [Reaction] = []) {
+    init(id: UUID = UUID(), text: String, sentAt: Date = .now, direction: Direction, receipt: Receipt = .sent, imageURL: URL? = nil, isSticker: Bool = false, replyPreview: ReplyPreview? = nil, reactions: [Reaction] = [], deliveryState: DeliveryState = .sent) {
         self.id = id
         self.text = text
         self.sentAt = sentAt
@@ -43,6 +50,7 @@ struct Message: Identifiable, Hashable {
         self.isSticker = isSticker
         self.replyPreview = replyPreview
         self.reactions = reactions
+        self.deliveryState = deliveryState
     }
 }
 

@@ -6,7 +6,7 @@ protocol RemoteChatRepository: Sendable {
     func startConversation(withEmail email: String) async throws -> Conversation
     func startConversation(with contact: Contact) async throws -> Conversation
     func fetchMessages(conversationID: UUID, before: Date?, limit: Int) async throws -> [Message]
-    func sendMessage(_ text: String, conversationID: UUID, replyingTo messageID: UUID?) async throws -> Message
+    func sendMessage(_ text: String, conversationID: UUID, replyingTo messageID: UUID?, clientMessageID: UUID?) async throws -> Message
     func sendImage(_ data: Data, conversationID: UUID) async throws -> Message
     func messageEvents(conversationID: UUID, participantID: UUID?) async throws -> AsyncStream<MessageEvent>
     func setTyping(_ isTyping: Bool, conversationID: UUID) async throws
@@ -128,16 +128,31 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             .execute()
     }
 
-    func sendMessage(_ text: String, conversationID: UUID, replyingTo messageID: UUID? = nil) async throws -> Message {
+    func sendMessage(_ text: String, conversationID: UUID, replyingTo messageID: UUID? = nil, clientMessageID: UUID? = nil) async throws -> Message {
         let currentUserID = try await client.auth.session.user.id
-        let payload = NewMessageRow(conversationID: conversationID, senderID: currentUserID, body: text, replyToMessageID: messageID)
-        let row: MessageRow = try await client
-            .from("messages")
-            .insert(payload)
-            .select()
-            .single()
-            .execute()
-            .value
+        let identifier = clientMessageID ?? UUID()
+        let payload = NewMessageRow(id: identifier, conversationID: conversationID, senderID: currentUserID, body: text, replyToMessageID: messageID)
+        let row: MessageRow
+        do {
+            row = try await client
+                .from("messages")
+                .insert(payload)
+                .select()
+                .single()
+                .execute()
+                .value
+        } catch {
+            // A retry can arrive after the insert succeeded but its response
+            // was lost. Fetching the same client-generated ID makes sending
+            // idempotent instead of creating a duplicate message.
+            row = try await client
+                .from("messages")
+                .select()
+                .eq("id", value: identifier)
+                .single()
+                .execute()
+                .value
+        }
         return row.message(currentUserID: currentUserID, imageURL: nil)
     }
 
@@ -565,13 +580,15 @@ private struct ReactionRow: Decodable {
 }
 
 private struct NewMessageRow: Encodable {
+    let id: UUID
     let conversationID: UUID
     let senderID: UUID
     let body: String
     let imagePath: String?
     let replyToMessageID: UUID?
 
-    init(conversationID: UUID, senderID: UUID, body: String, imagePath: String? = nil, replyToMessageID: UUID? = nil) {
+    init(id: UUID = UUID(), conversationID: UUID, senderID: UUID, body: String, imagePath: String? = nil, replyToMessageID: UUID? = nil) {
+        self.id = id
         self.conversationID = conversationID
         self.senderID = senderID
         self.body = body
@@ -580,6 +597,7 @@ private struct NewMessageRow: Encodable {
     }
 
     enum CodingKeys: String, CodingKey {
+        case id
         case conversationID = "conversation_id"
         case senderID = "sender_id"
         case body
