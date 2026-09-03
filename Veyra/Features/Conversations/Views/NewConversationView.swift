@@ -2,72 +2,68 @@ import SwiftUI
 
 struct NewConversationView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var email = ""
-    @State private var errorMessage: String?
-    @State private var isLoading = false
-    let onSubmit: (String) async -> String?
-    @State private var viewModel = ConversationListViewModel()
+    @State private var viewModel: NewConversationViewModel
+    @State private var openingUserID: UUID?
+    @State private var startError: String?
+    let onSelect: (User) async -> String?
 
-    init(onSubmit: @escaping (String) async -> String?) {
-        self.onSubmit = onSubmit
+    init(repository: (any RemoteChatRepository)? = nil, onSelect: @escaping (User) async -> String?) {
+        _viewModel = State(initialValue: NewConversationViewModel(repository: repository))
+        self.onSelect = onSelect
     }
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: VeyraSpacing.lg) {
-                searchField
-                    .padding(.top, VeyraSpacing.sm)
-
-                Text("Recent searches")
-
-                RecentConversationListView(users: RecentConversationPreviewData.users)
-
-                VeyraTextField(title: "Email", placeholder: "friend@example.com", text: $email)
-                    .textInputAutocapitalization(.never)
-                    .keyboardType(.emailAddress)
-                    .autocorrectionDisabled()
-
-                if let errorMessage {
-                    Label(errorMessage, systemImage: "exclamationmark.circle")
-                        .font(VeyraTypography.caption)
-                        .foregroundStyle(VeyraColor.danger)
-                }
-
-                VeyraPrimaryButton(title: isLoading ? "Starting…" : "Start conversation") {
-                    Task {
-                        isLoading = true
-                        errorMessage = await onSubmit(email.trimmingCharacters(in: .whitespacesAndNewlines))
-                        isLoading = false
+            ScrollView {
+                VStack(alignment: .leading, spacing: VeyraSpacing.lg) {
+                    searchField
+                    content
+                    if let message = startError ?? viewModel.errorMessage {
+                        Label(message, systemImage: "exclamationmark.circle")
+                            .font(VeyraTypography.caption)
+                            .foregroundStyle(VeyraColor.danger)
                     }
                 }
-                .disabled(!isValidEmail || isLoading)
-                .opacity(isValidEmail && !isLoading ? 1 : 0.55)
-
-                Spacer()
+                .padding(VeyraSpacing.lg)
             }
-            .padding(VeyraSpacing.lg)
-            .contentShape(Rectangle())
+            .scrollDismissesKeyboard(.interactively)
             .dismissKeyboardOnTap()
             .background(VeyraColor.background.ignoresSafeArea())
-            .navigationTitle("Say hello")
+            .navigationTitle("Find new people")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
-            }
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
         }
         .tint(VeyraColor.accent)
+        .task(id: viewModel.searchText) { await viewModel.search() }
+    }
+
+    @ViewBuilder private var content: some View {
+        if viewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines).count >= 2 {
+            if viewModel.isSearching && viewModel.results.isEmpty {
+                ProgressView("Searching…").frame(maxWidth: .infinity)
+            } else if viewModel.results.isEmpty && viewModel.errorMessage == nil {
+                ContentUnavailableView.search(text: viewModel.searchText)
+            } else {
+                Text("People").font(VeyraTypography.title)
+                RecentConversationListView(users: viewModel.results, showsRemoveButtons: false, onSelect: open)
+            }
+        } else if !viewModel.recentUsers.isEmpty {
+            Text("Recent searches").font(VeyraTypography.title)
+            RecentConversationListView(users: viewModel.recentUsers, onSelect: open, onRemove: viewModel.removeRecent)
+        } else {
+            ContentUnavailableView("Find new people", systemImage: "person.badge.plus", description: Text("Search by name or username."))
+        }
     }
 
     private var searchField: some View {
         HStack(spacing: VeyraSpacing.sm) {
-            Image(systemName: "magnifyingglass")
-                .foregroundStyle(VeyraColor.textSecondary)
+            Image(systemName: "magnifyingglass").foregroundStyle(VeyraColor.textSecondary)
             TextField("Search by username or name", text: $viewModel.searchText)
                 .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
             if !viewModel.searchText.isEmpty {
                 Button { viewModel.searchText = "" } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(VeyraColor.textSecondary)
+                    Image(systemName: "xmark.circle.fill").foregroundStyle(VeyraColor.textSecondary)
                 }
                 .accessibilityLabel("Clear search")
             }
@@ -78,7 +74,18 @@ struct NewConversationView: View {
         .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 
-    private var isValidEmail: Bool { email.contains("@") && email.contains(".") }
+    private func open(_ user: User) {
+        guard openingUserID == nil else { return }
+        openingUserID = user.id
+        Task {
+            startError = await onSelect(user)
+            if startError == nil {
+                viewModel.addRecent(user)
+                dismiss()
+            }
+            openingUserID = nil
+        }
+    }
 }
 
-#Preview { NewConversationView(onSubmit: { _ in nil }) }
+#Preview { NewConversationView(onSelect: { _ in nil }) }

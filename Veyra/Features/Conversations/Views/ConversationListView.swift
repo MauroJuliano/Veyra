@@ -85,8 +85,8 @@ struct ConversationListView: View {
             MessageTimelineView(conversation: conversation, repository: viewModel.chatRepository, cache: messageCache, messages: [])
         }
         .sheet(isPresented: $presentsNewConversation) {
-            NewConversationView { email in
-                if let conversation = await viewModel.startConversation(email: email) {
+            NewConversationView(repository: viewModel.chatRepository) { user in
+                if let conversation = await viewModel.startConversation(user: user) {
                     presentsNewConversation = false
                     selectedConversation = conversation
                     return nil

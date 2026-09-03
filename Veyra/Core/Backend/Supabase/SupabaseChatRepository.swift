@@ -16,6 +16,7 @@ protocol RemoteChatRepository: Sendable {
     func toggleReaction(_ emoji: String, messageID: UUID) async throws
     func deleteConversation(id: UUID) async throws
     func fetchContacts() async throws -> [Contact]
+    func searchPeople(query: String) async throws -> [User]
     func fetchMyProfile() async throws -> UserProfile
     func updateMyAvatar(_ data: Data) async throws -> UserProfile
     func maintainPresence() async
@@ -202,6 +203,18 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             contacts.append(row.contact(avatarURL: try await signedAvatarURL(path: row.avatarPath)))
         }
         return contacts
+    }
+
+    func searchPeople(query: String) async throws -> [User] {
+        let rows: [PeopleSearchRow] = try await client
+            .rpc("search_people", params: PeopleSearchParameters(searchQuery: query, resultLimit: 20))
+            .execute()
+            .value
+        var users: [User] = []
+        for row in rows {
+            users.append(row.user(avatarURL: try? await signedAvatarURL(path: row.avatarPath)))
+        }
+        return users
     }
 
     func fetchMyProfile() async throws -> UserProfile {
@@ -453,6 +466,34 @@ private struct ContactRow: Decodable {
 
     func contact(avatarURL: URL?) -> Contact {
         Contact(id: contactID, name: displayName, conversationID: conversationID, avatarURL: avatarURL)
+    }
+}
+
+private struct PeopleSearchRow: Decodable {
+    let userID: UUID
+    let displayName: String
+    let username: String?
+    let avatarPath: String?
+
+    enum CodingKeys: String, CodingKey {
+        case userID = "user_id"
+        case displayName = "display_name"
+        case username
+        case avatarPath = "avatar_path"
+    }
+
+    func user(avatarURL: URL?) -> User {
+        User(id: userID, participantID: userID, participantName: displayName, userName: username.map { "@\($0)" } ?? "", participantAvatarURL: avatarURL)
+    }
+}
+
+private struct PeopleSearchParameters: Encodable {
+    let searchQuery: String
+    let resultLimit: Int
+
+    enum CodingKeys: String, CodingKey {
+        case searchQuery = "search_query"
+        case resultLimit = "result_limit"
     }
 }
 

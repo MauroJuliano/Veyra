@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct User: Identifiable, Hashable {
+struct User: Identifiable, Hashable, Codable {
     let id: UUID
     let participantID: UUID?
     let participantName: String
@@ -22,6 +22,8 @@ struct User: Identifiable, Hashable {
 
 struct RecentConversationRowView: View {
     let user: User
+    var showsRemoveButton = true
+    var onRemove: () -> Void = {}
 
     var body: some View {
         HStack(spacing: VeyraSpacing.md) {
@@ -39,8 +41,17 @@ struct RecentConversationRowView: View {
 
             Spacer()
 
-            Image(systemName: "xmark")
-                .padding(VeyraSpacing.md)
+            if showsRemoveButton {
+                Button(action: onRemove) {
+                    Image(systemName: "xmark").padding(VeyraSpacing.md)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Remove \(user.participantName) from recent searches")
+            } else {
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(VeyraColor.textSecondary)
+                    .padding(VeyraSpacing.md)
+            }
         }
         .padding(VeyraSpacing.md)
         .contentShape(Rectangle())
