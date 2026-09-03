@@ -31,6 +31,7 @@ struct PersonalDetailsView: View {
         .background(VeyraColor.background.ignoresSafeArea())
         .navigationTitle("Personal details")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .tabBar)
         .scrollDismissesKeyboard(.interactively)
         .dismissKeyboardOnTap()
     }
