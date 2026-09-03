@@ -123,17 +123,7 @@ struct MessageTimelineView: View {
                         .clipShape(Capsule())
                         .padding(.vertical, VeyraSpacing.md)
                     ForEach(day.messages) { message in
-                        MessageBubbleView(
-                            message: message,
-                            participantName: conversation.participantName,
-                            participantAvatarURL: conversation.participantAvatarURL,
-                            onReply: { viewModel.beginReply(to: message) }
-                        ) { url in
-                            selectedImage = FullScreenImage(url: url, canSave: message.direction == .incoming)
-                        }
-                            .onLongPressGesture(minimumDuration: 0.35) {
-                                withAnimation(.easeOut(duration: 0.18)) { messageShowingActions = message }
-                            }
+                        messageRow(message)
                     }
                 }
             }
@@ -142,6 +132,22 @@ struct MessageTimelineView: View {
         .defaultScrollAnchor(.bottom)
         .scrollDismissesKeyboard(.interactively)
         .dismissKeyboardOnTap()
+    }
+
+    private func messageRow(_ message: Message) -> some View {
+        MessageBubbleView(
+            message: message,
+            participantName: conversation.participantName,
+            participantAvatarURL: conversation.participantAvatarURL,
+            onReply: { viewModel.beginReply(to: message) },
+            onImageTap: { url in
+                selectedImage = FullScreenImage(url: url, canSave: message.direction == .incoming)
+            },
+            onRetry: { Task { await viewModel.retry(message) } }
+        )
+        .onLongPressGesture(minimumDuration: 0.35) {
+            withAnimation(.easeOut(duration: 0.18)) { messageShowingActions = message }
+        }
     }
 
     @ViewBuilder private var replyComposerPreview: some View {
@@ -196,7 +202,8 @@ struct MessageTimelineView: View {
 
     @ToolbarContentBuilder private var chatToolbar: some ToolbarContent {
             ToolbarItem(placement: .principal) {
-                HStack(spacing: VeyraSpacing.sm) {
+                HStack {
+
                     VeyraAvatar(name: conversation.participantName, imageURL: conversation.participantAvatarURL, size: .small, showsOnlineIndicator: viewModel.isParticipantActive)
                     VStack(alignment: .leading, spacing: 1) {
                         Text(conversation.participantName)
@@ -206,7 +213,10 @@ struct MessageTimelineView: View {
                             .font(VeyraTypography.caption)
                             .foregroundStyle(VeyraColor.textSecondary)
                     }
+
+                    Spacer()
                 }
+                .padding(.horizontal)
             }
 
             ToolbarItemGroup(placement: .topBarTrailing) {

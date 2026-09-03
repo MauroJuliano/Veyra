@@ -1,26 +1,47 @@
+import Foundation
 import Testing
 @testable import Veyra
 
 struct NewConversationViewModelTests {
-    @Test func filtersContactsByName() {
-        let viewModel = NewConversationViewModel(contacts: [
-            Contact(name: "Beatriz Souza"),
-            Contact(name: "Daniel Martins")
-        ])
-        viewModel.searchText = "bia"
+    @Test func savesRecentPeopleMostRecentFirstWithoutDuplicates() throws {
+        let suiteName = "RecentPeopleStoreTests.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let store = RecentPeopleStore(defaults: defaults)
+        let martha = User(participantName: "Martha Nielsen", userName: "@martha", participantAvatarURL: nil)
+        let ulrich = User(participantName: "Ulrich Nielsen", userName: "@ulrich", participantAvatarURL: nil)
+        let viewModel = NewConversationViewModel(recentStore: store)
 
-        #expect(viewModel.filteredContacts.isEmpty)
+        viewModel.addRecent(martha)
+        viewModel.addRecent(ulrich)
+        viewModel.addRecent(martha)
 
-        viewModel.searchText = "beatriz"
-        #expect(viewModel.filteredContacts.map(\.name) == ["Beatriz Souza"])
+        #expect(viewModel.recentUsers.map(\.id) == [martha.id, ulrich.id])
+        #expect(store.load().map(\.id) == [martha.id, ulrich.id])
     }
 
-    @Test func createsEmptyConversationForSelectedContact() {
-        let contact = Contact(name: "Helena Ribeiro", isOnline: true)
-        let conversation = NewConversationViewModel(contacts: [contact]).conversation(for: contact)
+    @Test func removesRecentPersonPersistently() throws {
+        let suiteName = "RecentPeopleStoreTests.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let store = RecentPeopleStore(defaults: defaults)
+        let martha = User(participantName: "Martha Nielsen", userName: "@martha", participantAvatarURL: nil)
+        let viewModel = NewConversationViewModel(recentStore: store)
+        viewModel.addRecent(martha)
 
-        #expect(conversation.participantName == contact.name)
-        #expect(conversation.isOnline)
-        #expect(conversation.unreadCount == 0)
+        viewModel.removeRecent(martha)
+
+        #expect(viewModel.recentUsers.isEmpty)
+        #expect(store.load().isEmpty)
+    }
+
+    @Test @MainActor func shortQueryDoesNotCallRemoteSearch() async {
+        let viewModel = NewConversationViewModel(repository: OfflineRemoteChatRepository())
+        viewModel.searchText = "M"
+
+        await viewModel.search()
+
+        #expect(viewModel.results.isEmpty)
+        #expect(viewModel.errorMessage == nil)
     }
 }

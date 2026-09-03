@@ -83,6 +83,31 @@ struct SwiftDataConversationRepositoryTests {
         #expect(restored == [message])
     }
 
+    @Test func persistsFailedDeliveryStateForRetry() throws {
+        let repository = try SwiftDataConversationRepository(isStoredInMemoryOnly: true)
+        let conversationID = UUID()
+        let message = Message(text: "Queued", direction: .outgoing, deliveryState: .failed)
+
+        repository.saveMessages([message], conversationID: conversationID)
+        let restored = try #require(repository.fetchMessages(conversationID: conversationID, before: nil, limit: 50).first)
+
+        #expect(restored.id == message.id)
+        #expect(restored.deliveryState == .failed)
+    }
+
+    @Test func restoresInterruptedSendAsFailed() throws {
+        let repository = try SwiftDataConversationRepository(isStoredInMemoryOnly: true)
+        let conversationID = UUID()
+        repository.saveMessages(
+            [Message(text: "Interrupted", direction: .outgoing, deliveryState: .sending)],
+            conversationID: conversationID
+        )
+
+        let restored = try #require(repository.fetchMessages(conversationID: conversationID, before: nil, limit: 50).first)
+
+        #expect(restored.deliveryState == .failed)
+    }
+
     @Test func keepsOnlyMostRecentTwoHundredMessages() throws {
         let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: ConversationRecord.self, LocalMessageRecord.self, configurations: configuration)
@@ -103,7 +128,7 @@ struct SwiftDataConversationRepositoryTests {
     @Test func persistsContactNameAndAvatarOffline() throws {
         let repository = try SwiftDataConversationRepository(isStoredInMemoryOnly: true)
         let avatarURL = try #require(URL(string: "https://example.com/contact.jpg"))
-        let contact = Contact(name: "Saved contact", conversationID: UUID(), avatarURL: avatarURL)
+        let contact = Contact(name: "Saved contact", conversationID: UUID(), bio: "Saved bio", avatarURL: avatarURL)
 
         repository.saveContacts([contact])
         let restored = try #require(repository.fetchContacts().first)
@@ -111,6 +136,7 @@ struct SwiftDataConversationRepositoryTests {
         #expect(restored.id == contact.id)
         #expect(restored.name == contact.name)
         #expect(restored.conversationID == contact.conversationID)
+        #expect(restored.bio == contact.bio)
         #expect(restored.avatarURL == avatarURL)
         #expect(restored.isOnline == false)
     }

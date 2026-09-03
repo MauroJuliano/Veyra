@@ -102,6 +102,25 @@ final class ConversationListViewModel {
     }
 
     @MainActor
+    func startConversation(user: User) async -> Conversation? {
+        guard let remoteRepository, let userID = user.participantID else { return nil }
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            let contact = Contact(id: userID, name: user.participantName, avatarURL: user.participantAvatarURL)
+            let conversation = try await remoteRepository.startConversation(with: contact)
+            repository.save(conversation)
+            conversations = try await remoteRepository.fetchConversations()
+            conversations.forEach(repository.save)
+            errorMessage = nil
+            return conversation
+        } catch {
+            errorMessage = error.localizedDescription
+            return nil
+        }
+    }
+
+    @MainActor
     func delete(_ conversation: Conversation) async {
         guard let remoteRepository else {
             conversations.removeAll { $0.id == conversation.id }

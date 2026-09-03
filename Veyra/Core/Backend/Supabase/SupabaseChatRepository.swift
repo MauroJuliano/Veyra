@@ -6,7 +6,7 @@ protocol RemoteChatRepository: Sendable {
     func startConversation(withEmail email: String) async throws -> Conversation
     func startConversation(with contact: Contact) async throws -> Conversation
     func fetchMessages(conversationID: UUID, before: Date?, limit: Int) async throws -> [Message]
-    func sendMessage(_ text: String, conversationID: UUID, replyingTo messageID: UUID?) async throws -> Message
+    func sendMessage(_ text: String, conversationID: UUID, replyingTo messageID: UUID?, clientMessageID: UUID?) async throws -> Message
     func sendImage(_ data: Data, conversationID: UUID) async throws -> Message
     func messageEvents(conversationID: UUID, participantID: UUID?) async throws -> AsyncStream<MessageEvent>
     func setTyping(_ isTyping: Bool, conversationID: UUID) async throws
@@ -16,6 +16,7 @@ protocol RemoteChatRepository: Sendable {
     func toggleReaction(_ emoji: String, messageID: UUID) async throws
     func deleteConversation(id: UUID) async throws
     func fetchContacts() async throws -> [Contact]
+    func searchPeople(query: String) async throws -> [User]
     func fetchMyProfile() async throws -> UserProfile
     func updateMyAvatar(_ data: Data) async throws -> UserProfile
     func maintainPresence() async
@@ -128,16 +129,31 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             .execute()
     }
 
-    func sendMessage(_ text: String, conversationID: UUID, replyingTo messageID: UUID? = nil) async throws -> Message {
+    func sendMessage(_ text: String, conversationID: UUID, replyingTo messageID: UUID? = nil, clientMessageID: UUID? = nil) async throws -> Message {
         let currentUserID = try await client.auth.session.user.id
-        let payload = NewMessageRow(conversationID: conversationID, senderID: currentUserID, body: text, replyToMessageID: messageID)
-        let row: MessageRow = try await client
-            .from("messages")
-            .insert(payload)
-            .select()
-            .single()
-            .execute()
-            .value
+        let identifier = clientMessageID ?? UUID()
+        let payload = NewMessageRow(id: identifier, conversationID: conversationID, senderID: currentUserID, body: text, replyToMessageID: messageID)
+        let row: MessageRow
+        do {
+            row = try await client
+                .from("messages")
+                .insert(payload)
+                .select()
+                .single()
+                .execute()
+                .value
+        } catch {
+            // A retry can arrive after the insert succeeded but its response
+            // was lost. Fetching the same client-generated ID makes sending
+            // idempotent instead of creating a duplicate message.
+            row = try await client
+                .from("messages")
+                .select()
+                .eq("id", value: identifier)
+                .single()
+                .execute()
+                .value
+        }
         return row.message(currentUserID: currentUserID, imageURL: nil)
     }
 
@@ -187,6 +203,18 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             contacts.append(row.contact(avatarURL: try await signedAvatarURL(path: row.avatarPath)))
         }
         return contacts
+    }
+
+    func searchPeople(query: String) async throws -> [User] {
+        let rows: [PeopleSearchRow] = try await client
+            .rpc("search_people", params: PeopleSearchParameters(searchQuery: query, resultLimit: 20))
+            .execute()
+            .value
+        var users: [User] = []
+        for row in rows {
+            users.append(row.user(avatarURL: try? await signedAvatarURL(path: row.avatarPath)))
+        }
+        return users
     }
 
     func fetchMyProfile() async throws -> UserProfile {
@@ -441,6 +469,34 @@ private struct ContactRow: Decodable {
     }
 }
 
+private struct PeopleSearchRow: Decodable {
+    let userID: UUID
+    let displayName: String
+    let username: String?
+    let avatarPath: String?
+
+    enum CodingKeys: String, CodingKey {
+        case userID = "user_id"
+        case displayName = "display_name"
+        case username
+        case avatarPath = "avatar_path"
+    }
+
+    func user(avatarURL: URL?) -> User {
+        User(id: userID, participantID: userID, participantName: displayName, userName: username.map { "@\($0)" } ?? "", participantAvatarURL: avatarURL)
+    }
+}
+
+private struct PeopleSearchParameters: Encodable {
+    let searchQuery: String
+    let resultLimit: Int
+
+    enum CodingKeys: String, CodingKey {
+        case searchQuery = "search_query"
+        case resultLimit = "result_limit"
+    }
+}
+
 private struct ProfileRow: Decodable {
     let displayName: String
     let username: String?
@@ -565,13 +621,15 @@ private struct ReactionRow: Decodable {
 }
 
 private struct NewMessageRow: Encodable {
+    let id: UUID
     let conversationID: UUID
     let senderID: UUID
     let body: String
     let imagePath: String?
     let replyToMessageID: UUID?
 
-    init(conversationID: UUID, senderID: UUID, body: String, imagePath: String? = nil, replyToMessageID: UUID? = nil) {
+    init(id: UUID = UUID(), conversationID: UUID, senderID: UUID, body: String, imagePath: String? = nil, replyToMessageID: UUID? = nil) {
+        self.id = id
         self.conversationID = conversationID
         self.senderID = senderID
         self.body = body
@@ -580,6 +638,7 @@ private struct NewMessageRow: Encodable {
     }
 
     enum CodingKeys: String, CodingKey {
+        case id
         case conversationID = "conversation_id"
         case senderID = "sender_id"
         case body

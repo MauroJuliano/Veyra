@@ -4,6 +4,28 @@ import Testing
 
 @MainActor
 struct MessageTimelineViewModelTests {
+    @Test func failedSendRemainsVisibleAndPersistedForRetry() async {
+        let conversationID = UUID()
+        let cache = InMemoryMessageCacheRepository()
+        let viewModel = MessageTimelineViewModel(
+            conversationID: conversationID,
+            repository: OfflineRemoteChatRepository(),
+            cache: cache,
+            messages: []
+        )
+        viewModel.draft = "Send when online"
+
+        await viewModel.send()
+
+        guard let failed = viewModel.messages.first else {
+            Issue.record("The failed message should remain visible")
+            return
+        }
+        #expect(failed.deliveryState == .failed)
+        #expect(viewModel.draft.isEmpty)
+        #expect(cache.fetchMessages(conversationID: conversationID, before: nil, limit: 50).first?.id == failed.id)
+    }
+
     @Test func loadsCachedMessagesWithoutRemoteRepository() async {
         let conversationID = UUID()
         let cachedMessage = Message(text: "Available offline", direction: .incoming)
