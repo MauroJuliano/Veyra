@@ -16,22 +16,41 @@ struct ProfileViewModelTests {
         #expect(store.load() == profile)
     }
 
-    @Test func savesNormalizedProfile() {
+    @Test @MainActor func savesNormalizedProfile() async {
         let store = InMemoryProfileStore()
         let viewModel = ProfileViewModel(store: store)
         viewModel.displayName = "  Mauro Juliano  "
         viewModel.username = "@MauroDev"
+        viewModel.email = "MAURO@example.com"
+        viewModel.bio = "  iOS developer  "
 
-        #expect(viewModel.save())
-        #expect(store.load() == UserProfile(displayName: "Mauro Juliano", username: "maurodev"))
+        #expect(await viewModel.save())
+        #expect(store.load() == UserProfile(displayName: "Mauro Juliano", username: "maurodev", bio: "iOS developer", email: "mauro@example.com"))
     }
 
-    @Test func rejectsUsernameWithSpaces() {
+    @Test @MainActor func rejectsUsernameWithSpaces() async {
         let viewModel = ProfileViewModel(store: InMemoryProfileStore())
         viewModel.displayName = "Mauro Juliano"
         viewModel.username = "mauro dev"
 
-        #expect(!viewModel.save())
+        #expect(!(await viewModel.save()))
         #expect(viewModel.validationMessage != nil)
+    }
+
+    @Test @MainActor func rejectsInvalidEmail() async {
+        let viewModel = ProfileViewModel(store: InMemoryProfileStore())
+        viewModel.email = "not-an-email"
+
+        #expect(!(await viewModel.save()))
+        #expect(viewModel.validationMessage == "Enter a valid email address.")
+    }
+
+    @Test @MainActor func rejectsBioLongerThanOneHundredTwentyCharacters() async {
+        let viewModel = ProfileViewModel(store: InMemoryProfileStore())
+        viewModel.email = "member@example.com"
+        viewModel.bio = String(repeating: "a", count: 121)
+
+        #expect(!(await viewModel.save()))
+        #expect(viewModel.validationMessage == "Bio must contain at most 120 characters.")
     }
 }
