@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -59,6 +59,10 @@
 		9B311E6D5BCF803CF646E063 /* VeyraPrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D907300CAB7511CAFB4C0D7 /* VeyraPrimaryButton.swift */; };
 		A3F57AB2EFBDC14540CD7DE7 /* VeyraColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18C29846BD4E660FFF3319F /* VeyraColor.swift */; };
 		A9132EAC30465364009C03A6 /* GlassBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9132EAB30465364009C03A6 /* GlassBackground.swift */; };
+		A965E18430490ADB001365DE /* ContactListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A965E18330490AD1001365DE /* ContactListView.swift */; };
+		A98352883048F118002DC64A /* RecentConversationRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A98352873048F106002DC64A /* RecentConversationRowView.swift */; };
+		A983528A3048F391002DC64A /* RecentConversationPreviewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A98352893048F384002DC64A /* RecentConversationPreviewData.swift */; };
+		A983528C3048F592002DC64A /* RecentConversationListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A983528B3048F587002DC64A /* RecentConversationListView.swift */; };
 		AFA0D0231FA487557A3ACFBA /* VeyraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815CF3D51D8A2E92364C8777 /* VeyraApp.swift */; };
 		B357F0C51503990DB506D527 /* AuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A13B7B5A102C3620656316F /* AuthenticationService.swift */; };
 		BD796388BDA24BD3035EFBCE /* SupabaseClientProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B56D78C652AAAB9D315E96DF /* SupabaseClientProvider.swift */; };
@@ -131,6 +135,10 @@
 		A18C29846BD4E660FFF3319F /* VeyraColor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraColor.swift; sourceTree = "<group>"; };
 		A1D4A58FBF3FD75D6CFB8D01 /* EmailConfirmationView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EmailConfirmationView.swift; sourceTree = "<group>"; };
 		A9132EAB30465364009C03A6 /* GlassBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassBackground.swift; sourceTree = "<group>"; };
+		A965E18330490AD1001365DE /* ContactListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactListView.swift; sourceTree = "<group>"; };
+		A98352873048F106002DC64A /* RecentConversationRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentConversationRowView.swift; sourceTree = "<group>"; };
+		A98352893048F384002DC64A /* RecentConversationPreviewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentConversationPreviewData.swift; sourceTree = "<group>"; };
+		A983528B3048F587002DC64A /* RecentConversationListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentConversationListView.swift; sourceTree = "<group>"; };
 		AAA6A3BB479DAFD774307B9D /* VeyraSpacing.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraSpacing.swift; sourceTree = "<group>"; };
 		AAAAD678B15A97CA475953DB /* MessageComposerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessageComposerView.swift; sourceTree = "<group>"; };
 		ACE1C7EE7B619D59D5529C04 /* VeyraTextField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraTextField.swift; sourceTree = "<group>"; };
@@ -138,7 +146,7 @@
 		B38DAB0E23CBA856810C467B /* SessionStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		B56D78C652AAAB9D315E96DF /* SupabaseClientProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SupabaseClientProvider.swift; sourceTree = "<group>"; };
 		B6B6EEED8A124464784C2B17 /* Message.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
-		B6CB6E0F746BFB96C7862450 /* Secrets.xcconfig.example */ = {isa = PBXFileReference; includeInIndex = 1; path = Secrets.xcconfig.example; sourceTree = "<group>"; };
+		B6CB6E0F746BFB96C7862450 /* Secrets.xcconfig.example */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = Secrets.xcconfig.example; sourceTree = "<group>"; };
 		B94A5909B940AD5D3ADBDB05 /* ConversationListViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationListViewModel.swift; sourceTree = "<group>"; };
 		C2E49A4879773A3660F32692 /* ConversationListView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationListView.swift; sourceTree = "<group>"; };
 		C2F212E6EB3EFE613A12BF21 /* ContactPreviewData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactPreviewData.swift; sourceTree = "<group>"; };
@@ -209,7 +217,6 @@
 			children = (
 				1F545AD5822812B8446B21C3 /* UserProfile.swift */,
 			);
-			name = Models;
 			path = Models;
 			sourceTree = "<group>";
 		};
@@ -245,7 +252,6 @@
 			children = (
 				8A13B7B5A102C3620656316F /* AuthenticationService.swift */,
 			);
-			name = Authentication;
 			path = Authentication;
 			sourceTree = "<group>";
 		};
@@ -275,7 +281,6 @@
 				99FCB349C1FDF1744BC06562 /* RegistrationViewModel.swift */,
 				3193A4162DD922E516262590 /* AuthenticationCoordinator.swift */,
 			);
-			name = Presentation;
 			path = Presentation;
 			sourceTree = "<group>";
 		};
@@ -295,7 +300,6 @@
 				CD4A7C3978F85DD2937EF67D /* Supabase */,
 				319BB9F586381A13BE290554 /* Authentication */,
 			);
-			name = Backend;
 			path = Backend;
 			sourceTree = "<group>";
 		};
@@ -304,6 +308,8 @@
 			children = (
 				C2E49A4879773A3660F32692 /* ConversationListView.swift */,
 				082AFEC3EDA6622C035B8FC8 /* ConversationRowView.swift */,
+				A98352873048F106002DC64A /* RecentConversationRowView.swift */,
+				A983528B3048F587002DC64A /* RecentConversationListView.swift */,
 				5917AB74FE9969FED29ED57E /* NewConversationView.swift */,
 			);
 			path = Views;
@@ -345,6 +351,7 @@
 		6577D3D2341D28983B36E493 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				A965E18230490AB4001365DE /* Contatos */,
 				B7F33F1CEFEA5169702DB93D /* Conversations */,
 				D62F192FE2C61BF9C279E612 /* Messages */,
 				D7BA5F00FE6D5579086D0425 /* Authentication */,
@@ -358,7 +365,6 @@
 			children = (
 				8429D3FC53470967204274B2 /* ProfileViewModel.swift */,
 			);
-			name = Presentation;
 			path = Presentation;
 			sourceTree = "<group>";
 		};
@@ -385,7 +391,6 @@
 				6931A3E0FFF2CFD78CBCC110 /* ProfileView.swift */,
 				5EBE432F2420C29F7249B975 /* PersonalDetailsView.swift */,
 			);
-			name = Views;
 			path = Views;
 			sourceTree = "<group>";
 		};
@@ -394,17 +399,25 @@
 			children = (
 				0C09556DC67E480428C19D11 /* ProfileStore.swift */,
 			);
-			name = Profile;
 			path = Profile;
 			sourceTree = "<group>";
 		};
 		9F28206FAEF3B238B07E55EC /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				A98352893048F384002DC64A /* RecentConversationPreviewData.swift */,
 				E0EAA93FD7CD9802592B73FA /* ConversationPreviewData.swift */,
 				C2F212E6EB3EFE613A12BF21 /* ContactPreviewData.swift */,
 			);
 			path = Data;
+			sourceTree = "<group>";
+		};
+		A965E18230490AB4001365DE /* Contatos */ = {
+			isa = PBXGroup;
+			children = (
+				A965E18330490AD1001365DE /* ContactListView.swift */,
+			);
+			path = Contatos;
 			sourceTree = "<group>";
 		};
 		B1EEE824C219217C75F29061 /* Data */ = {
@@ -454,7 +467,6 @@
 				126B3FF9F85A7890CF968383 /* RegistrationView.swift */,
 				A1D4A58FBF3FD75D6CFB8D01 /* EmailConfirmationView.swift */,
 			);
-			name = Views;
 			path = Views;
 			sourceTree = "<group>";
 		};
@@ -465,7 +477,6 @@
 				B6CB6E0F746BFB96C7862450 /* Secrets.xcconfig.example */,
 				F5B95E0AB67F2F623383C13E /* Info.plist */,
 			);
-			name = Configuration;
 			path = Configuration;
 			sourceTree = "<group>";
 		};
@@ -476,7 +487,6 @@
 				B56D78C652AAAB9D315E96DF /* SupabaseClientProvider.swift */,
 				D2CE854CD6EA2E1365260700 /* SupabaseChatRepository.swift */,
 			);
-			name = Supabase;
 			path = Supabase;
 			sourceTree = "<group>";
 		};
@@ -524,7 +534,6 @@
 				472B3893225101D5C846BCE7 /* Presentation */,
 				C6EF2562A069E5ABF7120BD0 /* Views */,
 			);
-			name = Authentication;
 			path = Authentication;
 			sourceTree = "<group>";
 		};
@@ -533,7 +542,6 @@
 			children = (
 				B38DAB0E23CBA856810C467B /* SessionStore.swift */,
 			);
-			name = Session;
 			path = Session;
 			sourceTree = "<group>";
 		};
@@ -544,7 +552,6 @@
 				1B8448D1A22795F940FD4664 /* Models */,
 				74D184FDBE681B2E017A91C1 /* Presentation */,
 			);
-			name = Profile;
 			path = Profile;
 			sourceTree = "<group>";
 		};
@@ -709,6 +716,7 @@
 				FC691B76552D331E00398DE3 /* VeyraSpacing.swift in Sources */,
 				43ACD9B7B96AD843FE8E4420 /* VeyraRadius.swift in Sources */,
 				C4F01BA4C1FC96FCE3BC3D1D /* VeyraTypography.swift in Sources */,
+				A965E18430490ADB001365DE /* ContactListView.swift in Sources */,
 				CEEA022B7E5F677BA3E64917 /* VeyraAvatar.swift in Sources */,
 				9B311E6D5BCF803CF646E063 /* VeyraPrimaryButton.swift in Sources */,
 				782AB63FFF1CF012CCBE15D9 /* VeyraTextField.swift in Sources */,
@@ -730,11 +738,13 @@
 				48740A8D240138CA83CFE28C /* NewConversationViewModel.swift in Sources */,
 				1A05F76268540B8DBBDF8D9B /* NewConversationView.swift in Sources */,
 				A9132EAC30465364009C03A6 /* GlassBackground.swift in Sources */,
+				A98352883048F118002DC64A /* RecentConversationRowView.swift in Sources */,
 				3C20A3D616AFF95F6F424150 /* ConversationRepository.swift in Sources */,
 				7B51BB037BE5D99F3698FF44 /* ContactRepository.swift in Sources */,
 				8CD8A037A2DD7E127629FE32 /* AppDependencies.swift in Sources */,
 				861B06509E4A9B740264E765 /* ConversationRecord.swift in Sources */,
 				7C0D872ADBC557FB5919A320 /* SwiftDataConversationRepository.swift in Sources */,
+				A983528A3048F391002DC64A /* RecentConversationPreviewData.swift in Sources */,
 				308E1B8940EC5869C03CF983 /* LoginViewModel.swift in Sources */,
 				0D96BD4C565FD57122AF6B01 /* LoginView.swift in Sources */,
 				D5DDC42F3766A986FB03DADB /* RegistrationViewModel.swift in Sources */,
@@ -744,6 +754,7 @@
 				F9133D4385FE6D55603C3DFB /* UserProfile.swift in Sources */,
 				DE4360550F651CFC339409DA /* ProfileViewModel.swift in Sources */,
 				148683245215D266B1F69398 /* PersonalDetailsView.swift in Sources */,
+				A983528C3048F592002DC64A /* RecentConversationListView.swift in Sources */,
 				1AA8567C7E0EC69A7D58B631 /* ProfileStore.swift in Sources */,
 				88D05E71B0F456BA216AA73A /* SupabaseConfiguration.swift in Sources */,
 				BD796388BDA24BD3035EFBCE /* SupabaseClientProvider.swift in Sources */,
@@ -863,7 +874,10 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.maurojuliano.veyra;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -894,7 +908,10 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.maurojuliano.veyra;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -953,7 +970,8 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
