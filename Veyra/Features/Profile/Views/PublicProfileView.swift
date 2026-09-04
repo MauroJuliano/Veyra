@@ -300,10 +300,13 @@ private struct SharedMediaGalleryView: View {
                                     }
                                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                                     .clipped()
+                                    .allowsHitTesting(false)
                                 }
                                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
+                        .contentShape(Rectangle())
                         .accessibilityLabel("Open shared photo")
                     }
                 }
