@@ -5,19 +5,24 @@ struct PublicProfileView: View {
     @State private var user: User
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @State private var sharedMedia: [Message] = []
+    @State private var selectedImage: FullScreenImage?
 
     let repository: (any RemoteChatRepository)?
+    let conversationID: UUID?
     let isActive: Bool?
     var onMessage: ((User) async -> Void)?
 
     init(
         user: User,
         repository: (any RemoteChatRepository)?,
+        conversationID: UUID? = nil,
         isActive: Bool? = nil,
         onMessage: ((User) async -> Void)? = nil
     ) {
         _user = State(initialValue: user)
         self.repository = repository
+        self.conversationID = conversationID
         self.isActive = isActive
         self.onMessage = onMessage
     }
@@ -28,6 +33,7 @@ struct PublicProfileView: View {
                 identity
                 messageButton
                 aboutCard
+                sharedMediaCard
 
                 if let errorMessage {
                     Label(errorMessage, systemImage: "exclamationmark.circle")
@@ -44,6 +50,11 @@ struct PublicProfileView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
         .task { await loadProfile() }
+        .fullScreenCover(item: $selectedImage) { image in
+            FullScreenImageView(url: image.url, canSave: image.canSave) {
+                selectedImage = nil
+            }
+        }
     }
 
     private var identity: some View {
@@ -129,6 +140,55 @@ struct PublicProfileView: View {
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
     }
 
+    private var sharedMediaCard: some View {
+        VStack(alignment: .leading, spacing: VeyraSpacing.md) {
+            Label("Shared media", systemImage: "photo.on.rectangle.angled")
+                .font(VeyraTypography.title)
+                .foregroundStyle(VeyraColor.textPrimary)
+
+            if isLoading && sharedMedia.isEmpty {
+                ProgressView()
+                    .frame(maxWidth: .infinity, minHeight: 92)
+            } else if sharedMedia.isEmpty {
+                ContentUnavailableView(
+                    "No shared media yet",
+                    systemImage: "photo",
+                    description: Text("Photos shared in this conversation will appear here.")
+                )
+                .frame(maxWidth: .infinity, minHeight: 120)
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(spacing: VeyraSpacing.sm) {
+                        ForEach(sharedMedia) { message in
+                            if let url = message.imageURL {
+                                Button {
+                                    selectedImage = FullScreenImage(
+                                        url: url,
+                                        canSave: message.direction == .incoming
+                                    )
+                                } label: {
+                                    VeyraCachedImage(url: url) { image in
+                                        image.resizable().scaledToFill()
+                                    } placeholder: {
+                                        ProgressView()
+                                    }
+                                    .frame(width: 108, height: 108)
+                                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityLabel("Open shared photo")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(VeyraSpacing.lg)
+        .background { GlassBackground(cornerRadius: 28, tintOpacity: 0.1, glowOpacity: 0.1) }
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+    }
+
     private var displayedBio: String {
         user.bio.flatMap { $0.isEmpty ? nil : $0 } ?? "No bio yet"
     }
@@ -144,14 +204,30 @@ struct PublicProfileView: View {
 
     @MainActor
     private func loadProfile() async {
-        guard let repository, let userID = user.participantID else { return }
+        guard let repository else { return }
         isLoading = true
         defer { isLoading = false }
-        do {
-            user = try await repository.fetchPublicProfile(userID: userID)
-            errorMessage = nil
-        } catch {
-            errorMessage = "Unable to refresh this profile."
+
+        if let userID = user.participantID {
+            do {
+                user = try await repository.fetchPublicProfile(userID: userID)
+                errorMessage = nil
+            } catch {
+                errorMessage = "Unable to refresh this profile."
+            }
+        }
+
+        if let conversationID {
+            do {
+                sharedMedia = try await repository
+                    .fetchMessages(conversationID: conversationID, before: nil, limit: 100)
+                    .filter { $0.imageURL != nil }
+                    .sorted { $0.sentAt > $1.sentAt }
+            } catch {
+                if errorMessage == nil {
+                    errorMessage = "Unable to load shared media."
+                }
+            }
         }
     }
 }

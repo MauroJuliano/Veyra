@@ -134,7 +134,8 @@ struct ContactListView: View {
                     bio: contact.bio,
                     participantAvatarURL: contact.avatarURL
                 ),
-                repository: repository
+                repository: repository,
+                conversationID: contact.conversationID
             ) { _ in
                 await openConversation(with: contact)
             }

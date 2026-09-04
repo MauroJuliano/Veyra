@@ -44,6 +44,7 @@ struct MessageTimelineView: View {
                         participantAvatarURL: conversation.participantAvatarURL
                     ),
                     repository: viewModel.profileRepository,
+                    conversationID: conversation.id,
                     isActive: viewModel.isParticipantActive
                 )
             }
@@ -363,13 +364,13 @@ private enum ImageSelectionError: LocalizedError {
     var errorDescription: String? { "The selected image could not be loaded." }
 }
 
-private struct FullScreenImage: Identifiable {
+struct FullScreenImage: Identifiable {
     let id = UUID()
     let url: URL
     let canSave: Bool
 }
 
-private struct FullScreenImageView: View {
+struct FullScreenImageView: View {
     let url: URL
     let canSave: Bool
     let dismiss: () -> Void
