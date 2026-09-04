@@ -51,7 +51,7 @@ struct PublicProfileView: View {
         .toolbar(.hidden, for: .tabBar)
         .task { await loadProfile() }
         .fullScreenCover(item: $selectedImage) { image in
-            FullScreenImageView(url: image.url, canSave: image.canSave) {
+            FullScreenImageView(images: sharedMediaImages, selectedID: image.id) {
                 selectedImage = nil
             }
         }
@@ -177,6 +177,7 @@ struct PublicProfileView: View {
                             if let url = message.imageURL {
                                 Button {
                                     selectedImage = FullScreenImage(
+                                        id: message.id,
                                         url: url,
                                         canSave: message.direction == .incoming
                                     )
@@ -205,6 +206,18 @@ struct PublicProfileView: View {
 
     private var displayedBio: String {
         user.bio.flatMap { $0.isEmpty ? nil : $0 } ?? "No bio yet"
+    }
+
+    private var sharedMediaImages: [FullScreenImage] {
+        sharedMedia.compactMap { message in
+            message.imageURL.map {
+                FullScreenImage(
+                    id: message.id,
+                    url: $0,
+                    canSave: message.direction == .incoming
+                )
+            }
+        }
     }
 
     private var profileBackground: some View {
@@ -284,6 +297,7 @@ private struct SharedMediaGalleryView: View {
                     if let url = message.imageURL {
                         Button {
                             selectedImage = FullScreenImage(
+                                id: message.id,
                                 url: url,
                                 canSave: message.direction == .incoming
                             )
@@ -318,8 +332,20 @@ private struct SharedMediaGalleryView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
         .fullScreenCover(item: $selectedImage) { image in
-            FullScreenImageView(url: image.url, canSave: image.canSave) {
+            FullScreenImageView(images: galleryImages, selectedID: image.id) {
                 selectedImage = nil
+            }
+        }
+    }
+
+    private var galleryImages: [FullScreenImage] {
+        messages.compactMap { message in
+            message.imageURL.map {
+                FullScreenImage(
+                    id: message.id,
+                    url: $0,
+                    canSave: message.direction == .incoming
+                )
             }
         }
     }
