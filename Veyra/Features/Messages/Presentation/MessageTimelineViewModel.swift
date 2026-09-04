@@ -15,6 +15,7 @@ final class MessageTimelineViewModel {
     private(set) var hasEarlierMessages = true
     private(set) var isSending = false
     private(set) var isParticipantTyping = false
+    private(set) var isMessagingBlocked = false
     private(set) var isParticipantActive: Bool
     private(set) var participantLastSeenAt: Date?
     private(set) var errorMessage: String?
@@ -98,6 +99,7 @@ final class MessageTimelineViewModel {
         // leave an existing conversation empty.
         await load()
         guard let repository else { return }
+        await refreshMessagingAvailability(using: repository)
         do {
             try await repository.markConversationRead(conversationID: conversationID)
         } catch {
@@ -114,6 +116,7 @@ final class MessageTimelineViewModel {
                     switch event {
                     case .contentChanged:
                         await refreshMessages(using: repository)
+                        await refreshMessagingAvailability(using: repository)
                         await retryQueuedMessages()
                         try await repository.markConversationRead(conversationID: conversationID)
                     case .readReceiptChanged:
@@ -135,6 +138,7 @@ final class MessageTimelineViewModel {
 
     @MainActor
     func send() async {
+        guard !isMessagingBlocked else { return }
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
         let reply = replyingTo
@@ -169,7 +173,7 @@ final class MessageTimelineViewModel {
             errorMessage = nil
         } catch {
             updateDeliveryState(id: pending.id, state: .failed)
-            errorMessage = error.localizedDescription
+            handleMessagingError(error)
         }
     }
 
@@ -186,7 +190,7 @@ final class MessageTimelineViewModel {
             errorMessage = nil
         } catch {
             updateDeliveryState(id: message.id, state: .failed)
-            errorMessage = error.localizedDescription
+            handleMessagingError(error)
         }
     }
 
@@ -201,6 +205,7 @@ final class MessageTimelineViewModel {
 
     @MainActor
     func sendImage(_ data: Data) async {
+        guard !isMessagingBlocked else { return }
         guard let repository else { return }
         isSending = true
         defer { isSending = false }
@@ -210,12 +215,13 @@ final class MessageTimelineViewModel {
             cache.saveMessages([message], conversationID: conversationID)
             errorMessage = nil
         } catch {
-            errorMessage = error.localizedDescription
+            handleMessagingError(error)
         }
     }
 
     @MainActor
     func sendSticker(_ sticker: String) async {
+        guard !isMessagingBlocked else { return }
         guard let repository else {
             messages.append(Message(text: sticker, direction: .outgoing, isSticker: true))
             return
@@ -234,7 +240,7 @@ final class MessageTimelineViewModel {
             errorMessage = nil
         } catch {
             updateDeliveryState(id: pending.id, state: .failed)
-            errorMessage = error.localizedDescription
+            handleMessagingError(error)
         }
     }
 
@@ -294,6 +300,7 @@ final class MessageTimelineViewModel {
 
     @MainActor
     func toggleReaction(_ emoji: String, on message: Message) async {
+        guard !isMessagingBlocked else { return }
         guard let repository else { return }
         guard let index = messages.firstIndex(where: { $0.id == message.id }) else { return }
         let previousReactions = messages[index].reactions
@@ -307,6 +314,23 @@ final class MessageTimelineViewModel {
             }
             errorMessage = error.localizedDescription
         }
+    }
+
+    @MainActor
+    private func refreshMessagingAvailability(using repository: any RemoteChatRepository) async {
+        do {
+            isMessagingBlocked = !(try await repository.canSendMessages(conversationID: conversationID))
+        } catch {
+            // The database still enforces the block if this optional status refresh fails.
+        }
+    }
+
+    @MainActor
+    private func handleMessagingError(_ error: Error) {
+        if case ChatRepositoryError.messagingBlocked = error {
+            isMessagingBlocked = true
+        }
+        errorMessage = error.localizedDescription
     }
 
     private func toggledReactions(_ reactions: [Message.Reaction], emoji: String) -> [Message.Reaction] {

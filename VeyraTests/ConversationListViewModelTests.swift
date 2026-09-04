@@ -79,6 +79,10 @@ struct OfflineRemoteChatRepository: RemoteChatRepository {
     func fetchContacts() async throws -> [Contact] { throw URLError(.notConnectedToInternet) }
     func searchPeople(query: String) async throws -> [User] { throw URLError(.notConnectedToInternet) }
     func fetchPublicProfile(userID: UUID) async throws -> User { throw URLError(.notConnectedToInternet) }
+    func fetchBlockRelationship(userID: UUID) async throws -> BlockRelationship { throw URLError(.notConnectedToInternet) }
+    func setUserBlocked(userID: UUID, isBlocked: Bool) async throws { throw URLError(.notConnectedToInternet) }
+    func fetchBlockedUsers() async throws -> [User] { throw URLError(.notConnectedToInternet) }
+    func canSendMessages(conversationID: UUID) async throws -> Bool { throw URLError(.notConnectedToInternet) }
     func fetchMyProfile() async throws -> UserProfile { throw URLError(.notConnectedToInternet) }
     func updateMyProfile(displayName: String, username: String, bio: String, email: String) async throws -> UserProfile { throw URLError(.notConnectedToInternet) }
     func updateMyAvatar(_ data: Data) async throws -> UserProfile { throw URLError(.notConnectedToInternet) }

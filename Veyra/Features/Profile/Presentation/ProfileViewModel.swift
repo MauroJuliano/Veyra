@@ -13,6 +13,7 @@ final class ProfileViewModel {
     var isSaving = false
     private(set) var validationMessage: String?
     private(set) var isUploadingAvatar = false
+    var profileRepository: (any RemoteChatRepository)? { remoteRepository }
 
     init(store: any ProfileStore = UserDefaultsProfileStore(), remoteRepository: (any RemoteChatRepository)? = nil) {
         self.store = store

@@ -7,6 +7,9 @@ struct PublicProfileView: View {
     @State private var errorMessage: String?
     @State private var sharedMedia: [Message] = []
     @State private var selectedImage: FullScreenImage?
+    @State private var blockRelationship = BlockRelationship()
+    @State private var confirmsBlock = false
+    @State private var isUpdatingBlock = false
 
     let repository: (any RemoteChatRepository)?
     let conversationID: UUID?
@@ -31,7 +34,7 @@ struct PublicProfileView: View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: VeyraSpacing.xl) {
                 identity
-                messageButton
+                profileActions
                 aboutCard
                 sharedMediaCard
 
@@ -54,6 +57,18 @@ struct PublicProfileView: View {
             FullScreenImageView(images: sharedMediaImages, selectedID: image.id) {
                 selectedImage = nil
             }
+        }
+        .confirmationDialog(
+            "Block \(user.participantName)?",
+            isPresented: $confirmsBlock,
+            titleVisibility: .visible
+        ) {
+            Button("Block user", role: .destructive) {
+                Task { await updateBlockState(true) }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Neither of you will be able to send new messages until you unblock this user.")
         }
     }
 
@@ -90,17 +105,22 @@ struct PublicProfileView: View {
         .frame(maxWidth: .infinity)
     }
 
-    private var messageButton: some View {
-        Button {
-            Task {
-                if let onMessage {
-                    await onMessage(user)
-                } else {
-                    dismiss()
+    private var profileActions: some View {
+        VStack(spacing: VeyraSpacing.sm) {
+            Button {
+                if blockRelationship.isBlockedByMe {
+                    Task { await updateBlockState(false) }
+                } else if !blockRelationship.isBlockedByThem {
+                    Task {
+                        if let onMessage {
+                            await onMessage(user)
+                        } else {
+                            dismiss()
+                        }
+                    }
                 }
-            }
-        } label: {
-            Label("Message", systemImage: "message.fill")
+            } label: {
+                Label(primaryActionTitle, systemImage: primaryActionIcon)
                 .font(VeyraTypography.bodyEmphasized)
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
@@ -114,8 +134,31 @@ struct PublicProfileView: View {
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                 .shadow(color: VeyraColor.accent.opacity(0.22), radius: 18, y: 8)
+            }
+            .buttonStyle(.plain)
+            .disabled(isUpdatingBlock || blockRelationship.isBlockedByThem)
+
+            if !blockRelationship.preventsMessaging {
+                Button(role: .destructive) {
+                    confirmsBlock = true
+                } label: {
+                    Label("Block user", systemImage: "hand.raised.fill")
+                        .font(VeyraTypography.caption.weight(.semibold))
+                        .frame(height: 40)
+                }
+                .disabled(isUpdatingBlock)
+            }
         }
-        .buttonStyle(.plain)
+    }
+
+    private var primaryActionTitle: String {
+        if blockRelationship.isBlockedByMe { return "Unblock" }
+        if blockRelationship.isBlockedByThem { return "Messaging unavailable" }
+        return "Message"
+    }
+
+    private var primaryActionIcon: String {
+        blockRelationship.isBlockedByMe ? "hand.raised.slash.fill" : "message.fill"
     }
 
     private var aboutCard: some View {
@@ -238,6 +281,7 @@ struct PublicProfileView: View {
         if let userID = user.participantID {
             do {
                 user = try await repository.fetchPublicProfile(userID: userID)
+                blockRelationship = try await repository.fetchBlockRelationship(userID: userID)
                 errorMessage = nil
             } catch {
                 errorMessage = "Unable to refresh this profile."
@@ -255,6 +299,20 @@ struct PublicProfileView: View {
                     errorMessage = "Unable to load shared media."
                 }
             }
+        }
+    }
+
+    @MainActor
+    private func updateBlockState(_ shouldBlock: Bool) async {
+        guard let repository, let userID = user.participantID else { return }
+        isUpdatingBlock = true
+        defer { isUpdatingBlock = false }
+        do {
+            try await repository.setUserBlocked(userID: userID, isBlocked: shouldBlock)
+            blockRelationship = try await repository.fetchBlockRelationship(userID: userID)
+            errorMessage = nil
+        } catch {
+            errorMessage = "Unable to update this block setting."
         }
     }
 

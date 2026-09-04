@@ -95,14 +95,26 @@ struct MessageTimelineView: View {
             Divider().overlay(VeyraColor.divider)
             typingIndicator
             replyComposerPreview
-            MessageComposerView(
-                text: $viewModel.draft,
-                canSend: viewModel.canSend && !viewModel.isSending,
-                onSend: { Task { await viewModel.send() } },
-                selectedPhoto: $selectedPhoto,
-                onSendSticker: { sticker in Task { await viewModel.sendSticker(sticker) } },
-                isReplying: viewModel.replyingTo != nil
-            )
+            if viewModel.isMessagingBlocked {
+                Label(
+                    "Messaging is unavailable while either user is blocked.",
+                    systemImage: "hand.raised.fill"
+                )
+                .font(VeyraTypography.caption)
+                .foregroundStyle(VeyraColor.textSecondary)
+                .frame(maxWidth: .infinity)
+                .padding(VeyraSpacing.md)
+                .background(VeyraColor.surface.opacity(0.96))
+            } else {
+                MessageComposerView(
+                    text: $viewModel.draft,
+                    canSend: viewModel.canSend && !viewModel.isSending,
+                    onSend: { Task { await viewModel.send() } },
+                    selectedPhoto: $selectedPhoto,
+                    onSendSticker: { sticker in Task { await viewModel.sendSticker(sticker) } },
+                    isReplying: viewModel.replyingTo != nil
+                )
+            }
         }
     }
 
@@ -161,6 +173,7 @@ struct MessageTimelineView: View {
             onRetry: { Task { await viewModel.retry(message) } }
         )
         .onLongPressGesture(minimumDuration: 0.35) {
+            guard !viewModel.isMessagingBlocked else { return }
             withAnimation(.easeOut(duration: 0.18)) { messageShowingActions = message }
         }
     }
