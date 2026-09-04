@@ -10,6 +10,7 @@ struct MessageTimelineView: View {
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var selectedImage: FullScreenImage?
     @State private var messageShowingActions: Message?
+    @State private var showsParticipantProfile = false
 
     init(conversation: Conversation, repository: (any RemoteChatRepository)? = nil, cache: any MessageCacheRepository = InMemoryMessageCacheRepository(), messages: [Message]? = nil) {
         self.conversation = conversation
@@ -33,6 +34,20 @@ struct MessageTimelineView: View {
             .toolbarBackground(VeyraColor.surface.opacity(0.96), for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar { chatToolbar }
+            .navigationDestination(isPresented: $showsParticipantProfile) {
+                PublicProfileView(
+                    user: User(
+                        id: conversation.participantID ?? UUID(),
+                        participantID: conversation.participantID,
+                        participantName: conversation.participantName,
+                        userName: "",
+                        participantAvatarURL: conversation.participantAvatarURL
+                    ),
+                    repository: viewModel.profileRepository,
+                    conversationID: conversation.id,
+                    isActive: viewModel.isParticipantActive
+                )
+            }
             .task { await viewModel.observeMessages() }
             .onChange(of: viewModel.draft) { _, _ in viewModel.draftDidChange() }
             .onChange(of: selectedPhoto) { _, item in sendSelectedPhoto(item) }
@@ -202,21 +217,27 @@ struct MessageTimelineView: View {
 
     @ToolbarContentBuilder private var chatToolbar: some ToolbarContent {
             ToolbarItem(placement: .principal) {
-                HStack {
+                Button {
+                    showsParticipantProfile = true
+                } label: {
+                    HStack {
 
-                    VeyraAvatar(name: conversation.participantName, imageURL: conversation.participantAvatarURL, size: .small, showsOnlineIndicator: viewModel.isParticipantActive)
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text(conversation.participantName)
-                            .font(VeyraTypography.bodyEmphasized)
-                            .foregroundStyle(VeyraColor.textPrimary)
-                        Text(participantStatus)
-                            .font(VeyraTypography.caption)
-                            .foregroundStyle(VeyraColor.textSecondary)
+                        VeyraAvatar(name: conversation.participantName, imageURL: conversation.participantAvatarURL, size: .small, showsOnlineIndicator: viewModel.isParticipantActive)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(conversation.participantName)
+                                .font(VeyraTypography.bodyEmphasized)
+                                .foregroundStyle(VeyraColor.textPrimary)
+                            Text(participantStatus)
+                                .font(VeyraTypography.caption)
+                                .foregroundStyle(VeyraColor.textSecondary)
+                        }
+
+                        Spacer()
                     }
-
-                    Spacer()
+                    .padding(.horizontal)
                 }
-                .padding(.horizontal)
+                .buttonStyle(.plain)
+                .accessibilityLabel("View \(conversation.participantName)'s profile")
             }
 
             ToolbarItemGroup(placement: .topBarTrailing) {
@@ -343,31 +364,57 @@ private enum ImageSelectionError: LocalizedError {
     var errorDescription: String? { "The selected image could not be loaded." }
 }
 
-private struct FullScreenImage: Identifiable {
-    let id = UUID()
+struct FullScreenImage: Identifiable {
+    let id: UUID
     let url: URL
     let canSave: Bool
+
+    init(id: UUID = UUID(), url: URL, canSave: Bool) {
+        self.id = id
+        self.url = url
+        self.canSave = canSave
+    }
 }
 
-private struct FullScreenImageView: View {
-    let url: URL
-    let canSave: Bool
+struct FullScreenImageView: View {
+    let images: [FullScreenImage]
     let dismiss: () -> Void
+    @State private var selectedID: UUID
     @State private var isSaving = false
     @State private var saveMessage: String?
+
+    init(url: URL, canSave: Bool, dismiss: @escaping () -> Void) {
+        let image = FullScreenImage(url: url, canSave: canSave)
+        images = [image]
+        self.dismiss = dismiss
+        _selectedID = State(initialValue: image.id)
+    }
+
+    init(images: [FullScreenImage], selectedID: UUID, dismiss: @escaping () -> Void) {
+        self.images = images
+        self.dismiss = dismiss
+        _selectedID = State(initialValue: selectedID)
+    }
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
             Color.black.ignoresSafeArea().onTapGesture(perform: dismiss)
-            VeyraCachedImage(url: url) { image in
-                image.resizable().scaledToFit()
-            } placeholder: {
-                ProgressView().tint(.white)
+
+            TabView(selection: $selectedID) {
+                ForEach(images) { item in
+                    VeyraCachedImage(url: item.url) { image in
+                        image.resizable().scaledToFit()
+                    } placeholder: {
+                        ProgressView().tint(.white)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .tag(item.id)
+                }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .tabViewStyle(.page(indexDisplayMode: images.count > 1 ? .automatic : .never))
 
             HStack(spacing: VeyraSpacing.md) {
-                if canSave {
+                if currentImage?.canSave == true {
                     Button { Task { await saveToPhotoLibrary() } } label: {
                         if isSaving {
                             ProgressView().tint(.white)
@@ -397,11 +444,16 @@ private struct FullScreenImageView: View {
         Binding(get: { saveMessage != nil }, set: { if !$0 { saveMessage = nil } })
     }
 
+    private var currentImage: FullScreenImage? {
+        images.first { $0.id == selectedID } ?? images.first
+    }
+
     @MainActor
     private func saveToPhotoLibrary() async {
         isSaving = true
         defer { isSaving = false }
         do {
+            guard let url = currentImage?.url else { return }
             let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
             guard status == .authorized || status == .limited else {
                 saveMessage = "Allow photo access in Settings to save received images."

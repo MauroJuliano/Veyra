@@ -15,6 +15,7 @@
 		12C821102DA87163D75754D4 /* ConversationListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B94A5909B940AD5D3ADBDB05 /* ConversationListViewModel.swift */; };
 		14497BE77041C7B0A71FA6A0 /* SwiftDataConversationRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF646664F27E3856206D966C /* SwiftDataConversationRepositoryTests.swift */; };
 		148683245215D266B1F69398 /* PersonalDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EBE432F2420C29F7249B975 /* PersonalDetailsView.swift */; };
+		A13D54BE227B4FA49E8C0301 /* PublicProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13D54BE227B4FA49E8C0302 /* PublicProfileView.swift */; };
 		1A05F76268540B8DBBDF8D9B /* NewConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5917AB74FE9969FED29ED57E /* NewConversationView.swift */; };
 		1AA8567C7E0EC69A7D58B631 /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C09556DC67E480428C19D11 /* ProfileStore.swift */; };
 		1C05F92851F0DF88FF1FD371 /* Contact.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D3DEB07FE517FDFC254469 /* Contact.swift */; };
@@ -113,6 +114,7 @@
 		5917AB74FE9969FED29ED57E /* NewConversationView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NewConversationView.swift; sourceTree = "<group>"; };
 		5CF5736F5D2BE299C077CE7C /* LoginViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
 		5EBE432F2420C29F7249B975 /* PersonalDetailsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PersonalDetailsView.swift; sourceTree = "<group>"; };
+		A13D54BE227B4FA49E8C0302 /* PublicProfileView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PublicProfileView.swift; sourceTree = "<group>"; };
 		612257922E48B3ACB47078A3 /* VeyraRadius.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraRadius.swift; sourceTree = "<group>"; };
 		67E4FA0E7A4E39541CF5B110 /* MessageBubbleView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessageBubbleView.swift; sourceTree = "<group>"; };
 		6931A3E0FFF2CFD78CBCC110 /* ProfileView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
@@ -390,6 +392,7 @@
 			children = (
 				6931A3E0FFF2CFD78CBCC110 /* ProfileView.swift */,
 				5EBE432F2420C29F7249B975 /* PersonalDetailsView.swift */,
+				A13D54BE227B4FA49E8C0302 /* PublicProfileView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -754,6 +757,7 @@
 				F9133D4385FE6D55603C3DFB /* UserProfile.swift in Sources */,
 				DE4360550F651CFC339409DA /* ProfileViewModel.swift in Sources */,
 				148683245215D266B1F69398 /* PersonalDetailsView.swift in Sources */,
+				A13D54BE227B4FA49E8C0301 /* PublicProfileView.swift in Sources */,
 				A983528C3048F592002DC64A /* RecentConversationListView.swift in Sources */,
 				1AA8567C7E0EC69A7D58B631 /* ProfileStore.swift in Sources */,
 				88D05E71B0F456BA216AA73A /* SupabaseConfiguration.swift in Sources */,
