@@ -106,10 +106,8 @@ private extension PersonalDetailsView {
                 bioField
             }
             .padding(.horizontal, 16)
-            .background {
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .fill(VeyraColor.surface)
-            }
+            .background { GlassBackground(cornerRadius: 24, tintOpacity: 0.07, glowOpacity: 0.08) }
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         }
     }
 
