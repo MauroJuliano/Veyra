@@ -5,17 +5,20 @@ struct User: Identifiable, Hashable, Codable {
     let participantID: UUID?
     let participantName: String
     let userName: String
+    let bio: String?
     let participantAvatarURL: URL?
 
     init(id: UUID = UUID(),
          participantID: UUID? = nil,
          participantName: String,
          userName: String,
+         bio: String? = nil,
          participantAvatarURL: URL?) {
         self.id = id
         self.participantID = participantID
         self.participantName = participantName
         self.userName = userName
+        self.bio = bio
         self.participantAvatarURL = participantAvatarURL
     }
 }
@@ -33,7 +36,7 @@ struct RecentConversationRowView: View {
                 Text(user.participantName)
                     .font(VeyraTypography.bodyEmphasized)
                     .foregroundStyle(VeyraColor.textPrimary)
-                Text(user.userName)
+                Text(user.bio.flatMap { $0.isEmpty ? nil : $0 } ?? "No bio yet")
                     .font(VeyraTypography.body)
                     .foregroundStyle(VeyraColor.textSecondary)
                     .lineLimit(1)

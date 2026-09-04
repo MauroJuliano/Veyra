@@ -105,12 +105,13 @@ struct ProfileView: View {
             VStack(alignment: .leading, spacing: VeyraSpacing.xs) {
                 Text(viewModel.profile.displayName)
                     .font(.system(size: 21, weight: .semibold, design: .rounded))
-                Label("Verified member", systemImage: "checkmark.seal.fill")
-                    .font(VeyraTypography.caption.weight(.medium))
-                    .foregroundStyle(profileAccent)
                 Text(viewModel.profile.formattedUsername)
                     .font(VeyraTypography.caption)
                     .foregroundStyle(.secondary)
+                Text(viewModel.profile.bio.isEmpty ? "No bio yet" : viewModel.profile.bio)
+                    .font(VeyraTypography.body)
+                    .foregroundStyle(VeyraColor.textSecondary)
+                    .lineLimit(2)
             }
 
             Spacer(minLength: VeyraSpacing.xs)

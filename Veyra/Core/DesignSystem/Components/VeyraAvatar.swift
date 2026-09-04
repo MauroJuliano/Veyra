@@ -6,12 +6,14 @@ enum VeyraAvatarSize {
     case small
     case medium
     case large
+    case xLarge
 
     var dimension: CGFloat {
         switch self {
         case .small: 32
         case .medium: 44
         case .large: 64
+        case .xLarge: 88
         }
     }
 
@@ -19,7 +21,7 @@ enum VeyraAvatarSize {
         switch self {
         case .small: VeyraTypography.caption
         case .medium: VeyraTypography.bodyEmphasized
-        case .large: VeyraTypography.title
+        case .large, .xLarge: VeyraTypography.title
         }
     }
 }

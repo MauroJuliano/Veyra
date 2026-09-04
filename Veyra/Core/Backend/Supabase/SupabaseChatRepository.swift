@@ -18,6 +18,7 @@ protocol RemoteChatRepository: Sendable {
     func fetchContacts() async throws -> [Contact]
     func searchPeople(query: String) async throws -> [User]
     func fetchMyProfile() async throws -> UserProfile
+    func updateMyProfile(displayName: String, username: String, bio: String, email: String) async throws -> UserProfile
     func updateMyAvatar(_ data: Data) async throws -> UserProfile
     func maintainPresence() async
     func registerPushToken(_ token: String) async throws
@@ -218,9 +219,27 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
     }
 
     func fetchMyProfile() async throws -> UserProfile {
-        let userID = try await client.auth.session.user.id
+        let session = try await client.auth.session
+        let userID = session.user.id
         let row: ProfileRow = try await client.from("profiles").select().eq("id", value: userID).single().execute().value
-        return row.profile(avatarURL: try await signedAvatarURL(path: row.avatarPath))
+        return row.profile(email: session.user.email ?? "", avatarURL: try await signedAvatarURL(path: row.avatarPath))
+    }
+
+    func updateMyProfile(displayName: String, username: String, bio: String, email: String) async throws -> UserProfile {
+        let currentEmail = try await client.auth.session.user.email ?? ""
+        if email.caseInsensitiveCompare(currentEmail) != .orderedSame {
+            _ = try await client.auth.update(user: UserAttributes(email: email))
+        }
+        try await client.rpc("update_my_profile", params: ProfileUpdateParameters(
+            displayName: displayName,
+            username: username,
+            bio: bio
+        )).execute()
+        var profile = try await fetchMyProfile()
+        if profile.email.isEmpty || email.caseInsensitiveCompare(currentEmail) != .orderedSame {
+            profile.email = email
+        }
+        return profile
     }
 
     func updateMyAvatar(_ data: Data) async throws -> UserProfile {
@@ -456,16 +475,18 @@ private struct ContactRow: Decodable {
     let displayName: String
     let conversationID: UUID?
     let avatarPath: String?
+    let bio: String?
 
     enum CodingKeys: String, CodingKey {
         case contactID = "contact_id"
         case displayName = "display_name"
         case conversationID = "conversation_id"
         case avatarPath = "avatar_path"
+        case bio
     }
 
     func contact(avatarURL: URL?) -> Contact {
-        Contact(id: contactID, name: displayName, conversationID: conversationID, avatarURL: avatarURL)
+        Contact(id: contactID, name: displayName, conversationID: conversationID, bio: bio, avatarURL: avatarURL)
     }
 }
 
@@ -474,16 +495,18 @@ private struct PeopleSearchRow: Decodable {
     let displayName: String
     let username: String?
     let avatarPath: String?
+    let bio: String?
 
     enum CodingKeys: String, CodingKey {
         case userID = "user_id"
         case displayName = "display_name"
         case username
         case avatarPath = "avatar_path"
+        case bio
     }
 
     func user(avatarURL: URL?) -> User {
-        User(id: userID, participantID: userID, participantName: displayName, userName: username.map { "@\($0)" } ?? "", participantAvatarURL: avatarURL)
+        User(id: userID, participantID: userID, participantName: displayName, userName: username.map { "@\($0)" } ?? "", bio: bio, participantAvatarURL: avatarURL)
     }
 }
 
@@ -501,8 +524,23 @@ private struct ProfileRow: Decodable {
     let displayName: String
     let username: String?
     let avatarPath: String?
-    enum CodingKeys: String, CodingKey { case displayName = "display_name"; case username; case avatarPath = "avatar_url" }
-    func profile(avatarURL: URL?) -> UserProfile { UserProfile(displayName: displayName, username: username ?? "veyrauser", avatarURL: avatarURL) }
+    let bio: String?
+    enum CodingKeys: String, CodingKey { case displayName = "display_name"; case username; case avatarPath = "avatar_url"; case bio }
+    func profile(email: String, avatarURL: URL?) -> UserProfile {
+        UserProfile(displayName: displayName, username: username ?? "veyrauser", avatarURL: avatarURL, bio: bio ?? "", email: email)
+    }
+}
+
+private struct ProfileUpdateParameters: Encodable {
+    let displayName: String
+    let username: String
+    let bio: String
+
+    enum CodingKeys: String, CodingKey {
+        case displayName = "new_display_name"
+        case username = "new_username"
+        case bio = "new_bio"
+    }
 }
 
 private struct AvatarPathRow: Encodable {

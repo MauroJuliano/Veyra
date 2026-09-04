@@ -8,6 +8,9 @@ final class ProfileViewModel {
     private(set) var profile: UserProfile
     var displayName: String
     var username: String
+    var email: String
+    var bio: String
+    var isSaving = false
     private(set) var validationMessage: String?
     private(set) var isUploadingAvatar = false
 
@@ -18,24 +21,65 @@ final class ProfileViewModel {
         self.profile = profile
         displayName = profile.displayName
         username = profile.username
+        bio = profile.bio
+        email = profile.email
     }
 
-    func save() -> Bool {
+    @MainActor
+    func save() async -> Bool {
         let name = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
         let handle = username.trimmingCharacters(in: .whitespacesAndNewlines).trimmingCharacters(in: CharacterSet(charactersIn: "@"))
+        let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let normalizedBio = bio.trimmingCharacters(in: .whitespacesAndNewlines)
         guard name.count >= 2 else {
             validationMessage = "Enter a valid display name."
             return false
         }
-        guard handle.count >= 3, !handle.contains(where: { $0.isWhitespace }) else {
-            validationMessage = "Username must have at least 3 characters and no spaces."
+        let validUsername = handle.range(of: "^[a-zA-Z0-9_]{3,30}$", options: .regularExpression) != nil
+        guard validUsername else {
+            validationMessage = "Username must have 3–30 letters, numbers or underscores."
             return false
         }
-        let updated = UserProfile(displayName: name, username: handle.lowercased(), avatarURL: profile.avatarURL)
+        guard normalizedEmail.range(of: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", options: .regularExpression) != nil else {
+            validationMessage = "Enter a valid email address."
+            return false
+        }
+        guard normalizedBio.count <= 120 else {
+            validationMessage = "Bio must contain at most 120 characters."
+            return false
+        }
+
+        isSaving = true
+        defer { isSaving = false }
+        let updated: UserProfile
+        if let remoteRepository {
+            do {
+                updated = try await remoteRepository.updateMyProfile(
+                    displayName: name,
+                    username: handle.lowercased(),
+                    bio: normalizedBio,
+                    email: normalizedEmail
+                )
+            } catch {
+                let description = error.localizedDescription.lowercased()
+                if description.contains("username") || description.contains("profiles_username_key") {
+                    validationMessage = "This username is already in use."
+                } else if description.contains("email") || description.contains("already registered") {
+                    validationMessage = "This email is already in use."
+                } else {
+                    validationMessage = error.localizedDescription
+                }
+                return false
+            }
+        } else {
+            updated = UserProfile(displayName: name, username: handle.lowercased(), avatarURL: profile.avatarURL, bio: normalizedBio, email: normalizedEmail)
+        }
         store.save(updated)
         profile = updated
         displayName = updated.displayName
         username = updated.username
+        email = updated.email
+        bio = updated.bio
         validationMessage = nil
         return true
     }
@@ -48,6 +92,8 @@ final class ProfileViewModel {
             profile = remote
             displayName = remote.displayName
             username = remote.username
+            email = remote.email
+            bio = remote.bio
             store.save(remote)
         } catch {
             validationMessage = error.localizedDescription
@@ -61,6 +107,10 @@ final class ProfileViewModel {
         defer { isUploadingAvatar = false }
         do {
             profile = try await remoteRepository.updateMyAvatar(data)
+            displayName = profile.displayName
+            username = profile.username
+            email = profile.email
+            bio = profile.bio
             store.save(profile)
             validationMessage = nil
         } catch {
