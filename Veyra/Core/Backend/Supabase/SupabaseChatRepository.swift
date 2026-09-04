@@ -475,16 +475,18 @@ private struct ContactRow: Decodable {
     let displayName: String
     let conversationID: UUID?
     let avatarPath: String?
+    let bio: String?
 
     enum CodingKeys: String, CodingKey {
         case contactID = "contact_id"
         case displayName = "display_name"
         case conversationID = "conversation_id"
         case avatarPath = "avatar_path"
+        case bio
     }
 
     func contact(avatarURL: URL?) -> Contact {
-        Contact(id: contactID, name: displayName, conversationID: conversationID, avatarURL: avatarURL)
+        Contact(id: contactID, name: displayName, conversationID: conversationID, bio: bio, avatarURL: avatarURL)
     }
 }
 
@@ -493,16 +495,18 @@ private struct PeopleSearchRow: Decodable {
     let displayName: String
     let username: String?
     let avatarPath: String?
+    let bio: String?
 
     enum CodingKeys: String, CodingKey {
         case userID = "user_id"
         case displayName = "display_name"
         case username
         case avatarPath = "avatar_path"
+        case bio
     }
 
     func user(avatarURL: URL?) -> User {
-        User(id: userID, participantID: userID, participantName: displayName, userName: username.map { "@\($0)" } ?? "", participantAvatarURL: avatarURL)
+        User(id: userID, participantID: userID, participantName: displayName, userName: username.map { "@\($0)" } ?? "", bio: bio, participantAvatarURL: avatarURL)
     }
 }
 

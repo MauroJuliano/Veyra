@@ -133,12 +133,10 @@ struct ContactListView: View {
                     .font(VeyraTypography.bodyEmphasized)
                     .foregroundStyle(VeyraColor.textPrimary)
 
-                if let bio = contact.bio {
-                    Text(bio)
-                        .font(VeyraTypography.body)
-                        .foregroundStyle(VeyraColor.textSecondary)
-                        .lineLimit(1)
-                }
+                Text(contact.bio.flatMap { $0.isEmpty ? nil : $0 } ?? "No bio yet")
+                    .font(VeyraTypography.body)
+                    .foregroundStyle(VeyraColor.textSecondary)
+                    .lineLimit(1)
             }
 
         }
