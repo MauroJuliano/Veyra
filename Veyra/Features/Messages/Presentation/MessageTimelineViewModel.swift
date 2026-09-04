@@ -21,6 +21,7 @@ final class MessageTimelineViewModel {
     private var typingStopTask: Task<Void, Never>?
     private var participantTypingTimeoutTask: Task<Void, Never>?
     private let pageSize = 50
+    var profileRepository: (any RemoteChatRepository)? { repository }
 
     init(conversationID: UUID = UUID(), participantID: UUID? = nil, isParticipantActive: Bool = false, participantLastSeenAt: Date? = nil, repository: (any RemoteChatRepository)? = nil, cache: any MessageCacheRepository = InMemoryMessageCacheRepository(), messages: [Message]) {
         self.conversationID = conversationID

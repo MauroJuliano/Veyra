@@ -9,6 +9,7 @@ struct ContactListView: View {
     @State private var errorMessage: String?
     @State private var searchText = ""
     @State private var selectedConversation: Conversation?
+    @State private var selectedContact: Contact?
     @State private var openingContactID: UUID?
 
     var groupedUsers: [String: [Contact]] {
@@ -50,7 +51,7 @@ struct ContactListView: View {
                         Section(header: Text(key)) {
                             ForEach(groupedUsers[key]!.sorted(by: { $0.name < $1.name })) { contact in
                                 Button {
-                                    Task { await openConversation(with: contact) }
+                                    selectedContact = contact
                                 } label: {
                                     HStack {
                                         contactRow(contact)
@@ -123,6 +124,21 @@ struct ContactListView: View {
         .navigationDestination(item: $selectedConversation) { conversation in
             MessageTimelineView(conversation: conversation, repository: repository, cache: messageCache, messages: [])
         }
+        .navigationDestination(item: $selectedContact) { contact in
+            PublicProfileView(
+                user: User(
+                    id: contact.id,
+                    participantID: contact.id,
+                    participantName: contact.name,
+                    userName: "",
+                    bio: contact.bio,
+                    participantAvatarURL: contact.avatarURL
+                ),
+                repository: repository
+            ) { _ in
+                await openConversation(with: contact)
+            }
+        }
     }
 
     private func contactRow(_ contact: Contact) -> some View {
@@ -166,6 +182,7 @@ struct ContactListView: View {
         defer { openingContactID = nil }
         do {
             selectedConversation = try await repository.startConversation(with: contact)
+            selectedContact = nil
             errorMessage = nil
             await load()
         } catch {

@@ -10,6 +10,7 @@ struct MessageTimelineView: View {
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var selectedImage: FullScreenImage?
     @State private var messageShowingActions: Message?
+    @State private var showsParticipantProfile = false
 
     init(conversation: Conversation, repository: (any RemoteChatRepository)? = nil, cache: any MessageCacheRepository = InMemoryMessageCacheRepository(), messages: [Message]? = nil) {
         self.conversation = conversation
@@ -33,6 +34,19 @@ struct MessageTimelineView: View {
             .toolbarBackground(VeyraColor.surface.opacity(0.96), for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar { chatToolbar }
+            .navigationDestination(isPresented: $showsParticipantProfile) {
+                PublicProfileView(
+                    user: User(
+                        id: conversation.participantID ?? UUID(),
+                        participantID: conversation.participantID,
+                        participantName: conversation.participantName,
+                        userName: "",
+                        participantAvatarURL: conversation.participantAvatarURL
+                    ),
+                    repository: viewModel.profileRepository,
+                    isActive: viewModel.isParticipantActive
+                )
+            }
             .task { await viewModel.observeMessages() }
             .onChange(of: viewModel.draft) { _, _ in viewModel.draftDidChange() }
             .onChange(of: selectedPhoto) { _, item in sendSelectedPhoto(item) }
@@ -202,21 +216,27 @@ struct MessageTimelineView: View {
 
     @ToolbarContentBuilder private var chatToolbar: some ToolbarContent {
             ToolbarItem(placement: .principal) {
-                HStack {
+                Button {
+                    showsParticipantProfile = true
+                } label: {
+                    HStack {
 
-                    VeyraAvatar(name: conversation.participantName, imageURL: conversation.participantAvatarURL, size: .small, showsOnlineIndicator: viewModel.isParticipantActive)
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text(conversation.participantName)
-                            .font(VeyraTypography.bodyEmphasized)
-                            .foregroundStyle(VeyraColor.textPrimary)
-                        Text(participantStatus)
-                            .font(VeyraTypography.caption)
-                            .foregroundStyle(VeyraColor.textSecondary)
+                        VeyraAvatar(name: conversation.participantName, imageURL: conversation.participantAvatarURL, size: .small, showsOnlineIndicator: viewModel.isParticipantActive)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(conversation.participantName)
+                                .font(VeyraTypography.bodyEmphasized)
+                                .foregroundStyle(VeyraColor.textPrimary)
+                            Text(participantStatus)
+                                .font(VeyraTypography.caption)
+                                .foregroundStyle(VeyraColor.textSecondary)
+                        }
+
+                        Spacer()
                     }
-
-                    Spacer()
+                    .padding(.horizontal)
                 }
-                .padding(.horizontal)
+                .buttonStyle(.plain)
+                .accessibilityLabel("View \(conversation.participantName)'s profile")
             }
 
             ToolbarItemGroup(placement: .topBarTrailing) {

@@ -4,6 +4,7 @@ struct NewConversationView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: NewConversationViewModel
     @State private var openingUserID: UUID?
+    @State private var selectedUser: User?
     @State private var startError: String?
     let onSelect: (User) async -> String?
 
@@ -32,6 +33,11 @@ struct NewConversationView: View {
             .navigationTitle("Find new people")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
+            .navigationDestination(item: $selectedUser) { user in
+                PublicProfileView(user: user, repository: viewModel.profileRepository) { selected in
+                    open(selected)
+                }
+            }
         }
         .tint(VeyraColor.accent)
         .task(id: viewModel.searchText) { await viewModel.search() }
@@ -45,11 +51,11 @@ struct NewConversationView: View {
                 ContentUnavailableView.search(text: viewModel.searchText)
             } else {
                 Text("People").font(VeyraTypography.title)
-                RecentConversationListView(users: viewModel.results, showsRemoveButtons: false, onSelect: open)
+                RecentConversationListView(users: viewModel.results, showsRemoveButtons: false, onSelect: showProfile)
             }
         } else if !viewModel.recentUsers.isEmpty {
             Text("Recent searches").font(VeyraTypography.title)
-            RecentConversationListView(users: viewModel.recentUsers, onSelect: open, onRemove: viewModel.removeRecent)
+            RecentConversationListView(users: viewModel.recentUsers, onSelect: showProfile, onRemove: viewModel.removeRecent)
         } else {
             ContentUnavailableView("Find new people", systemImage: "person.badge.plus", description: Text("Search by name or username."))
         }
@@ -85,6 +91,10 @@ struct NewConversationView: View {
             }
             openingUserID = nil
         }
+    }
+
+    private func showProfile(_ user: User) {
+        selectedUser = user
     }
 }
 

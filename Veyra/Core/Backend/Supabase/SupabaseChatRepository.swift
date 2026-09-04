@@ -17,6 +17,7 @@ protocol RemoteChatRepository: Sendable {
     func deleteConversation(id: UUID) async throws
     func fetchContacts() async throws -> [Contact]
     func searchPeople(query: String) async throws -> [User]
+    func fetchPublicProfile(userID: UUID) async throws -> User
     func fetchMyProfile() async throws -> UserProfile
     func updateMyProfile(displayName: String, username: String, bio: String, email: String) async throws -> UserProfile
     func updateMyAvatar(_ data: Data) async throws -> UserProfile
@@ -223,6 +224,17 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
         let userID = session.user.id
         let row: ProfileRow = try await client.from("profiles").select().eq("id", value: userID).single().execute().value
         return row.profile(email: session.user.email ?? "", avatarURL: try await signedAvatarURL(path: row.avatarPath))
+    }
+
+    func fetchPublicProfile(userID: UUID) async throws -> User {
+        let row: PublicProfileRow = try await client
+            .from("profiles")
+            .select("id, display_name, username, avatar_url, bio")
+            .eq("id", value: userID)
+            .single()
+            .execute()
+            .value
+        return row.user(avatarURL: try await signedAvatarURL(path: row.avatarPath))
     }
 
     func updateMyProfile(displayName: String, username: String, bio: String, email: String) async throws -> UserProfile {
@@ -528,6 +540,31 @@ private struct ProfileRow: Decodable {
     enum CodingKeys: String, CodingKey { case displayName = "display_name"; case username; case avatarPath = "avatar_url"; case bio }
     func profile(email: String, avatarURL: URL?) -> UserProfile {
         UserProfile(displayName: displayName, username: username ?? "veyrauser", avatarURL: avatarURL, bio: bio ?? "", email: email)
+    }
+}
+
+private struct PublicProfileRow: Decodable {
+    let id: UUID
+    let displayName: String
+    let username: String?
+    let avatarPath: String?
+    let bio: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, username, bio
+        case displayName = "display_name"
+        case avatarPath = "avatar_url"
+    }
+
+    func user(avatarURL: URL?) -> User {
+        User(
+            id: id,
+            participantID: id,
+            participantName: displayName,
+            userName: username.map { "@\($0)" } ?? "",
+            bio: bio,
+            participantAvatarURL: avatarURL
+        )
     }
 }
 

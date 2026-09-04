@@ -10,6 +10,7 @@ final class NewConversationViewModel {
     private(set) var recentUsers: [User]
     private(set) var isSearching = false
     private(set) var errorMessage: String?
+    var profileRepository: (any RemoteChatRepository)? { repository }
 
     init(repository: (any RemoteChatRepository)? = nil, recentStore: RecentPeopleStore = RecentPeopleStore()) {
         self.repository = repository
