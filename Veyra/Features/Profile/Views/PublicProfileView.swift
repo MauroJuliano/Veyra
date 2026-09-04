@@ -149,16 +149,15 @@ struct PublicProfileView: View {
 
                 Spacer()
 
-                if sharedMedia.count > 4 {
-                    NavigationLink {
-                        SharedMediaGalleryView(messages: sharedMedia)
-                    } label: {
-                        Label("See all", systemImage: "chevron.right")
-                            .labelStyle(.titleAndIcon)
-                            .font(VeyraTypography.caption.weight(.semibold))
-                            .foregroundStyle(VeyraColor.accent)
-                    }
+                NavigationLink {
+                    SharedMediaGalleryView(messages: sharedMedia)
+                } label: {
+                    Label("See all", systemImage: "chevron.right")
+                        .labelStyle(.iconOnly)
+                        .font(VeyraTypography.caption.weight(.semibold))
+                        .foregroundStyle(VeyraColor.accent)
                 }
+
             }
 
             if isLoading && sharedMedia.isEmpty {
@@ -289,14 +288,20 @@ private struct SharedMediaGalleryView: View {
                                 canSave: message.direction == .incoming
                             )
                         } label: {
-                            VeyraCachedImage(url: url) { image in
-                                image.resizable().scaledToFill()
-                            } placeholder: {
-                                ProgressView()
-                            }
-                            .frame(maxWidth: .infinity)
-                            .aspectRatio(1, contentMode: .fit)
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            Color.clear
+                                .aspectRatio(1, contentMode: .fit)
+                                .overlay {
+                                    VeyraCachedImage(url: url) { image in
+                                        image
+                                            .resizable()
+                                            .scaledToFill()
+                                    } placeholder: {
+                                        ProgressView()
+                                    }
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                    .clipped()
+                                }
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel("Open shared photo")
