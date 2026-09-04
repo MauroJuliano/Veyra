@@ -142,9 +142,24 @@ struct PublicProfileView: View {
 
     private var sharedMediaCard: some View {
         VStack(alignment: .leading, spacing: VeyraSpacing.md) {
-            Label("Shared media", systemImage: "photo.on.rectangle.angled")
-                .font(VeyraTypography.title)
-                .foregroundStyle(VeyraColor.textPrimary)
+            HStack {
+                Label("Shared media", systemImage: "photo.on.rectangle.angled")
+                    .font(VeyraTypography.title)
+                    .foregroundStyle(VeyraColor.textPrimary)
+
+                Spacer()
+
+                if sharedMedia.count > 4 {
+                    NavigationLink {
+                        SharedMediaGalleryView(messages: sharedMedia)
+                    } label: {
+                        Label("See all", systemImage: "chevron.right")
+                            .labelStyle(.titleAndIcon)
+                            .font(VeyraTypography.caption.weight(.semibold))
+                            .foregroundStyle(VeyraColor.accent)
+                    }
+                }
+            }
 
             if isLoading && sharedMedia.isEmpty {
                 ProgressView()
@@ -159,7 +174,7 @@ struct PublicProfileView: View {
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: VeyraSpacing.sm) {
-                        ForEach(sharedMedia) { message in
+                        ForEach(Array(sharedMedia.prefix(4))) { message in
                             if let url = message.imageURL {
                                 Button {
                                     selectedImage = FullScreenImage(
@@ -219,14 +234,84 @@ struct PublicProfileView: View {
 
         if let conversationID {
             do {
-                sharedMedia = try await repository
-                    .fetchMessages(conversationID: conversationID, before: nil, limit: 100)
-                    .filter { $0.imageURL != nil }
-                    .sorted { $0.sentAt > $1.sentAt }
+                sharedMedia = try await loadAllSharedMedia(
+                    conversationID: conversationID,
+                    repository: repository
+                )
             } catch {
                 if errorMessage == nil {
                     errorMessage = "Unable to load shared media."
                 }
+            }
+        }
+    }
+
+    private func loadAllSharedMedia(
+        conversationID: UUID,
+        repository: any RemoteChatRepository
+    ) async throws -> [Message] {
+        var before: Date?
+        var media: [Message] = []
+
+        while true {
+            let page = try await repository.fetchMessages(
+                conversationID: conversationID,
+                before: before,
+                limit: 100
+            )
+            media.append(contentsOf: page.filter { $0.imageURL != nil })
+
+            guard page.count == 100, let oldestDate = page.last?.sentAt else { break }
+            before = oldestDate
+        }
+
+        return media.sorted { $0.sentAt > $1.sentAt }
+    }
+}
+
+private struct SharedMediaGalleryView: View {
+    let messages: [Message]
+    @State private var selectedImage: FullScreenImage?
+
+    private let columns = Array(
+        repeating: GridItem(.flexible(), spacing: VeyraSpacing.xs),
+        count: 3
+    )
+
+    var body: some View {
+        ScrollView {
+            LazyVGrid(columns: columns, spacing: VeyraSpacing.xs) {
+                ForEach(messages) { message in
+                    if let url = message.imageURL {
+                        Button {
+                            selectedImage = FullScreenImage(
+                                url: url,
+                                canSave: message.direction == .incoming
+                            )
+                        } label: {
+                            VeyraCachedImage(url: url) { image in
+                                image.resizable().scaledToFill()
+                            } placeholder: {
+                                ProgressView()
+                            }
+                            .frame(maxWidth: .infinity)
+                            .aspectRatio(1, contentMode: .fit)
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Open shared photo")
+                    }
+                }
+            }
+            .padding(VeyraSpacing.md)
+        }
+        .background(VeyraColor.background.ignoresSafeArea())
+        .navigationTitle("Shared media")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .tabBar)
+        .fullScreenCover(item: $selectedImage) { image in
+            FullScreenImageView(url: image.url, canSave: image.canSave) {
+                selectedImage = nil
             }
         }
     }
