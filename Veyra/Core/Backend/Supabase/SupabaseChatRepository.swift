@@ -18,6 +18,10 @@ protocol RemoteChatRepository: Sendable {
     func fetchContacts() async throws -> [Contact]
     func searchPeople(query: String) async throws -> [User]
     func fetchPublicProfile(userID: UUID) async throws -> User
+    func fetchBlockRelationship(userID: UUID) async throws -> BlockRelationship
+    func setUserBlocked(userID: UUID, isBlocked: Bool) async throws
+    func fetchBlockedUsers() async throws -> [User]
+    func canSendMessages(conversationID: UUID) async throws -> Bool
     func fetchMyProfile() async throws -> UserProfile
     func updateMyProfile(displayName: String, username: String, bio: String, email: String) async throws -> UserProfile
     func updateMyAvatar(_ data: Data) async throws -> UserProfile
@@ -132,6 +136,9 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
     }
 
     func sendMessage(_ text: String, conversationID: UUID, replyingTo messageID: UUID? = nil, clientMessageID: UUID? = nil) async throws -> Message {
+        guard try await canSendMessages(conversationID: conversationID) else {
+            throw ChatRepositoryError.messagingBlocked
+        }
         let currentUserID = try await client.auth.session.user.id
         let identifier = clientMessageID ?? UUID()
         let payload = NewMessageRow(id: identifier, conversationID: conversationID, senderID: currentUserID, body: text, replyToMessageID: messageID)
@@ -167,6 +174,9 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
     }
 
     func sendImage(_ data: Data, conversationID: UUID) async throws -> Message {
+        guard try await canSendMessages(conversationID: conversationID) else {
+            throw ChatRepositoryError.messagingBlocked
+        }
         let currentUserID = try await client.auth.session.user.id
         let path = [
             currentUserID.uuidString.lowercased(),
@@ -235,6 +245,38 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             .execute()
             .value
         return row.user(avatarURL: try await signedAvatarURL(path: row.avatarPath))
+    }
+
+    func fetchBlockRelationship(userID: UUID) async throws -> BlockRelationship {
+        let rows: [BlockRelationshipRow] = try await client
+            .rpc("get_block_relationship", params: ["target_user_id": userID.uuidString])
+            .execute()
+            .value
+        guard let row = rows.first else { return BlockRelationship() }
+        return BlockRelationship(isBlockedByMe: row.isBlockedByMe, isBlockedByThem: row.isBlockedByThem)
+    }
+
+    func setUserBlocked(userID: UUID, isBlocked: Bool) async throws {
+        try await client.rpc(
+            "set_user_block",
+            params: UserBlockParameters(userID: userID, shouldBlock: isBlocked)
+        ).execute()
+    }
+
+    func fetchBlockedUsers() async throws -> [User] {
+        let rows: [PeopleSearchRow] = try await client.rpc("list_blocked_users").execute().value
+        var users: [User] = []
+        for row in rows {
+            users.append(row.user(avatarURL: try? await signedAvatarURL(path: row.avatarPath)))
+        }
+        return users
+    }
+
+    func canSendMessages(conversationID: UUID) async throws -> Bool {
+        try await client
+            .rpc("can_send_to_conversation", params: ["target_conversation_id": conversationID.uuidString])
+            .execute()
+            .value
     }
 
     func updateMyProfile(displayName: String, username: String, bio: String, email: String) async throws -> UserProfile {
@@ -444,7 +486,20 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
 
 enum ChatRepositoryError: LocalizedError {
     case conversationNotFound
-    var errorDescription: String? { "The conversation could not be loaded." }
+    case messagingBlocked
+
+    var errorDescription: String? {
+        switch self {
+        case .conversationNotFound: "The conversation could not be loaded."
+        case .messagingBlocked: "Messages are unavailable while either user is blocked."
+        }
+    }
+}
+
+struct BlockRelationship: Equatable, Sendable {
+    var isBlockedByMe = false
+    var isBlockedByThem = false
+    var preventsMessaging: Bool { isBlockedByMe || isBlockedByThem }
 }
 
 private struct ConversationRow: Decodable {
@@ -529,6 +584,26 @@ private struct PeopleSearchParameters: Encodable {
     enum CodingKeys: String, CodingKey {
         case searchQuery = "search_query"
         case resultLimit = "result_limit"
+    }
+}
+
+private struct BlockRelationshipRow: Decodable {
+    let isBlockedByMe: Bool
+    let isBlockedByThem: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case isBlockedByMe = "is_blocked_by_me"
+        case isBlockedByThem = "is_blocked_by_them"
+    }
+}
+
+private struct UserBlockParameters: Encodable {
+    let userID: UUID
+    let shouldBlock: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case userID = "target_user_id"
+        case shouldBlock = "should_block"
     }
 }
 

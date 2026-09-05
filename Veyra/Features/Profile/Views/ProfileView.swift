@@ -54,6 +54,8 @@ struct ProfileView: View {
             .navigationDestination(for: Route.self) { route in
                 if route == .personalDetails {
                     PersonalDetailsView(viewModel: viewModel)
+                } else if route == .privacy {
+                    BlockedUsersView(repository: viewModel.profileRepository)
                 } else {
                     ProfileDetailPlaceholder(route: route.rawValue, systemImage: route.icon)
                 }
