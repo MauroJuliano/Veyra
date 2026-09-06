@@ -4,6 +4,7 @@ import Observation
 @Observable
 final class RegistrationViewModel {
     var name = ""
+    var username = ""
     var email = ""
     var password = ""
     var passwordConfirmation = ""
@@ -12,6 +13,7 @@ final class RegistrationViewModel {
 
     var canSubmit: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && !username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             && !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             && !password.isEmpty
             && !passwordConfirmation.isEmpty
@@ -20,12 +22,20 @@ final class RegistrationViewModel {
 
     func submit() -> Bool {
         let normalizedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalizedUsername = username
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(in: CharacterSet(charactersIn: "@"))
+            .lowercased()
+        let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         guard normalizedName.count >= 2 else {
             validationMessage = "Enter your full name."
             return false
         }
-        guard normalizedEmail.contains("@"), normalizedEmail.contains(".") else {
+        guard normalizedUsername.range(of: "^[a-z0-9_]{3,30}$", options: .regularExpression) != nil else {
+            validationMessage = "Username must contain 3–30 lowercase letters, numbers, or underscores."
+            return false
+        }
+        guard normalizedEmail.range(of: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", options: .regularExpression) != nil else {
             validationMessage = "Enter a valid email address."
             return false
         }
@@ -42,6 +52,7 @@ final class RegistrationViewModel {
             return false
         }
         name = normalizedName
+        username = normalizedUsername
         email = normalizedEmail
         validationMessage = nil
         return true

@@ -30,9 +30,9 @@ final class AuthenticationCoordinator {
         }
     }
 
-    func signUp(name: String, email: String, password: String) async {
+    func signUp(name: String, username: String, email: String, password: String) async {
         await perform {
-            switch try await service.signUp(name: name, email: email, password: password) {
+            switch try await service.signUp(name: name, username: username, email: email, password: password) {
             case .authenticated: route = .authenticated
             case .requiresEmailConfirmation(let email): route = .emailConfirmation(email)
             }

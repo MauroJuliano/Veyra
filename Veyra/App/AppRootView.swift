@@ -22,8 +22,8 @@ struct AppRootView: View {
                 isLoading: authentication.isLoading,
                 externalError: authentication.errorMessage,
                 onBack: authentication.showLogin,
-                onRegistered: { name, email, password in
-                    Task { await authentication.signUp(name: name, email: email, password: password) }
+                onRegistered: { name, username, email, password in
+                    Task { await authentication.signUp(name: name, username: username, email: email, password: password) }
                 }
             )
             .transition(.opacity)
