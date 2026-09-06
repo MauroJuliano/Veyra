@@ -29,6 +29,11 @@ The project intentionally has no CocoaPods. Its only application dependency is t
 
 ## Supabase configuration
 
+Backend infrastructure is maintained separately in
+[`MauroJuliano/Veyra-Supabase`](https://github.com/MauroJuliano/Veyra-Supabase).
+This repository focuses on the native iOS application; database migrations,
+functions, triggers, and Row Level Security policies live in the backend repository.
+
 1. Copy `Veyra/Configuration/Secrets.xcconfig.example` to `Veyra/Configuration/Secrets.xcconfig`.
 2. Add the project URL and publishable key from the Supabase dashboard.
 3. Never add a `service_role` key or database password to the iOS project.
