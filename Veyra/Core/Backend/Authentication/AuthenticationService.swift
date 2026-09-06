@@ -1,5 +1,5 @@
 import Foundation
-import Supabase
+@preconcurrency import Supabase
 
 enum RegistrationOutcome: Equatable {
     case authenticated
@@ -8,9 +8,13 @@ enum RegistrationOutcome: Equatable {
 
 enum AuthenticationServiceError: LocalizedError, Equatable {
     case missingConfiguration
+    case usernameAlreadyInUse
 
     var errorDescription: String? {
-        "Supabase is not configured on this device."
+        switch self {
+        case .missingConfiguration: "Supabase is not configured on this device."
+        case .usernameAlreadyInUse: "This username is already in use."
+        }
     }
 }
 
@@ -18,7 +22,7 @@ enum AuthenticationServiceError: LocalizedError, Equatable {
 protocol AuthenticationService {
     var hasSession: Bool { get }
     func signIn(email: String, password: String) async throws
-    func signUp(name: String, email: String, password: String) async throws -> RegistrationOutcome
+    func signUp(name: String, username: String, email: String, password: String) async throws -> RegistrationOutcome
     func signOut() async throws
 }
 
@@ -36,11 +40,15 @@ final class SupabaseAuthenticationService: AuthenticationService {
         try await client.auth.signIn(email: email, password: password)
     }
 
-    func signUp(name: String, email: String, password: String) async throws -> RegistrationOutcome {
+    func signUp(name: String, username: String, email: String, password: String) async throws -> RegistrationOutcome {
+        guard try await isUsernameAvailable(client: client, username: username) else {
+            throw AuthenticationServiceError.usernameAlreadyInUse
+        }
+
         let response = try await client.auth.signUp(
             email: email,
             password: password,
-            data: ["display_name": .string(name)]
+            data: ["display_name": .string(name), "username": .string(username)]
         )
         return response.session == nil ? .requiresEmailConfirmation(email) : .authenticated
     }
@@ -54,8 +62,21 @@ final class SupabaseAuthenticationService: AuthenticationService {
 final class UnavailableAuthenticationService: AuthenticationService {
     var hasSession: Bool { false }
     func signIn(email: String, password: String) async throws { throw AuthenticationServiceError.missingConfiguration }
-    func signUp(name: String, email: String, password: String) async throws -> RegistrationOutcome { throw AuthenticationServiceError.missingConfiguration }
+    func signUp(name: String, username: String, email: String, password: String) async throws -> RegistrationOutcome { throw AuthenticationServiceError.missingConfiguration }
     func signOut() async throws { throw AuthenticationServiceError.missingConfiguration }
+}
+
+private struct UsernameAvailability: Decodable, Sendable {
+    let available: Bool
+}
+
+private func isUsernameAvailable(client: SupabaseClient, username: String) async throws -> Bool {
+    let availability: UsernameAvailability = try await client
+        .rpc("check_username_availability", params: ["requested_username": username])
+        .single()
+        .execute()
+        .value
+    return availability.available
 }
 
 @MainActor

@@ -5,9 +5,9 @@ struct RegistrationView: View {
     let isLoading: Bool
     let externalError: String?
     let onBack: () -> Void
-    let onRegistered: (String, String, String) -> Void
+    let onRegistered: (String, String, String, String) -> Void
 
-    init(viewModel: RegistrationViewModel = RegistrationViewModel(), isLoading: Bool = false, externalError: String? = nil, onBack: @escaping () -> Void, onRegistered: @escaping (String, String, String) -> Void) {
+    init(viewModel: RegistrationViewModel = RegistrationViewModel(), isLoading: Bool = false, externalError: String? = nil, onBack: @escaping () -> Void, onRegistered: @escaping (String, String, String, String) -> Void) {
         _viewModel = State(initialValue: viewModel)
         self.isLoading = isLoading
         self.externalError = externalError
@@ -37,6 +37,7 @@ struct RegistrationView: View {
                         }
 
                         field("Full name", icon: "person", text: $viewModel.name, contentType: .name)
+                        field("Username", icon: "at", text: $viewModel.username, contentType: .username)
                         field("Email", icon: "envelope", text: $viewModel.email, contentType: .emailAddress)
                         secureField("Password", text: $viewModel.password, contentType: .newPassword)
                         secureField("Confirm password", text: $viewModel.passwordConfirmation, contentType: .newPassword)
@@ -54,7 +55,7 @@ struct RegistrationView: View {
                         }
 
                         Button {
-                            if viewModel.submit() { onRegistered(viewModel.name, viewModel.email, viewModel.password) }
+                            if viewModel.submit() { onRegistered(viewModel.name, viewModel.username, viewModel.email, viewModel.password) }
                         } label: {
                             HStack {
                                 Spacer()
@@ -94,8 +95,8 @@ struct RegistrationView: View {
             Image(systemName: icon).foregroundStyle(VeyraColor.accent)
             TextField(title, text: text)
                 .textContentType(contentType)
-                .textInputAutocapitalization(contentType == .emailAddress ? .never : .words)
-                .autocorrectionDisabled(contentType == .emailAddress)
+                .textInputAutocapitalization(contentType == .emailAddress || contentType == .username ? .never : .words)
+                .autocorrectionDisabled(contentType == .emailAddress || contentType == .username)
         }
         .padding(.horizontal, VeyraSpacing.md)
         .frame(height: 64)
@@ -127,5 +128,5 @@ struct RegistrationView: View {
 }
 
 #Preview("Registration") {
-    RegistrationView(onBack: {}, onRegistered: { _, _, _ in })
+    RegistrationView(onBack: {}, onRegistered: { _, _, _, _ in })
 }

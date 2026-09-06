@@ -18,7 +18,7 @@ struct AuthenticationCoordinatorTests {
     @Test func registrationCanRequireEmailConfirmation() async {
         let service = AuthenticationServiceSpy(registrationOutcome: .requiresEmailConfirmation("user@veyra.app"))
         let coordinator = AuthenticationCoordinator(service: service)
-        await coordinator.signUp(name: "User", email: "user@veyra.app", password: "password")
+        await coordinator.signUp(name: "User", username: "user", email: "user@veyra.app", password: "password")
         #expect(coordinator.route == .emailConfirmation("user@veyra.app"))
     }
 
@@ -45,7 +45,7 @@ private final class AuthenticationServiceSpy: AuthenticationService {
     }
 
     func signIn(email: String, password: String) async throws { if let error { throw error } }
-    func signUp(name: String, email: String, password: String) async throws -> RegistrationOutcome {
+    func signUp(name: String, username: String, email: String, password: String) async throws -> RegistrationOutcome {
         if let error { throw error }
         return registrationOutcome
     }
