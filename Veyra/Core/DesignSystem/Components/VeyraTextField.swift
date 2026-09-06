@@ -7,11 +7,11 @@ struct VeyraTextField: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: VeyraSpacing.xs) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(VeyraTypography.caption)
                 .foregroundStyle(VeyraColor.textSecondary)
 
-            TextField(placeholder, text: $text)
+            TextField(LocalizedStringKey(placeholder), text: $text)
                 .font(VeyraTypography.body)
                 .foregroundStyle(VeyraColor.textPrimary)
                 .padding(.horizontal, VeyraSpacing.md)

@@ -183,7 +183,7 @@ struct MessageTimelineView: View {
             HStack(spacing: 0) {
                 Rectangle().fill(VeyraColor.accent).frame(width: 4, height: 64)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(message.direction == .outgoing ? "You" : conversation.participantName)
+                    Text(message.direction == .outgoing ? String(localized: "You") : conversation.participantName)
                         .font(VeyraTypography.bodyEmphasized)
                         .foregroundStyle(VeyraColor.accent)
                     Text(message.imageURL == nil ? message.text : "Photo")
@@ -269,9 +269,9 @@ struct MessageTimelineView: View {
     }
 
     private var participantStatus: String {
-        if viewModel.isParticipantActive { return "Active" }
-        guard let lastSeenAt = viewModel.participantLastSeenAt else { return "Offline" }
-        return "Last seen at \(lastSeenAt.formatted(date: .omitted, time: .shortened))"
+        if viewModel.isParticipantActive { return String(localized: "Active") }
+        guard let lastSeenAt = viewModel.participantLastSeenAt else { return String(localized: "Offline") }
+        return String(localized: "Last seen at \(lastSeenAt.formatted(date: .omitted, time: .shortened))")
     }
 
     private func sendSelectedPhoto(_ item: PhotosPickerItem?) {
@@ -358,7 +358,7 @@ private struct MessageActionsOverlay: View {
     private func actionButton(_ title: String, icon: String, color: Color = .white, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack {
-                Text(title)
+                Text(LocalizedStringKey(title))
                 Spacer()
                 Image(systemName: icon)
             }
@@ -374,7 +374,7 @@ private struct MessageActionsOverlay: View {
 private enum ImageSelectionError: LocalizedError {
     case noData
 
-    var errorDescription: String? { "The selected image could not be loaded." }
+    var errorDescription: String? { String(localized: "The selected image could not be loaded.") }
 }
 
 struct FullScreenImage: Identifiable {
@@ -469,14 +469,14 @@ struct FullScreenImageView: View {
             guard let url = currentImage?.url else { return }
             let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
             guard status == .authorized || status == .limited else {
-                saveMessage = "Allow photo access in Settings to save received images."
+                saveMessage = String(localized: "Allow photo access in Settings to save received images.")
                 return
             }
             let (data, _) = try await URLSession.shared.data(from: url)
             try await saveImageData(data)
-            saveMessage = "Image saved to Photos."
+            saveMessage = String(localized: "Image saved to Photos.")
         } catch {
-            saveMessage = "The image could not be saved. \(error.localizedDescription)"
+            saveMessage = String(localized: "The image could not be saved. \(error.localizedDescription)")
         }
     }
 
@@ -501,7 +501,7 @@ private enum PhotoSaveError: LocalizedError {
     case unknownFailure
 
     var errorDescription: String? {
-        "Photos did not complete the save operation."
+        String(localized: "Photos did not complete the save operation.")
     }
 }
 

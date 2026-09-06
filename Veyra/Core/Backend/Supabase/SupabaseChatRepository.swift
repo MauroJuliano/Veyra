@@ -498,8 +498,8 @@ enum ChatRepositoryError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .conversationNotFound: "The conversation could not be loaded."
-        case .messagingBlocked: "Messages are unavailable while either user is blocked."
+        case .conversationNotFound: String(localized: "The conversation could not be loaded.")
+        case .messagingBlocked: String(localized: "Messages are unavailable while either user is blocked.")
         }
     }
 }
@@ -763,7 +763,7 @@ private struct MessageRow: Decodable {
             imageURL: imageURL,
             isSticker: isSticker,
             replyPreview: replyToMessageID.map {
-                Message.ReplyPreview(messageID: $0, text: replyBody ?? "Message unavailable", isOwnMessage: replySenderID == currentUserID)
+                Message.ReplyPreview(messageID: $0, text: replyBody ?? String(localized: "Message unavailable"), isOwnMessage: replySenderID == currentUserID)
             },
             reactions: (reactions ?? []).map {
                 Message.Reaction(emoji: $0.emoji, count: $0.count, isSelectedByCurrentUser: $0.selected)

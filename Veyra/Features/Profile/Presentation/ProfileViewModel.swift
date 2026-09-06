@@ -33,20 +33,20 @@ final class ProfileViewModel {
         let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         let normalizedBio = bio.trimmingCharacters(in: .whitespacesAndNewlines)
         guard name.count >= 2 else {
-            validationMessage = "Enter a valid display name."
+            validationMessage = String(localized: "Enter a valid display name.")
             return false
         }
         let validUsername = handle.range(of: "^[a-zA-Z0-9_]{3,30}$", options: .regularExpression) != nil
         guard validUsername else {
-            validationMessage = "Username must have 3–30 letters, numbers or underscores."
+            validationMessage = String(localized: "Username must have 3–30 letters, numbers or underscores.")
             return false
         }
         guard normalizedEmail.range(of: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", options: .regularExpression) != nil else {
-            validationMessage = "Enter a valid email address."
+            validationMessage = String(localized: "Enter a valid email address.")
             return false
         }
         guard normalizedBio.count <= 120 else {
-            validationMessage = "Bio must contain at most 120 characters."
+            validationMessage = String(localized: "Bio must contain at most 120 characters.")
             return false
         }
 
@@ -64,9 +64,9 @@ final class ProfileViewModel {
             } catch {
                 let description = error.localizedDescription.lowercased()
                 if description.contains("username") || description.contains("profiles_username_key") {
-                    validationMessage = "This username is already in use."
+                    validationMessage = String(localized: "This username is already in use.")
                 } else if description.contains("email") || description.contains("already registered") {
-                    validationMessage = "This email is already in use."
+                    validationMessage = String(localized: "This email is already in use.")
                 } else {
                     validationMessage = error.localizedDescription
                 }

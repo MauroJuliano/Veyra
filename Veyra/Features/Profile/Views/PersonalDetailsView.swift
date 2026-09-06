@@ -119,7 +119,7 @@ private extension PersonalDetailsView {
         prefix: String? = nil
     ) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
@@ -130,7 +130,7 @@ private extension PersonalDetailsView {
                         .foregroundStyle(.primary)
                 }
 
-                TextField(placeholder, text: text)
+                TextField(LocalizedStringKey(placeholder), text: text)
                     .font(.title3)
                     .foregroundStyle(.primary)
 

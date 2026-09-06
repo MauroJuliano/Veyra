@@ -86,7 +86,7 @@ struct PublicProfileView: View {
         }
         .sheet(isPresented: $showsReport) {
             ReportUserView(user: user, repository: repository) {
-                reportConfirmation = "Thanks. Your report was submitted for review."
+                reportConfirmation = String(localized: "Thanks. Your report was submitted for review.")
             }
         }
         .alert("Report submitted", isPresented: reportConfirmationIsPresented) {
@@ -176,9 +176,9 @@ struct PublicProfileView: View {
     }
 
     private var primaryActionTitle: String {
-        if blockRelationship.isBlockedByMe { return "Unblock" }
-        if blockRelationship.isBlockedByThem { return "Messaging unavailable" }
-        return "Message"
+        if blockRelationship.isBlockedByMe { return String(localized: "Unblock") }
+        if blockRelationship.isBlockedByThem { return String(localized: "Messaging unavailable") }
+        return String(localized: "Message")
     }
 
     private var primaryActionIcon: String {
@@ -192,7 +192,7 @@ struct PublicProfileView: View {
                 .foregroundStyle(VeyraColor.textPrimary)
 
             if let isActive {
-                Label(isActive ? "Active now" : "Offline", systemImage: "circle.fill")
+                Label(LocalizedStringKey(isActive ? "Active now" : "Offline"), systemImage: "circle.fill")
                     .font(VeyraTypography.body)
                     .foregroundStyle(isActive ? VeyraColor.success : VeyraColor.textSecondary)
             }
@@ -272,7 +272,7 @@ struct PublicProfileView: View {
     }
 
     private var displayedBio: String {
-        user.bio.flatMap { $0.isEmpty ? nil : $0 } ?? "No bio yet"
+        user.bio.flatMap { $0.isEmpty ? nil : $0 } ?? String(localized: "No bio yet")
     }
 
     private var reportConfirmationIsPresented: Binding<Bool> {
@@ -315,7 +315,7 @@ struct PublicProfileView: View {
                 blockRelationship = try await repository.fetchBlockRelationship(userID: userID)
                 errorMessage = nil
             } catch {
-                errorMessage = "Unable to refresh this profile."
+                errorMessage = String(localized: "Unable to refresh this profile.")
             }
         }
 
@@ -327,7 +327,7 @@ struct PublicProfileView: View {
                 )
             } catch {
                 if errorMessage == nil {
-                    errorMessage = "Unable to load shared media."
+                    errorMessage = String(localized: "Unable to load shared media.")
                 }
             }
         }
@@ -343,7 +343,7 @@ struct PublicProfileView: View {
             blockRelationship = try await repository.fetchBlockRelationship(userID: userID)
             errorMessage = nil
         } catch {
-            errorMessage = "Unable to update this block setting."
+            errorMessage = String(localized: "Unable to update this block setting.")
         }
     }
 

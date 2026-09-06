@@ -42,9 +42,9 @@ struct ConversationListView: View {
                     ProgressView("Loading conversations…")
                 } else if viewModel.filteredConversations.isEmpty {
                     ContentUnavailableView {
-                        Label(viewModel.hasSearchQuery ? "No conversations found" : "No conversations yet", systemImage: viewModel.hasSearchQuery ? "magnifyingglass" : "message")
+                        Label(LocalizedStringKey(viewModel.hasSearchQuery ? "No conversations found" : "No conversations yet"), systemImage: viewModel.hasSearchQuery ? "magnifyingglass" : "message")
                     } description: {
-                        Text(viewModel.hasSearchQuery ? "Try another name or message." : "Your conversations will appear here.")
+                        Text(LocalizedStringKey(viewModel.hasSearchQuery ? "Try another name or message." : "Your conversations will appear here."))
                     }
                 } else {
                     ScrollView {
@@ -91,7 +91,7 @@ struct ConversationListView: View {
                     selectedConversation = conversation
                     return nil
                 }
-                return viewModel.errorMessage ?? "Unable to start this conversation."
+                return viewModel.errorMessage ?? String(localized: "Unable to start this conversation.")
             }
         }
         .task { await viewModel.observeConversations() }

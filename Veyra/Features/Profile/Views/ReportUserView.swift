@@ -11,11 +11,11 @@ private enum ReportReason: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .spam: "Spam"
-        case .harassment: "Harassment or bullying"
-        case .impersonation: "Pretending to be someone else"
-        case .inappropriateContent: "Inappropriate content"
-        case .other: "Something else"
+        case .spam: String(localized: "Spam")
+        case .harassment: String(localized: "Harassment or bullying")
+        case .impersonation: String(localized: "Pretending to be someone else")
+        case .inappropriateContent: String(localized: "Inappropriate content")
+        case .other: String(localized: "Something else")
         }
     }
 }
@@ -94,7 +94,7 @@ struct ReportUserView: View {
     @MainActor
     private func submit() async {
         guard let repository, let userID = user.participantID else {
-            errorMessage = "Reporting is unavailable right now."
+            errorMessage = String(localized: "Reporting is unavailable right now.")
             return
         }
         isSubmitting = true
@@ -109,9 +109,9 @@ struct ReportUserView: View {
             dismiss()
         } catch {
             if error.localizedDescription.lowercased().contains("already pending") {
-                errorMessage = "You already have a report pending for this user."
+                errorMessage = String(localized: "You already have a report pending for this user.")
             } else {
-                errorMessage = "The report could not be submitted. Please try again."
+                errorMessage = String(localized: "The report could not be submitted. Please try again.")
             }
         }
     }

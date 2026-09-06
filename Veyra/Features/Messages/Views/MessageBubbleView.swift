@@ -20,7 +20,7 @@ struct MessageBubbleView: View {
             VStack(alignment: message.direction == .incoming ? .leading : .trailing, spacing: VeyraSpacing.xs) {
                 if let reply = message.replyPreview {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(reply.isOwnMessage ? "You" : participantName)
+                        Text(reply.isOwnMessage ? String(localized: "You") : participantName)
                             .font(VeyraTypography.caption)
                             .foregroundStyle(VeyraColor.accent)
                         Text(reply.text)
@@ -159,7 +159,7 @@ struct MessageReceiptIcon: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(isRead ? "Read" : "Sent")
+        .accessibilityLabel(Text(isRead ? "Read" : "Sent"))
     }
 }
 

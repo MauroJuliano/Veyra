@@ -28,27 +28,27 @@ final class RegistrationViewModel {
             .lowercased()
         let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         guard normalizedName.count >= 2 else {
-            validationMessage = "Enter your full name."
+            validationMessage = String(localized: "Enter your full name.")
             return false
         }
         guard normalizedUsername.range(of: "^[a-z0-9_]{3,30}$", options: .regularExpression) != nil else {
-            validationMessage = "Username must contain 3–30 lowercase letters, numbers, or underscores."
+            validationMessage = String(localized: "Username must contain 3–30 lowercase letters, numbers, or underscores.")
             return false
         }
         guard normalizedEmail.range(of: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", options: .regularExpression) != nil else {
-            validationMessage = "Enter a valid email address."
+            validationMessage = String(localized: "Enter a valid email address.")
             return false
         }
         guard password.count >= 6 else {
-            validationMessage = "Password must contain at least 6 characters."
+            validationMessage = String(localized: "Password must contain at least 6 characters.")
             return false
         }
         guard password == passwordConfirmation else {
-            validationMessage = "Passwords do not match."
+            validationMessage = String(localized: "Passwords do not match.")
             return false
         }
         guard acceptsTerms else {
-            validationMessage = "Accept the terms to continue."
+            validationMessage = String(localized: "Accept the terms to continue.")
             return false
         }
         name = normalizedName

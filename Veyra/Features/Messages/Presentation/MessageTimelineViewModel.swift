@@ -144,7 +144,7 @@ final class MessageTimelineViewModel {
         let reply = replyingTo
         guard let repository else {
             let preview = reply.map {
-                Message.ReplyPreview(messageID: $0.id, text: $0.imageURL == nil ? $0.text : "Photo", isOwnMessage: $0.direction == .outgoing)
+                Message.ReplyPreview(messageID: $0.id, text: $0.imageURL == nil ? $0.text : String(localized: "Photo"), isOwnMessage: $0.direction == .outgoing)
             }
             messages.append(Message(text: text, direction: .outgoing, replyPreview: preview))
             draft = ""
@@ -152,7 +152,7 @@ final class MessageTimelineViewModel {
             return
         }
         let preview = reply.map {
-            Message.ReplyPreview(messageID: $0.id, text: $0.imageURL == nil ? $0.text : "Photo", isOwnMessage: $0.direction == .outgoing)
+            Message.ReplyPreview(messageID: $0.id, text: $0.imageURL == nil ? $0.text : String(localized: "Photo"), isOwnMessage: $0.direction == .outgoing)
         }
         let pending = Message(text: text, direction: .outgoing, replyPreview: preview, deliveryState: .sending)
         appendIfNeeded(pending)

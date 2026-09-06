@@ -43,7 +43,7 @@ struct ContactListView: View {
                 ContentUnavailableView(
                     "No contacts yet",
                     systemImage: "person.2",
-                    description: Text(errorMessage ?? "People you start conversations with will appear here.")
+                    description: Text(errorMessage ?? String(localized: "People you start conversations with will appear here."))
                 )
             } else {
                 List {
@@ -150,7 +150,7 @@ struct ContactListView: View {
                     .font(VeyraTypography.bodyEmphasized)
                     .foregroundStyle(VeyraColor.textPrimary)
 
-                Text(contact.bio.flatMap { $0.isEmpty ? nil : $0 } ?? "No bio yet")
+                Text(contact.bio.flatMap { $0.isEmpty ? nil : $0 } ?? String(localized: "No bio yet"))
                     .font(VeyraTypography.body)
                     .foregroundStyle(VeyraColor.textSecondary)
                     .lineLimit(1)

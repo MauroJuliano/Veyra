@@ -13,7 +13,7 @@ struct VeyraPrimaryButton: View {
                     Image(systemName: systemImage)
                 }
 
-                Text(title)
+                Text(LocalizedStringKey(title))
             }
             .font(VeyraTypography.bodyEmphasized)
             .frame(maxWidth: .infinity)
