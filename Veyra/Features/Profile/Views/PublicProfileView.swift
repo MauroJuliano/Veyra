@@ -12,6 +12,7 @@ struct PublicProfileView: View {
     @State private var isUpdatingBlock = false
     @State private var showsReport = false
     @State private var reportConfirmation: String?
+    @State private var activeVoiceCall: VoiceCall?
 
     let repository: (any RemoteChatRepository)?
     let conversationID: UUID?
@@ -72,6 +73,9 @@ struct PublicProfileView: View {
                 selectedImage = nil
             }
         }
+        .fullScreenCover(item: $activeVoiceCall) { call in
+            VoiceCallView(call: call)
+        }
         .confirmationDialog(
             "Block \(user.participantName)?",
             isPresented: $confirmsBlock,
@@ -131,36 +135,62 @@ struct PublicProfileView: View {
 
     private var profileActions: some View {
         VStack(spacing: VeyraSpacing.sm) {
-            Button {
-                if blockRelationship.isBlockedByMe {
-                    Task { await updateBlockState(false) }
-                } else if !blockRelationship.isBlockedByThem {
-                    Task {
-                        if let onMessage {
-                            await onMessage(user)
-                        } else {
-                            dismiss()
+            HStack(spacing: VeyraSpacing.md) {
+                Button {
+                    if blockRelationship.isBlockedByMe {
+                        Task { await updateBlockState(false) }
+                    } else if !blockRelationship.isBlockedByThem {
+                        Task {
+                            if let onMessage {
+                                await onMessage(user)
+                            } else {
+                                dismiss()
+                            }
                         }
                     }
+                } label: {
+                    Label(primaryActionTitle, systemImage: primaryActionIcon)
+                        .font(VeyraTypography.bodyEmphasized)
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background {
+                            LinearGradient(
+                                colors: [VeyraColor.accent, VeyraColor.accent.opacity(0.65)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        }
+                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        .shadow(color: VeyraColor.accent.opacity(0.22), radius: 18, y: 8)
                 }
-            } label: {
-                Label(primaryActionTitle, systemImage: primaryActionIcon)
-                .font(VeyraTypography.bodyEmphasized)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 56)
-                .background {
-                    LinearGradient(
-                        colors: [VeyraColor.accent, VeyraColor.accent.opacity(0.65)],
-                        startPoint: .leading,
-                        endPoint: .trailing
+                .buttonStyle(.plain)
+                .disabled(isUpdatingBlock || blockRelationship.isBlockedByThem)
+
+                Button {
+                    activeVoiceCall = VoiceCall(
+                        participantID: user.participantID,
+                        participantName: user.participantName,
+                        participantAvatarURL: user.participantAvatarURL
                     )
+                } label: {
+                    Label("Call", systemImage: "phone")
+                        .font(VeyraTypography.bodyEmphasized)
+                        .foregroundStyle(VeyraColor.accent)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background {
+                            GlassBackground(cornerRadius: 18, tintOpacity: 0.08, glowOpacity: 0.12)
+                        }
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .stroke(VeyraColor.accent.opacity(0.8), lineWidth: 1)
+                        }
+                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                 }
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .shadow(color: VeyraColor.accent.opacity(0.22), radius: 18, y: 8)
+                .buttonStyle(.plain)
+                .disabled(blockRelationship.preventsMessaging)
             }
-            .buttonStyle(.plain)
-            .disabled(isUpdatingBlock || blockRelationship.isBlockedByThem)
 
             if !blockRelationship.preventsMessaging {
                 Button(role: .destructive) {

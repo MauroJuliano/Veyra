@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F03900000000000000000001 /* VoiceCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = F03900000000000000000011 /* VoiceCall.swift */; };
+		F03900000000000000000002 /* VoiceCallCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F03900000000000000000012 /* VoiceCallCoordinator.swift */; };
+		F03900000000000000000003 /* VoiceCallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F03900000000000000000013 /* VoiceCallView.swift */; };
+		F03900000000000000000004 /* VoiceCallCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F03900000000000000000014 /* VoiceCallCoordinatorTests.swift */; };
 		F03800000000000000000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F03800000000000000000011 /* Localizable.xcstrings */; };
 		F03800000000000000000002 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F03800000000000000000012 /* InfoPlist.xcstrings */; };
 		F03800000000000000000003 /* LocalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F03800000000000000000013 /* LocalizationTests.swift */; };
@@ -96,6 +100,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		F03900000000000000000011 /* VoiceCall.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoiceCall.swift; sourceTree = "<group>"; };
+		F03900000000000000000012 /* VoiceCallCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoiceCallCoordinator.swift; sourceTree = "<group>"; };
+		F03900000000000000000013 /* VoiceCallView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoiceCallView.swift; sourceTree = "<group>"; };
+		F03900000000000000000014 /* VoiceCallCoordinatorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoiceCallCoordinatorTests.swift; sourceTree = "<group>"; };
 		F03800000000000000000011 /* Localizable.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		F03800000000000000000012 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		F03800000000000000000013 /* LocalizationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LocalizationTests.swift; sourceTree = "<group>"; };
@@ -198,6 +206,40 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F03900000000000000000021 /* Calls */ = {
+			isa = PBXGroup;
+			children = (
+				F03900000000000000000022 /* Models */,
+				F03900000000000000000023 /* Presentation */,
+				F03900000000000000000024 /* Views */,
+			);
+			path = Calls;
+			sourceTree = "<group>";
+		};
+		F03900000000000000000022 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				F03900000000000000000011 /* VoiceCall.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		F03900000000000000000023 /* Presentation */ = {
+			isa = PBXGroup;
+			children = (
+				F03900000000000000000012 /* VoiceCallCoordinator.swift */,
+			);
+			path = Presentation;
+			sourceTree = "<group>";
+		};
+		F03900000000000000000024 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				F03900000000000000000013 /* VoiceCallView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		0D313FE79FD841EB30849DC8 /* Models */ = {
 			isa = PBXGroup;
 			children = (
@@ -363,6 +405,7 @@
 		6577D3D2341D28983B36E493 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				F03900000000000000000021 /* Calls */,
 				A965E18230490AB4001365DE /* Contatos */,
 				B7F33F1CEFEA5169702DB93D /* Conversations */,
 				D62F192FE2C61BF9C279E612 /* Messages */,
@@ -457,6 +500,7 @@
 		BFBF3C2D03A9534B3FA12D2E /* VeyraTests */ = {
 			isa = PBXGroup;
 			children = (
+				F03900000000000000000014 /* VoiceCallCoordinatorTests.swift */,
 				F03800000000000000000013 /* LocalizationTests.swift */,
 				96D6F9076981087963B2FF89 /* AppMetadataTests.swift */,
 				9BF8B6FD286458DDB74C22F1 /* AvatarInitialsTests.swift */,
@@ -709,6 +753,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F03900000000000000000004 /* VoiceCallCoordinatorTests.swift in Sources */,
 				F03800000000000000000003 /* LocalizationTests.swift in Sources */,
 				E03D522D231932CB9A16CA75 /* AppMetadataTests.swift in Sources */,
 				95DD681F3B9F64C813E31A9F /* AvatarInitialsTests.swift in Sources */,
@@ -731,6 +776,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F03900000000000000000001 /* VoiceCall.swift in Sources */,
+				F03900000000000000000002 /* VoiceCallCoordinator.swift in Sources */,
+				F03900000000000000000003 /* VoiceCallView.swift in Sources */,
 				AFA0D0231FA487557A3ACFBA /* VeyraApp.swift in Sources */,
 				60CDAF65F1178A5709B81BE3 /* AppRootView.swift in Sources */,
 				7C9F715FB5E1C3D678BC47B9 /* AppMetadata.swift in Sources */,
