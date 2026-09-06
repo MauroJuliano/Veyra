@@ -10,6 +10,8 @@ struct PublicProfileView: View {
     @State private var blockRelationship = BlockRelationship()
     @State private var confirmsBlock = false
     @State private var isUpdatingBlock = false
+    @State private var showsReport = false
+    @State private var reportConfirmation: String?
 
     let repository: (any RemoteChatRepository)?
     let conversationID: UUID?
@@ -52,6 +54,18 @@ struct PublicProfileView: View {
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button("Report user", systemImage: "exclamationmark.bubble", role: .destructive) {
+                        showsReport = true
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+                .accessibilityLabel("Profile actions")
+            }
+        }
         .task { await loadProfile() }
         .fullScreenCover(item: $selectedImage) { image in
             FullScreenImageView(images: sharedMediaImages, selectedID: image.id) {
@@ -69,6 +83,16 @@ struct PublicProfileView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("Neither of you will be able to send new messages until you unblock this user.")
+        }
+        .sheet(isPresented: $showsReport) {
+            ReportUserView(user: user, repository: repository) {
+                reportConfirmation = "Thanks. Your report was submitted for review."
+            }
+        }
+        .alert("Report submitted", isPresented: reportConfirmationIsPresented) {
+            Button("OK") {}
+        } message: {
+            Text(reportConfirmation ?? "")
         }
     }
 
@@ -249,6 +273,13 @@ struct PublicProfileView: View {
 
     private var displayedBio: String {
         user.bio.flatMap { $0.isEmpty ? nil : $0 } ?? "No bio yet"
+    }
+
+    private var reportConfirmationIsPresented: Binding<Bool> {
+        Binding(
+            get: { reportConfirmation != nil },
+            set: { if !$0 { reportConfirmation = nil } }
+        )
     }
 
     private var sharedMediaImages: [FullScreenImage] {

@@ -17,6 +17,7 @@
 		148683245215D266B1F69398 /* PersonalDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EBE432F2420C29F7249B975 /* PersonalDetailsView.swift */; };
 		A13D54BE227B4FA49E8C0301 /* PublicProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13D54BE227B4FA49E8C0302 /* PublicProfileView.swift */; };
 		B24E65CF338C50B5AF9D1401 /* BlockedUsersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B24E65CF338C50B5AF9D1402 /* BlockedUsersView.swift */; };
+		C35F76D0449D61C6B0AE2501 /* ReportUserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C35F76D0449D61C6B0AE2502 /* ReportUserView.swift */; };
 		1A05F76268540B8DBBDF8D9B /* NewConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5917AB74FE9969FED29ED57E /* NewConversationView.swift */; };
 		1AA8567C7E0EC69A7D58B631 /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C09556DC67E480428C19D11 /* ProfileStore.swift */; };
 		1C05F92851F0DF88FF1FD371 /* Contact.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D3DEB07FE517FDFC254469 /* Contact.swift */; };
@@ -117,6 +118,7 @@
 		5EBE432F2420C29F7249B975 /* PersonalDetailsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PersonalDetailsView.swift; sourceTree = "<group>"; };
 		A13D54BE227B4FA49E8C0302 /* PublicProfileView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PublicProfileView.swift; sourceTree = "<group>"; };
 		B24E65CF338C50B5AF9D1402 /* BlockedUsersView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BlockedUsersView.swift; sourceTree = "<group>"; };
+		C35F76D0449D61C6B0AE2502 /* ReportUserView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ReportUserView.swift; sourceTree = "<group>"; };
 		612257922E48B3ACB47078A3 /* VeyraRadius.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraRadius.swift; sourceTree = "<group>"; };
 		67E4FA0E7A4E39541CF5B110 /* MessageBubbleView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessageBubbleView.swift; sourceTree = "<group>"; };
 		6931A3E0FFF2CFD78CBCC110 /* ProfileView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
@@ -396,6 +398,7 @@
 				5EBE432F2420C29F7249B975 /* PersonalDetailsView.swift */,
 				A13D54BE227B4FA49E8C0302 /* PublicProfileView.swift */,
 				B24E65CF338C50B5AF9D1402 /* BlockedUsersView.swift */,
+				C35F76D0449D61C6B0AE2502 /* ReportUserView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -762,6 +765,7 @@
 				148683245215D266B1F69398 /* PersonalDetailsView.swift in Sources */,
 				A13D54BE227B4FA49E8C0301 /* PublicProfileView.swift in Sources */,
 				B24E65CF338C50B5AF9D1401 /* BlockedUsersView.swift in Sources */,
+				C35F76D0449D61C6B0AE2501 /* ReportUserView.swift in Sources */,
 				A983528C3048F592002DC64A /* RecentConversationListView.swift in Sources */,
 				1AA8567C7E0EC69A7D58B631 /* ProfileStore.swift in Sources */,
 				88D05E71B0F456BA216AA73A /* SupabaseConfiguration.swift in Sources */,
