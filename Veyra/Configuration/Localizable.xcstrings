@@ -1,6 +1,42 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Call": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Ligar" } } }
+    },
+    "Call ended": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Chamada encerrada" } } }
+    },
+    "Call failed": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Falha na chamada" } } }
+    },
+    "Calling…": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Chamando…" } } }
+    },
+    "Close call": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Fechar chamada" } } }
+    },
+    "Connected": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Conectado" } } }
+    },
+    "Connecting…": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Conectando…" } } }
+    },
+    "End call": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Encerrar chamada" } } }
+    },
+    "Mute": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Silenciar" } } }
+    },
+    "Preparing call…": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Preparando chamada…" } } }
+    },
+    "Speaker": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Alto-falante" } } }
+    },
+    "Veyra voice call": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Chamada de voz Veyra" } } }
+    },
     "New conversation": {
       "localizations": {
         "pt-BR": {

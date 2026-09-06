@@ -11,6 +11,7 @@ struct MessageTimelineView: View {
     @State private var selectedImage: FullScreenImage?
     @State private var messageShowingActions: Message?
     @State private var showsParticipantProfile = false
+    @State private var activeVoiceCall: VoiceCall?
 
     init(conversation: Conversation, repository: (any RemoteChatRepository)? = nil, cache: any MessageCacheRepository = InMemoryMessageCacheRepository(), messages: [Message]? = nil) {
         self.conversation = conversation
@@ -61,6 +62,9 @@ struct MessageTimelineView: View {
             }
             .fullScreenCover(item: $selectedImage) { image in
                 FullScreenImageView(url: image.url, canSave: image.canSave) { selectedImage = nil }
+            }
+            .fullScreenCover(item: $activeVoiceCall) { call in
+                VoiceCallView(call: call)
             }
             .overlay {
                 if let message = messageShowingActions {
@@ -254,7 +258,15 @@ struct MessageTimelineView: View {
             }
 
             ToolbarItemGroup(placement: .topBarTrailing) {
-                Button(action: {}) { Image(systemName: "phone") }
+                Button {
+                    activeVoiceCall = VoiceCall(
+                        participantID: conversation.participantID,
+                        participantName: conversation.participantName,
+                        participantAvatarURL: conversation.participantAvatarURL
+                    )
+                } label: {
+                    Image(systemName: "phone")
+                }
                     .accessibilityLabel("Start audio call")
                 Button(action: {}) { Image(systemName: "video") }
                     .accessibilityLabel("Start video call")
