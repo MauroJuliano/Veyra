@@ -22,6 +22,7 @@ protocol RemoteChatRepository: Sendable {
     func setUserBlocked(userID: UUID, isBlocked: Bool) async throws
     func fetchBlockedUsers() async throws -> [User]
     func canSendMessages(conversationID: UUID) async throws -> Bool
+    func reportUser(userID: UUID, reason: String, details: String) async throws
     func fetchMyProfile() async throws -> UserProfile
     func updateMyProfile(displayName: String, username: String, bio: String, email: String) async throws -> UserProfile
     func updateMyAvatar(_ data: Data) async throws -> UserProfile
@@ -277,6 +278,13 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             .rpc("can_send_to_conversation", params: ["target_conversation_id": conversationID.uuidString])
             .execute()
             .value
+    }
+
+    func reportUser(userID: UUID, reason: String, details: String) async throws {
+        try await client.rpc(
+            "report_user",
+            params: UserReportParameters(userID: userID, reason: reason, details: details)
+        ).execute()
     }
 
     func updateMyProfile(displayName: String, username: String, bio: String, email: String) async throws -> UserProfile {
@@ -604,6 +612,18 @@ private struct UserBlockParameters: Encodable {
     enum CodingKeys: String, CodingKey {
         case userID = "target_user_id"
         case shouldBlock = "should_block"
+    }
+}
+
+private struct UserReportParameters: Encodable {
+    let userID: UUID
+    let reason: String
+    let details: String
+
+    enum CodingKeys: String, CodingKey {
+        case userID = "target_user_id"
+        case reason = "report_reason"
+        case details = "report_details"
     }
 }
 
