@@ -1,6 +1,12 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Microphone access is required for voice calls.": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "O acesso ao microfone é necessário para chamadas de voz." } } }
+    },
+    "Unable to connect audio for this call.": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Não foi possível conectar o áudio desta chamada." } } }
+    },
     "Accept": {
       "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Aceitar" } } }
     },
