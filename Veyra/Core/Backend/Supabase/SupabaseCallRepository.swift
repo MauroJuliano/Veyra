@@ -38,7 +38,10 @@ final class SupabaseCallRepository: CallRepository, @unchecked Sendable {
     }
 
     func activeCallEvents() async throws -> AsyncStream<[VoiceCallUpdate]> {
-        let channel = client.channel("veyra:voice-calls")
+        // A repository stream can be recreated while a previous channel is still
+        // being removed. Reusing the same topic makes Supabase return the already
+        // subscribed channel, where new postgres callbacks can no longer be added.
+        let channel = client.channel("veyra:voice-calls:\(UUID().uuidString)")
         let changes = channel.postgresChange(AnyAction.self, table: "voice_calls")
         try await channel.subscribeWithError()
         let initialCalls = try await fetchActiveCalls()
@@ -85,7 +88,7 @@ final class SupabaseCallRepository: CallRepository, @unchecked Sendable {
 
     func signalEvents(callID: UUID) async throws -> AsyncStream<[CallSignalEnvelope]> {
         let currentUserID = try await client.auth.session.user.id
-        let channel = client.channel("voice-call-signals:\(callID.uuidString)")
+        let channel = client.channel("voice-call-signals:\(callID.uuidString):\(UUID().uuidString)")
         let changes = channel.postgresChange(
             AnyAction.self,
             table: "voice_call_signals",
