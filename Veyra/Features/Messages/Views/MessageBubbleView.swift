@@ -34,7 +34,9 @@ struct MessageBubbleView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 Group {
-                    if let imageURL = message.imageURL {
+                    if let audioURL = message.audioURL {
+                        AudioMessagePlayerView(url: audioURL, duration: message.audioDuration ?? 0)
+                    } else if let imageURL = message.imageURL {
                         Button { onImageTap(imageURL) } label: {
                             VeyraCachedImage(url: imageURL) { image in
                                 image.resizable().scaledToFill()

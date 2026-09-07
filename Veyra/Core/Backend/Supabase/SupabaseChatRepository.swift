@@ -8,6 +8,7 @@ protocol RemoteChatRepository: Sendable {
     func fetchMessages(conversationID: UUID, before: Date?, limit: Int) async throws -> [Message]
     func sendMessage(_ text: String, conversationID: UUID, replyingTo messageID: UUID?, clientMessageID: UUID?) async throws -> Message
     func sendImage(_ data: Data, conversationID: UUID) async throws -> Message
+    func sendAudio(_ data: Data, duration: TimeInterval, conversationID: UUID) async throws -> Message
     func messageEvents(conversationID: UUID, participantID: UUID?) async throws -> AsyncStream<MessageEvent>
     func setTyping(_ isTyping: Bool, conversationID: UUID) async throws
     func conversationEvents() async throws -> AsyncStream<ConversationEvent>
@@ -121,7 +122,13 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             } else {
                 signedURL = nil
             }
-            messages.append(row.message(currentUserID: currentUserID, imageURL: signedURL))
+            let audioURL: URL?
+            if let audioPath = row.audioPath {
+                audioURL = try await client.storage.from("chat-media").createSignedURL(path: audioPath, expiresIn: 3_600)
+            } else {
+                audioURL = nil
+            }
+            messages.append(row.message(currentUserID: currentUserID, imageURL: signedURL, audioURL: audioURL))
         }
         return messages
     }
@@ -164,7 +171,7 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
                 .execute()
                 .value
         }
-        return row.message(currentUserID: currentUserID, imageURL: nil)
+        return row.message(currentUserID: currentUserID, imageURL: nil, audioURL: nil)
     }
 
     func toggleReaction(_ emoji: String, messageID: UUID) async throws {
@@ -189,7 +196,21 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
         let imageURL = try await bucket.createSignedURL(path: path, expiresIn: 3_600)
         let payload = NewMessageRow(conversationID: conversationID, senderID: currentUserID, body: "Photo", imagePath: path)
         let row: MessageRow = try await client.from("messages").insert(payload).select().single().execute().value
-        return row.message(currentUserID: currentUserID, imageURL: imageURL)
+        return row.message(currentUserID: currentUserID, imageURL: imageURL, audioURL: nil)
+    }
+
+    func sendAudio(_ data: Data, duration: TimeInterval, conversationID: UUID) async throws -> Message {
+        guard try await canSendMessages(conversationID: conversationID) else {
+            throw ChatRepositoryError.messagingBlocked
+        }
+        let currentUserID = try await client.auth.session.user.id
+        let path = [currentUserID.uuidString.lowercased(), conversationID.uuidString.lowercased(), "\(UUID().uuidString.lowercased()).m4a"].joined(separator: "/")
+        let bucket = client.storage.from("chat-media")
+        try await bucket.upload(path, data: data, options: FileOptions(contentType: "audio/mp4"))
+        let audioURL = try await bucket.createSignedURL(path: path, expiresIn: 3_600)
+        let payload = NewMessageRow(conversationID: conversationID, senderID: currentUserID, body: "Audio", audioPath: path, audioDurationMilliseconds: Int(duration * 1_000))
+        let row: MessageRow = try await client.from("messages").insert(payload).select().single().execute().value
+        return row.message(currentUserID: currentUserID, imageURL: nil, audioURL: audioURL)
     }
 
     func deleteMessage(id: UUID) async throws {
@@ -741,6 +762,8 @@ private struct MessageRow: Decodable {
     let createdAt: Date
     let isRead: Bool?
     let imagePath: String?
+    let audioPath: String?
+    let audioDurationMilliseconds: Int?
     let replyToMessageID: UUID?
     let replyBody: String?
     let replySenderID: UUID?
@@ -753,13 +776,15 @@ private struct MessageRow: Decodable {
         case createdAt = "created_at"
         case isRead = "is_read"
         case imagePath = "image_path"
+        case audioPath = "audio_path"
+        case audioDurationMilliseconds = "audio_duration_ms"
         case replyToMessageID = "reply_to_message_id"
         case replyBody = "reply_body"
         case replySenderID = "reply_sender_id"
         case reactions
     }
 
-    func message(currentUserID: UUID, imageURL: URL?) -> Message {
+    func message(currentUserID: UUID, imageURL: URL?, audioURL: URL?) -> Message {
         let stickerPrefix = "[sticker]"
         let isSticker = body.hasPrefix(stickerPrefix)
         return Message(
@@ -769,6 +794,8 @@ private struct MessageRow: Decodable {
             direction: senderID == currentUserID ? .outgoing : .incoming,
             receipt: isRead == true ? .read : .sent,
             imageURL: imageURL,
+            audioURL: audioURL,
+            audioDuration: audioDurationMilliseconds.map { TimeInterval($0) / 1_000 },
             isSticker: isSticker,
             replyPreview: replyToMessageID.map {
                 Message.ReplyPreview(messageID: $0, text: replyBody ?? String(localized: "Message unavailable"), isOwnMessage: replySenderID == currentUserID)
@@ -804,14 +831,18 @@ private struct NewMessageRow: Encodable {
     let senderID: UUID
     let body: String
     let imagePath: String?
+    let audioPath: String?
+    let audioDurationMilliseconds: Int?
     let replyToMessageID: UUID?
 
-    init(id: UUID = UUID(), conversationID: UUID, senderID: UUID, body: String, imagePath: String? = nil, replyToMessageID: UUID? = nil) {
+    init(id: UUID = UUID(), conversationID: UUID, senderID: UUID, body: String, imagePath: String? = nil, audioPath: String? = nil, audioDurationMilliseconds: Int? = nil, replyToMessageID: UUID? = nil) {
         self.id = id
         self.conversationID = conversationID
         self.senderID = senderID
         self.body = body
         self.imagePath = imagePath
+        self.audioPath = audioPath
+        self.audioDurationMilliseconds = audioDurationMilliseconds
         self.replyToMessageID = replyToMessageID
     }
 
@@ -821,6 +852,8 @@ private struct NewMessageRow: Encodable {
         case senderID = "sender_id"
         case body
         case imagePath = "image_path"
+        case audioPath = "audio_path"
+        case audioDurationMilliseconds = "audio_duration_ms"
         case replyToMessageID = "reply_to_message_id"
     }
 }

@@ -171,7 +171,7 @@ final class MessageTimelineViewModel {
         let reply = replyingTo
         guard let repository else {
             let preview = reply.map {
-                Message.ReplyPreview(messageID: $0.id, text: $0.imageURL == nil ? $0.text : String(localized: "Photo"), isOwnMessage: $0.direction == .outgoing)
+                Message.ReplyPreview(messageID: $0.id, text: replyDescription(for: $0), isOwnMessage: $0.direction == .outgoing)
             }
             messages.append(Message(text: text, direction: .outgoing, replyPreview: preview))
             draft = ""
@@ -179,7 +179,7 @@ final class MessageTimelineViewModel {
             return
         }
         let preview = reply.map {
-            Message.ReplyPreview(messageID: $0.id, text: $0.imageURL == nil ? $0.text : String(localized: "Photo"), isOwnMessage: $0.direction == .outgoing)
+            Message.ReplyPreview(messageID: $0.id, text: replyDescription(for: $0), isOwnMessage: $0.direction == .outgoing)
         }
         let pending = Message(text: text, direction: .outgoing, replyPreview: preview, deliveryState: .sending)
         appendIfNeeded(pending)
@@ -238,6 +238,25 @@ final class MessageTimelineViewModel {
         defer { isSending = false }
         do {
             let message = try await repository.sendImage(data, conversationID: conversationID)
+            appendIfNeeded(message)
+            cache.saveMessages([message], conversationID: conversationID)
+            errorMessage = nil
+        } catch {
+            handleMessagingError(error)
+        }
+    }
+
+    @MainActor
+    func sendAudio(_ recording: AudioMessageRecorder.Recording) async {
+        guard !isMessagingBlocked, let repository else { return }
+        isSending = true
+        defer { isSending = false }
+        do {
+            let message = try await repository.sendAudio(
+                recording.data,
+                duration: recording.duration,
+                conversationID: conversationID
+            )
             appendIfNeeded(message)
             cache.saveMessages([message], conversationID: conversationID)
             errorMessage = nil
@@ -409,6 +428,12 @@ final class MessageTimelineViewModel {
     private func removeLocalMessage(id: UUID) {
         messages.removeAll { $0.id == id }
         cache.deleteMessage(id: id)
+    }
+
+    private func replyDescription(for message: Message) -> String {
+        if message.audioURL != nil { return String(localized: "Audio") }
+        if message.imageURL != nil { return String(localized: "Photo") }
+        return message.text
     }
 
     private func merge(_ incoming: [Message]) {

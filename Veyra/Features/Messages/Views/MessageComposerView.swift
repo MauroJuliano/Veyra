@@ -7,6 +7,8 @@ struct MessageComposerView: View {
     let onSend: () -> Void
     @Binding var selectedPhoto: PhotosPickerItem?
     let onSendSticker: (String) -> Void
+    let audioRecorder: AudioMessageRecorder
+    let onSendAudio: (AudioMessageRecorder.Recording) -> Void
     let isReplying: Bool
     @FocusState private var isTextFieldFocused: Bool
 
@@ -25,12 +27,24 @@ struct MessageComposerView: View {
             .accessibilityLabel("Add photo")
 
             HStack(alignment: .bottom, spacing: VeyraSpacing.sm) {
-                TextField("Message...", text: $text, axis: .vertical)
-                    .lineLimit(1...5)
-                    .focused($isTextFieldFocused)
-                Button(action: {}) { Image(systemName: "mic") }
-                    .accessibilityLabel("Record audio")
-                Menu {
+                if audioRecorder.isRecording {
+                    Circle().fill(VeyraColor.danger).frame(width: 8, height: 8)
+                    Text(recordingDuration)
+                        .monospacedDigit()
+                        .foregroundStyle(VeyraColor.textPrimary)
+                    Spacer()
+                    Button("Cancel") { audioRecorder.cancel() }
+                        .foregroundStyle(VeyraColor.danger)
+                    Button(action: finishRecording) { Image(systemName: "stop.fill") }
+                        .accessibilityLabel("Finish recording")
+                } else {
+                    TextField("Message...", text: $text, axis: .vertical)
+                        .lineLimit(1...5)
+                        .focused($isTextFieldFocused)
+                    Button { Task { await audioRecorder.start() } } label: { Image(systemName: "mic") }
+                        .accessibilityLabel("Record audio")
+                }
+                if !audioRecorder.isRecording { Menu {
                     Section("Stickers") {
                         ForEach(stickers, id: \.self) { sticker in
                             Button(sticker) { onSendSticker(sticker) }
@@ -39,7 +53,7 @@ struct MessageComposerView: View {
                 } label: {
                     Image(systemName: "sparkles")
                 }
-                .accessibilityLabel("Choose sticker")
+                .accessibilityLabel("Choose sticker") }
             }
             .foregroundStyle(VeyraColor.textSecondary)
             .padding(.horizontal, VeyraSpacing.md)
@@ -47,9 +61,11 @@ struct MessageComposerView: View {
             .background { GlassBackground(tintOpacity: 0.1, glowOpacity: 0.1) }
             .clipShape(RoundedRectangle(cornerRadius: 18))
 
-            composerButton(systemImage: "paperplane.fill", label: "Send message", action: onSend)
-                .disabled(!canSend)
-                .opacity(canSend ? 1 : 0.45)
+            if !audioRecorder.isRecording {
+                composerButton(systemImage: "paperplane.fill", label: "Send message", action: onSend)
+                    .disabled(!canSend)
+                    .opacity(canSend ? 1 : 0.45)
+            }
         }
         .padding(.horizontal, VeyraSpacing.md)
         .padding(.vertical, VeyraSpacing.sm)
@@ -57,6 +73,15 @@ struct MessageComposerView: View {
         .onChange(of: isReplying) { _, replying in
             if replying { isTextFieldFocused = true }
         }
+    }
+
+    private var recordingDuration: String {
+        let seconds = Int(audioRecorder.duration)
+        return String(format: "%d:%02d", seconds / 60, seconds % 60)
+    }
+
+    private func finishRecording() {
+        do { onSendAudio(try audioRecorder.finish()) } catch { audioRecorder.cancel() }
     }
 
     private func composerButton(systemImage: String, label: String, action: @escaping () -> Void) -> some View {

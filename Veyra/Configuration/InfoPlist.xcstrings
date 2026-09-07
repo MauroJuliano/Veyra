@@ -6,13 +6,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Veyra uses the microphone for voice calls you start or answer."
+            "value" : "Veyra uses the microphone for voice calls and audio messages."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Veyra usa o microfone nas chamadas de voz que você inicia ou atende."
+            "value" : "O Veyra usa o microfone para chamadas e mensagens de áudio."
           }
         }
       }

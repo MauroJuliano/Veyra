@@ -35,18 +35,22 @@ struct Message: Identifiable, Hashable {
     let direction: Direction
     let receipt: Receipt
     let imageURL: URL?
+    let audioURL: URL?
+    let audioDuration: TimeInterval?
     let isSticker: Bool
     let replyPreview: ReplyPreview?
     var reactions: [Reaction]
     var deliveryState: DeliveryState
 
-    init(id: UUID = UUID(), text: String, sentAt: Date = .now, direction: Direction, receipt: Receipt = .sent, imageURL: URL? = nil, isSticker: Bool = false, replyPreview: ReplyPreview? = nil, reactions: [Reaction] = [], deliveryState: DeliveryState = .sent) {
+    init(id: UUID = UUID(), text: String, sentAt: Date = .now, direction: Direction, receipt: Receipt = .sent, imageURL: URL? = nil, audioURL: URL? = nil, audioDuration: TimeInterval? = nil, isSticker: Bool = false, replyPreview: ReplyPreview? = nil, reactions: [Reaction] = [], deliveryState: DeliveryState = .sent) {
         self.id = id
         self.text = text
         self.sentAt = sentAt
         self.direction = direction
         self.receipt = receipt
         self.imageURL = imageURL
+        self.audioURL = audioURL
+        self.audioDuration = audioDuration
         self.isSticker = isSticker
         self.replyPreview = replyPreview
         self.reactions = reactions

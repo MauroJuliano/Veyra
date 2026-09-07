@@ -1819,6 +1819,27 @@
         }
       }
     },
+    "Audio": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Áudio" } } }
+    },
+    "Audio recording could not be started.": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Não foi possível iniciar a gravação de áudio." } } }
+    },
+    "Finish recording": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Finalizar gravação" } } }
+    },
+    "Microphone access is required to record audio messages.": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "O acesso ao microfone é necessário para gravar mensagens de áudio." } } }
+    },
+    "No audio recording is available.": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Nenhuma gravação de áudio está disponível." } } }
+    },
+    "Pause audio": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Pausar áudio" } } }
+    },
+    "Play audio": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Reproduzir áudio" } } }
+    },
     "Messaging is unavailable while either user is blocked.": {
       "localizations": {
         "pt-BR": {

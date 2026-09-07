@@ -100,4 +100,22 @@ struct MessageTimelineViewModelTests {
 
         #expect(viewModel.replyingTo == nil)
     }
+
+    @Test func cachesAudioMessageMetadata() async {
+        let conversationID = UUID()
+        let audioURL = URL(string: "https://example.com/audio.m4a")!
+        let message = Message(
+            text: "Audio",
+            direction: .incoming,
+            audioURL: audioURL,
+            audioDuration: 12.5
+        )
+        let cache = InMemoryMessageCacheRepository()
+        cache.saveMessages([message], conversationID: conversationID)
+
+        let restored = cache.fetchMessages(conversationID: conversationID, before: nil, limit: 50).first
+
+        #expect(restored?.audioURL == audioURL)
+        #expect(restored?.audioDuration == 12.5)
+    }
 }
