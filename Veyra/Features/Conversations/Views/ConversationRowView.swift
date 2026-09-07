@@ -21,10 +21,16 @@ struct ConversationRowView: View {
                 }
 
                 HStack {
-                    Text(conversation.lastMessage)
-                        .font(VeyraTypography.body)
-                        .foregroundStyle(VeyraColor.textSecondary)
-                        .lineLimit(1)
+                    HStack(spacing: VeyraSpacing.xs) {
+                        if conversation.lastActivityIsCall {
+                            Image(systemName: "phone.fill")
+                                .font(VeyraTypography.caption)
+                        }
+                        Text(conversation.lastActivityText)
+                            .font(VeyraTypography.body)
+                            .lineLimit(1)
+                    }
+                    .foregroundStyle(VeyraColor.textSecondary)
                     Spacer(minLength: VeyraSpacing.sm)
                     if conversation.unreadCount > 0 {
                         Text(conversation.unreadCount, format: .number)
@@ -36,7 +42,7 @@ struct ConversationRowView: View {
                             .accessibilityLabel("\(conversation.unreadCount) unread messages")
                     }
 
-                    if conversation.lastMessageIsMine {
+                    if conversation.lastMessageIsMine && !conversation.lastActivityIsCall {
                         MessageReceiptIcon(isRead: conversation.lastMessageIsRead)
                             .font(VeyraTypography.caption)
                     }

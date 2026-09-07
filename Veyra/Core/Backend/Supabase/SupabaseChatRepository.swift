@@ -426,6 +426,7 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
         let messageChanges = channel.postgresChange(AnyAction.self, table: "messages")
         let membershipChanges = channel.postgresChange(AnyAction.self, table: "conversation_members")
         let presenceChanges = channel.postgresChange(AnyAction.self, table: "user_presence")
+        let callChanges = channel.postgresChange(AnyAction.self, table: "voice_calls")
 
         try await channel.subscribeWithError()
 
@@ -448,11 +449,18 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
                     continuation.yield(.contentChanged)
                 }
             }
+            let callsTask = Task {
+                for await _ in callChanges {
+                    guard !Task.isCancelled else { break }
+                    continuation.yield(.contentChanged)
+                }
+            }
 
             continuation.onTermination = { [client] _ in
                 messagesTask.cancel()
                 membershipsTask.cancel()
                 presenceTask.cancel()
+                callsTask.cancel()
                 Task { await client.removeChannel(channel) }
             }
         }

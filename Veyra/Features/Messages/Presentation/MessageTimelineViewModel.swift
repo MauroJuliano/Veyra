@@ -13,6 +13,7 @@ final class MessageTimelineViewModel {
     var draft = ""
     private(set) var replyingTo: Message?
     private(set) var isLoading = false
+    private(set) var hasLoadedInitialPage = false
     private(set) var isLoadingEarlier = false
     private(set) var hasEarlierMessages = true
     private(set) var isSending = false
@@ -35,6 +36,7 @@ final class MessageTimelineViewModel {
         self.callRepository = callRepository
         self.cache = cache
         self.messages = messages.sorted { $0.sentAt < $1.sentAt }
+        hasLoadedInitialPage = repository == nil
         hasEarlierMessages = repository != nil
     }
 
@@ -62,7 +64,10 @@ final class MessageTimelineViewModel {
         hasEarlierMessages = cached.count == pageSize
         guard let repository else { return }
         isLoading = true
-        defer { isLoading = false }
+        defer {
+            isLoading = false
+            hasLoadedInitialPage = true
+        }
         do {
             let page = try await repository.fetchMessages(conversationID: conversationID, before: nil, limit: pageSize)
             let removedIDs = reconcileLatestPage(page)
