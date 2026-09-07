@@ -5,6 +5,7 @@ protocol CallRepository: Sendable {
     func answerCall(id: UUID, accept: Bool) async throws
     func endCall(id: UUID) async throws
     func activeCallEvents() async throws -> AsyncStream<[VoiceCallUpdate]>
+    func fetchCallHistory(with participantID: UUID) async throws -> [VoiceCallHistory]
     func sendSignal(_ signal: CallSignal, callID: UUID) async throws
     func signalEvents(callID: UUID) async throws -> AsyncStream<[CallSignalEnvelope]>
 }

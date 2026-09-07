@@ -6,8 +6,10 @@ final class MessageTimelineViewModel {
     private let conversationID: UUID
     private let participantID: UUID?
     private let repository: (any RemoteChatRepository)?
+    private let callRepository: (any CallRepository)?
     private let cache: any MessageCacheRepository
     private(set) var messages: [Message]
+    private(set) var callHistory: [VoiceCallHistory] = []
     var draft = ""
     private(set) var replyingTo: Message?
     private(set) var isLoading = false
@@ -24,12 +26,13 @@ final class MessageTimelineViewModel {
     private let pageSize = 50
     var profileRepository: (any RemoteChatRepository)? { repository }
 
-    init(conversationID: UUID = UUID(), participantID: UUID? = nil, isParticipantActive: Bool = false, participantLastSeenAt: Date? = nil, repository: (any RemoteChatRepository)? = nil, cache: any MessageCacheRepository = InMemoryMessageCacheRepository(), messages: [Message]) {
+    init(conversationID: UUID = UUID(), participantID: UUID? = nil, isParticipantActive: Bool = false, participantLastSeenAt: Date? = nil, repository: (any RemoteChatRepository)? = nil, callRepository: (any CallRepository)? = nil, cache: any MessageCacheRepository = InMemoryMessageCacheRepository(), messages: [Message]) {
         self.conversationID = conversationID
         self.participantID = participantID
         self.isParticipantActive = isParticipantActive
         self.participantLastSeenAt = participantLastSeenAt
         self.repository = repository
+        self.callRepository = callRepository
         self.cache = cache
         self.messages = messages.sorted { $0.sentAt < $1.sentAt }
         hasEarlierMessages = repository != nil
@@ -38,6 +41,13 @@ final class MessageTimelineViewModel {
     var days: [MessageDay] {
         Dictionary(grouping: messages) { Calendar.current.startOfDay(for: $0.sentAt) }
             .map { MessageDay(date: $0.key, messages: $0.value.sorted { $0.sentAt < $1.sentAt }) }
+            .sorted { $0.date < $1.date }
+    }
+
+    var timelineDays: [ChatTimelineDay] {
+        let items = messages.map(ChatTimelineItem.message) + callHistory.map(ChatTimelineItem.call)
+        return Dictionary(grouping: items) { Calendar.current.startOfDay(for: $0.date) }
+            .map { ChatTimelineDay(date: $0.key, items: $0.value.sorted { $0.date < $1.date }) }
             .sorted { $0.date < $1.date }
     }
 
@@ -62,6 +72,18 @@ final class MessageTimelineViewModel {
             errorMessage = nil
         } catch {
             errorMessage = cached.isEmpty ? error.localizedDescription : nil
+        }
+        await loadCallHistory()
+    }
+
+    @MainActor
+    func loadCallHistory() async {
+        guard let callRepository, let participantID else { return }
+        do {
+            callHistory = try await callRepository.fetchCallHistory(with: participantID)
+        } catch {
+            // Call history enriches the conversation but must not hide messages
+            // when its backend migration has not been deployed yet.
         }
     }
 

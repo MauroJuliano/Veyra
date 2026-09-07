@@ -1,6 +1,24 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Declined incoming call": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Chamada recebida recusada" } } }
+    },
+    "Missed incoming call": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Chamada recebida perdida" } } }
+    },
+    "Declined outgoing call": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Chamada realizada recusada" } } }
+    },
+    "Unanswered outgoing call": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Chamada realizada não atendida" } } }
+    },
+    "Incoming call": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Chamada recebida" } } }
+    },
+    "Outgoing call": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Chamada realizada" } } }
+    },
     "Microphone access is required for voice calls.": {
       "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "O acesso ao microfone é necessário para chamadas de voz." } } }
     },

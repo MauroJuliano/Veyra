@@ -64,6 +64,25 @@ final class SupabaseCallRepository: CallRepository, @unchecked Sendable {
         }
     }
 
+    func fetchCallHistory(with participantID: UUID) async throws -> [VoiceCallHistory] {
+        let currentUserID = try await client.auth.session.user.id
+        let rows: [VoiceCallHistoryRow] = try await client
+            .rpc("list_call_history", params: ["target_user_id": participantID])
+            .execute()
+            .value
+        return rows.compactMap { row in
+            guard let status = VoiceCallHistoryStatus(rawValue: row.callStatus) else { return nil }
+            return VoiceCallHistory(
+                id: row.callID,
+                direction: row.callerID == currentUserID ? .outgoing : .incoming,
+                status: status,
+                startedAt: row.createdAt,
+                answeredAt: row.answeredAt,
+                endedAt: row.endedAt
+            )
+        }
+    }
+
     func sendSignal(_ signal: CallSignal, callID: UUID) async throws {
         let currentUserID = try await client.auth.session.user.id
         let encoded: (type: String, payload: [String: String]) = switch signal {
@@ -232,5 +251,23 @@ private struct ActiveVoiceCallRow: Decodable {
         case callStatus = "call_status"
         case createdAt = "created_at"
         case answeredAt = "answered_at"
+    }
+}
+
+private struct VoiceCallHistoryRow: Decodable {
+    let callID: UUID
+    let callerID: UUID
+    let callStatus: String
+    let createdAt: Date
+    let answeredAt: Date?
+    let endedAt: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case callID = "call_id"
+        case callerID = "caller_id"
+        case callStatus = "call_status"
+        case createdAt = "created_at"
+        case answeredAt = "answered_at"
+        case endedAt = "ended_at"
     }
 }
