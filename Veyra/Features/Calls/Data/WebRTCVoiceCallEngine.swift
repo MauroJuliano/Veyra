@@ -5,7 +5,7 @@ import Foundation
 @MainActor
 final class WebRTCVoiceCallEngine: NSObject, VoiceCallAudioEngine {
     private let repository: any CallRepository
-    private let factory: RTCPeerConnectionFactory
+    private var factory: RTCPeerConnectionFactory?
     private var peerConnection: RTCPeerConnection?
     private var localAudioTrack: RTCAudioTrack?
     private var signalsTask: Task<Void, Never>?
@@ -16,8 +16,6 @@ final class WebRTCVoiceCallEngine: NSObject, VoiceCallAudioEngine {
 
     init(repository: any CallRepository) {
         self.repository = repository
-        RTCInitializeSSL()
-        factory = RTCPeerConnectionFactory()
         super.init()
     }
 
@@ -25,7 +23,7 @@ final class WebRTCVoiceCallEngine: NSObject, VoiceCallAudioEngine {
         guard await AVAudioApplication.requestRecordPermission() else {
             throw VoiceCallAudioError.microphonePermissionDenied
         }
-        try configure(callID: callID)
+        try await configure(callID: callID)
         observeSignals(callID: callID)
         let offer = try await createOffer()
         try await setLocalDescription(offer)
@@ -36,7 +34,7 @@ final class WebRTCVoiceCallEngine: NSObject, VoiceCallAudioEngine {
         guard await AVAudioApplication.requestRecordPermission() else {
             throw VoiceCallAudioError.microphonePermissionDenied
         }
-        try configure(callID: callID)
+        try await configure(callID: callID)
         observeSignals(callID: callID)
     }
 
@@ -57,13 +55,22 @@ final class WebRTCVoiceCallEngine: NSObject, VoiceCallAudioEngine {
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
 
-    private func configure(callID: UUID) throws {
+    private func configure(callID: UUID) async throws {
         guard peerConnection == nil else { return }
         self.callID = callID
 
-        let audioSession = AVAudioSession.sharedInstance()
-        try audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .defaultToSpeaker])
-        try audioSession.setActive(true)
+        let resources = await Task.detached(priority: .userInitiated) {
+            RTCInitializeSSL()
+            return WebRTCFactoryBox(factory: RTCPeerConnectionFactory())
+        }.value
+        let factory = resources.factory
+        self.factory = factory
+
+        try await Task.detached(priority: .userInitiated) {
+            let audioSession = AVAudioSession.sharedInstance()
+            try audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .defaultToSpeaker])
+            try audioSession.setActive(true)
+        }.value
 
         let configuration = RTCConfiguration()
         configuration.iceServers = [
@@ -171,6 +178,14 @@ final class WebRTCVoiceCallEngine: NSObject, VoiceCallAudioEngine {
                 else { continuation.resume(returning: ()) }
             }
         }
+    }
+}
+
+private final class WebRTCFactoryBox: @unchecked Sendable {
+    let factory: RTCPeerConnectionFactory
+
+    init(factory: RTCPeerConnectionFactory) {
+        self.factory = factory
     }
 }
 
