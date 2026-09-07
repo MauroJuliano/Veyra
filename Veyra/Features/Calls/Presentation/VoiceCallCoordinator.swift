@@ -14,30 +14,49 @@ final class VoiceCallCoordinator {
     private(set) var errorMessage: String?
     private let repository: (any CallRepository)?
     private let audioEngine: (any VoiceCallAudioEngine)?
+    private let unansweredTimeout: Duration
     private var eventsTask: Task<Void, Never>?
+    private var timeoutTask: Task<Void, Never>?
+    private var heartbeatTask: Task<Void, Never>?
     private var hasObservedActiveCall = false
+    private var hasPersistedCall = false
 
-    init(call: VoiceCall, repository: (any CallRepository)? = nil, audioEngine: (any VoiceCallAudioEngine)? = nil) {
+    init(
+        call: VoiceCall,
+        repository: (any CallRepository)? = nil,
+        audioEngine: (any VoiceCallAudioEngine)? = nil,
+        unansweredTimeout: Duration = .seconds(30)
+    ) {
         self.call = call
         self.repository = repository
         self.audioEngine = audioEngine
+        self.unansweredTimeout = unansweredTimeout
         state = call.direction == .incoming ? .ringing : .idle
     }
 
     func start() async {
         guard state == .idle else {
-            if state == .ringing { observeEvents() }
+            if state == .ringing {
+                hasPersistedCall = repository != nil
+                observeEvents()
+                scheduleUnansweredTimeout()
+                startHeartbeat()
+            }
             return
         }
         state = .calling
         guard let repository else { return }
         do {
             call = try await repository.startCall(to: call)
+            hasPersistedCall = true
             observeEvents()
+            scheduleUnansweredTimeout()
+            startHeartbeat()
             try await audioEngine?.startOutgoing(callID: call.id)
         } catch {
             errorMessage = error.localizedDescription
             state = .failed
+            finishPersistedCallIfNeeded()
         }
     }
 
@@ -50,6 +69,10 @@ final class VoiceCallCoordinator {
         guard state == .calling || state == .connecting else { return }
         connectedAt = date
         state = .connected
+        timeoutTask?.cancel()
+        timeoutTask = nil
+        heartbeatTask?.cancel()
+        heartbeatTask = nil
     }
 
     func toggleMute() {
@@ -72,6 +95,9 @@ final class VoiceCallCoordinator {
     func fail() {
         guard state != .ended else { return }
         state = .failed
+        timeoutTask?.cancel()
+        audioEngine?.stop()
+        finishPersistedCallIfNeeded()
     }
 
     func answer() async {
@@ -80,10 +106,12 @@ final class VoiceCallCoordinator {
         do {
             try await repository.answerCall(id: call.id, accept: true)
             observeEvents()
+            startHeartbeat()
             try await audioEngine?.startIncoming(callID: call.id)
         } catch {
             errorMessage = error.localizedDescription
             state = .failed
+            finishPersistedCallIfNeeded()
         }
     }
 
@@ -102,11 +130,61 @@ final class VoiceCallCoordinator {
         let callID = call.id
         let repository = repository
         eventsTask?.cancel()
+        timeoutTask?.cancel()
+        timeoutTask = nil
+        heartbeatTask?.cancel()
+        heartbeatTask = nil
         audioEngine?.stop()
         endedAt = date
         state = .ended
-        if repository != nil {
+        if repository != nil, hasPersistedCall {
+            hasPersistedCall = false
             Task { try? await repository?.endCall(id: callID) }
+        }
+    }
+
+    func abandonIfNeeded() {
+        guard state != .ended && state != .failed else { return }
+        end()
+    }
+
+    private func scheduleUnansweredTimeout() {
+        timeoutTask?.cancel()
+        let timeout = unansweredTimeout
+        timeoutTask = Task { [weak self] in
+            do {
+                try await Task.sleep(for: timeout)
+                guard let self, self.state == .calling || self.state == .ringing || self.state == .connecting else { return }
+                self.end()
+            } catch is CancellationError {
+                return
+            } catch {
+                return
+            }
+        }
+    }
+
+    private func finishPersistedCallIfNeeded() {
+        guard hasPersistedCall, let repository else { return }
+        heartbeatTask?.cancel()
+        heartbeatTask = nil
+        hasPersistedCall = false
+        let callID = call.id
+        Task { try? await repository.endCall(id: callID) }
+    }
+
+    private func startHeartbeat() {
+        guard heartbeatTask == nil, let repository else { return }
+        let callID = call.id
+        heartbeatTask = Task {
+            while !Task.isCancelled {
+                try? await repository.heartbeatCall(id: callID)
+                do {
+                    try await Task.sleep(for: .seconds(10))
+                } catch {
+                    return
+                }
+            }
         }
     }
 

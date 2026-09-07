@@ -52,6 +52,23 @@ struct ConversationListViewModelTests {
         #expect(viewModel.filteredConversations.map(\.participantName) == ["Ana"])
     }
 
+    @Test func mapsCallActivityToReadableHomeStatus() {
+        let missed = Conversation(
+            participantName: "Martha",
+            lastMessage: "[call]incoming:missed",
+            updatedAt: .now
+        )
+        let completed = Conversation(
+            participantName: "Jonas",
+            lastMessage: "[call]outgoing:ended",
+            updatedAt: .now
+        )
+
+        #expect(missed.lastActivityIsCall)
+        #expect(missed.lastActivityText == String(localized: "Missed incoming call"))
+        #expect(completed.lastActivityText == String(localized: "Outgoing call"))
+    }
+
     @Test @MainActor func deletesLocalConversation() async {
         let conversation = Conversation(participantName: "Ana", lastMessage: "Hello", updatedAt: .now)
         let viewModel = ConversationListViewModel(conversations: [conversation])
