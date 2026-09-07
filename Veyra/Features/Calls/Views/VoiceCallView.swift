@@ -4,8 +4,8 @@ struct VoiceCallView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var coordinator: VoiceCallCoordinator
 
-    init(call: VoiceCall) {
-        _coordinator = State(initialValue: VoiceCallCoordinator(call: call))
+    init(call: VoiceCall, repository: (any CallRepository)? = nil) {
+        _coordinator = State(initialValue: VoiceCallCoordinator(call: call, repository: repository))
     }
 
     var body: some View {
@@ -21,7 +21,12 @@ struct VoiceCallView: View {
             .padding(.horizontal, VeyraSpacing.lg)
             .padding(.vertical, VeyraSpacing.lg)
         }
-        .task { coordinator.start() }
+        .task { await coordinator.start() }
+        .onChange(of: coordinator.state) { _, state in
+            if state == .ended {
+                dismiss()
+            }
+        }
         .interactiveDismissDisabled()
     }
 
@@ -88,11 +93,29 @@ struct VoiceCallView: View {
                     .foregroundStyle(VeyraColor.textSecondary)
                     .contentTransition(.numericText())
             }
+
+            if let errorMessage = coordinator.errorMessage {
+                Text(errorMessage)
+                    .font(VeyraTypography.caption)
+                    .foregroundStyle(VeyraColor.danger)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, VeyraSpacing.xl)
+            }
         }
         .multilineTextAlignment(.center)
     }
 
     private var controls: some View {
+        Group {
+            if coordinator.state == .ringing {
+                incomingControls
+            } else {
+                activeControls
+            }
+        }
+    }
+
+    private var activeControls: some View {
         HStack(spacing: VeyraSpacing.xl) {
             controlButton(
                 title: "Mute",
@@ -124,6 +147,50 @@ struct VoiceCallView: View {
         .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
     }
 
+    private var incomingControls: some View {
+        HStack(spacing: 72) {
+            callActionButton(
+                title: "Decline",
+                systemImage: "phone.down.fill",
+                color: VeyraColor.danger
+            ) {
+                Task { await coordinator.decline() }
+            }
+            callActionButton(
+                title: "Accept",
+                systemImage: "phone.fill",
+                color: VeyraColor.success
+            ) {
+                Task { await coordinator.answer() }
+            }
+        }
+        .padding(.vertical, VeyraSpacing.xl)
+        .frame(maxWidth: .infinity)
+        .background { GlassBackground(cornerRadius: 32, tintOpacity: 0.1, glowOpacity: 0.12) }
+        .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+    }
+
+    private func callActionButton(
+        title: LocalizedStringKey,
+        systemImage: String,
+        color: Color,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            VStack(spacing: VeyraSpacing.sm) {
+                Image(systemName: systemImage)
+                    .font(.title2)
+                    .foregroundStyle(.white)
+                    .frame(width: 68, height: 68)
+                    .background(color, in: Circle())
+                Text(title)
+                    .font(VeyraTypography.caption)
+                    .foregroundStyle(VeyraColor.textSecondary)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
     private func controlButton(
         title: LocalizedStringKey,
         systemImage: String,
@@ -148,6 +215,7 @@ struct VoiceCallView: View {
     private func status(at date: Date) -> String {
         switch coordinator.state {
         case .idle: String(localized: "Preparing call…")
+        case .ringing: String(localized: "Incoming call…")
         case .calling: String(localized: "Calling…")
         case .connecting: String(localized: "Connecting…")
         case .connected:

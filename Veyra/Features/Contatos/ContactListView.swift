@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContactListView: View {
     let repository: (any RemoteChatRepository)?
+    let callRepository: (any CallRepository)?
     let localRepository: any ContactRepository
     let messageCache: any MessageCacheRepository
     @State private var contacts: [Contact]
@@ -22,8 +23,9 @@ struct ContactListView: View {
         groupedUsers.keys.sorted()
     }
 
-    init(repository: (any RemoteChatRepository)?, localRepository: any ContactRepository, messageCache: any MessageCacheRepository) {
+    init(repository: (any RemoteChatRepository)?, callRepository: (any CallRepository)? = nil, localRepository: any ContactRepository, messageCache: any MessageCacheRepository) {
         self.repository = repository
+        self.callRepository = callRepository
         self.localRepository = localRepository
         self.messageCache = messageCache
         _contacts = State(initialValue: localRepository.fetchContacts())
@@ -122,7 +124,7 @@ struct ContactListView: View {
         .task { await load() }
         .refreshable { await load() }
         .navigationDestination(item: $selectedConversation) { conversation in
-            MessageTimelineView(conversation: conversation, repository: repository, cache: messageCache, messages: [])
+            MessageTimelineView(conversation: conversation, repository: repository, callRepository: callRepository, cache: messageCache, messages: [])
         }
         .navigationDestination(item: $selectedContact) { contact in
             PublicProfileView(
@@ -135,6 +137,7 @@ struct ContactListView: View {
                     participantAvatarURL: contact.avatarURL
                 ),
                 repository: repository,
+                callRepository: callRepository,
                 conversationID: contact.conversationID
             ) { _ in
                 await openConversation(with: contact)

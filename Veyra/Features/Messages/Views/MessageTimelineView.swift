@@ -5,6 +5,7 @@ import UIKit
 
 struct MessageTimelineView: View {
     let conversation: Conversation
+    let callRepository: (any CallRepository)?
     @State private var viewModel: MessageTimelineViewModel
     @State private var messagePendingDeletion: Message?
     @State private var selectedPhoto: PhotosPickerItem?
@@ -13,8 +14,9 @@ struct MessageTimelineView: View {
     @State private var showsParticipantProfile = false
     @State private var activeVoiceCall: VoiceCall?
 
-    init(conversation: Conversation, repository: (any RemoteChatRepository)? = nil, cache: any MessageCacheRepository = InMemoryMessageCacheRepository(), messages: [Message]? = nil) {
+    init(conversation: Conversation, repository: (any RemoteChatRepository)? = nil, callRepository: (any CallRepository)? = nil, cache: any MessageCacheRepository = InMemoryMessageCacheRepository(), messages: [Message]? = nil) {
         self.conversation = conversation
+        self.callRepository = callRepository
         _viewModel = State(initialValue: MessageTimelineViewModel(
             conversationID: conversation.id,
             participantID: conversation.participantID,
@@ -45,6 +47,7 @@ struct MessageTimelineView: View {
                         participantAvatarURL: conversation.participantAvatarURL
                     ),
                     repository: viewModel.profileRepository,
+                    callRepository: callRepository,
                     conversationID: conversation.id,
                     isActive: viewModel.isParticipantActive
                 )
@@ -64,7 +67,7 @@ struct MessageTimelineView: View {
                 FullScreenImageView(url: image.url, canSave: image.canSave) { selectedImage = nil }
             }
             .fullScreenCover(item: $activeVoiceCall) { call in
-                VoiceCallView(call: call)
+                VoiceCallView(call: call, repository: callRepository)
             }
             .overlay {
                 if let message = messageShowingActions {

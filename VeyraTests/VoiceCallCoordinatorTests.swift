@@ -10,36 +10,36 @@ struct VoiceCallCoordinatorTests {
         participantAvatarURL: nil
     )
 
-    @Test func startsAnOutgoingCallOnlyOnce() {
+    @Test func startsAnOutgoingCallOnlyOnce() async {
         let coordinator = VoiceCallCoordinator(call: call)
-        coordinator.start()
-        coordinator.start()
+        await coordinator.start()
+        await coordinator.start()
         #expect(coordinator.state == .calling)
     }
 
-    @Test func connectsAndTracksTheStartDate() {
+    @Test func connectsAndTracksTheStartDate() async {
         let coordinator = VoiceCallCoordinator(call: call)
         let connectedAt = Date(timeIntervalSince1970: 100)
-        coordinator.start()
+        await coordinator.start()
         coordinator.markConnecting()
         coordinator.markConnected(at: connectedAt)
         #expect(coordinator.state == .connected)
         #expect(coordinator.connectedAt == connectedAt)
     }
 
-    @Test func togglesLocalAudioControls() {
+    @Test func togglesLocalAudioControls() async {
         let coordinator = VoiceCallCoordinator(call: call)
-        coordinator.start()
+        await coordinator.start()
         coordinator.toggleMute()
         coordinator.toggleSpeaker()
         #expect(coordinator.isMuted)
         #expect(coordinator.isSpeakerEnabled)
     }
 
-    @Test func endingIsTerminal() {
+    @Test func endingIsTerminal() async {
         let coordinator = VoiceCallCoordinator(call: call)
         let endedAt = Date(timeIntervalSince1970: 200)
-        coordinator.start()
+        await coordinator.start()
         coordinator.end(at: endedAt)
         coordinator.markConnected()
         coordinator.toggleMute()
