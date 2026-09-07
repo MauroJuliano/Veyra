@@ -124,24 +124,44 @@ final class WebRTCVoiceCallEngine: NSObject, VoiceCallAudioEngine {
     }
 
     private func createOffer() async throws -> RTCSessionDescription {
-        try await sessionDescription { completion in
-            peerConnection?.offer(for: mediaConstraints, completionHandler: completion)
-        }
+        guard let peerConnection else { throw VoiceCallAudioError.peerConnectionUnavailable }
+        return try await Self.createOffer(
+            on: WebRTCPeerConnectionBox(peerConnection),
+            constraints: mediaConstraints
+        )
     }
 
     private func createAnswer() async throws -> RTCSessionDescription {
-        try await sessionDescription { completion in
-            peerConnection?.answer(for: mediaConstraints, completionHandler: completion)
-        }
+        guard let peerConnection else { throw VoiceCallAudioError.peerConnectionUnavailable }
+        return try await Self.createAnswer(
+            on: WebRTCPeerConnectionBox(peerConnection),
+            constraints: mediaConstraints
+        )
     }
 
     private var mediaConstraints: RTCMediaConstraints {
         RTCMediaConstraints(mandatoryConstraints: ["OfferToReceiveAudio": "true", "OfferToReceiveVideo": "false"], optionalConstraints: nil)
     }
 
-    private func sessionDescription(_ operation: (@escaping (RTCSessionDescription?, Error?) -> Void) -> Void) async throws -> RTCSessionDescription {
+    nonisolated private static func createOffer(
+        on connection: WebRTCPeerConnectionBox,
+        constraints: RTCMediaConstraints
+    ) async throws -> RTCSessionDescription {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<RTCSessionDescription, any Error>) in
-            operation { description, error in
+            connection.value.offer(for: constraints) { description, error in
+                if let error { continuation.resume(throwing: error) }
+                else if let description { continuation.resume(returning: description) }
+                else { continuation.resume(throwing: VoiceCallAudioError.missingSessionDescription) }
+            }
+        }
+    }
+
+    nonisolated private static func createAnswer(
+        on connection: WebRTCPeerConnectionBox,
+        constraints: RTCMediaConstraints
+    ) async throws -> RTCSessionDescription {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<RTCSessionDescription, any Error>) in
+            connection.value.answer(for: constraints) { description, error in
                 if let error { continuation.resume(throwing: error) }
                 else if let description { continuation.resume(returning: description) }
                 else { continuation.resume(throwing: VoiceCallAudioError.missingSessionDescription) }
@@ -150,8 +170,16 @@ final class WebRTCVoiceCallEngine: NSObject, VoiceCallAudioEngine {
     }
 
     private func setLocalDescription(_ description: RTCSessionDescription) async throws {
+        guard let peerConnection else { throw VoiceCallAudioError.peerConnectionUnavailable }
+        try await Self.setLocalDescription(description, on: WebRTCPeerConnectionBox(peerConnection))
+    }
+
+    nonisolated private static func setLocalDescription(
+        _ description: RTCSessionDescription,
+        on connection: WebRTCPeerConnectionBox
+    ) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
-            peerConnection?.setLocalDescription(description) { error in
+            connection.value.setLocalDescription(description) { error in
                 if let error { continuation.resume(throwing: error) }
                 else { continuation.resume(returning: ()) }
             }
@@ -159,24 +187,48 @@ final class WebRTCVoiceCallEngine: NSObject, VoiceCallAudioEngine {
     }
 
     private func setRemoteDescription(_ description: RTCSessionDescription) async throws {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
-            peerConnection?.setRemoteDescription(description) { error in
-                if let error { continuation.resume(throwing: error) }
-                else { continuation.resume(returning: ()) }
-            }
-        }
+        guard let peerConnection else { throw VoiceCallAudioError.peerConnectionUnavailable }
+        try await Self.setRemoteDescription(description, on: WebRTCPeerConnectionBox(peerConnection))
         hasRemoteDescription = true
         for candidate in pendingCandidates { try await add(candidate) }
         pendingCandidates.removeAll()
     }
 
-    private func add(_ candidate: RTCIceCandidate) async throws {
+    nonisolated private static func setRemoteDescription(
+        _ description: RTCSessionDescription,
+        on connection: WebRTCPeerConnectionBox
+    ) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
-            peerConnection?.add(candidate) { error in
+            connection.value.setRemoteDescription(description) { error in
                 if let error { continuation.resume(throwing: error) }
                 else { continuation.resume(returning: ()) }
             }
         }
+    }
+
+    private func add(_ candidate: RTCIceCandidate) async throws {
+        guard let peerConnection else { throw VoiceCallAudioError.peerConnectionUnavailable }
+        try await Self.add(candidate, on: WebRTCPeerConnectionBox(peerConnection))
+    }
+
+    nonisolated private static func add(
+        _ candidate: RTCIceCandidate,
+        on connection: WebRTCPeerConnectionBox
+    ) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
+            connection.value.add(candidate) { error in
+                if let error { continuation.resume(throwing: error) }
+                else { continuation.resume(returning: ()) }
+            }
+        }
+    }
+}
+
+private final class WebRTCPeerConnectionBox: @unchecked Sendable {
+    let value: RTCPeerConnection
+
+    init(_ value: RTCPeerConnection) {
+        self.value = value
     }
 }
 
