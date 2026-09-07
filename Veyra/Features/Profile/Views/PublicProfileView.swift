@@ -15,6 +15,7 @@ struct PublicProfileView: View {
     @State private var activeVoiceCall: VoiceCall?
 
     let repository: (any RemoteChatRepository)?
+    let callRepository: (any CallRepository)?
     let conversationID: UUID?
     let isActive: Bool?
     var onMessage: ((User) async -> Void)?
@@ -22,12 +23,14 @@ struct PublicProfileView: View {
     init(
         user: User,
         repository: (any RemoteChatRepository)?,
+        callRepository: (any CallRepository)? = nil,
         conversationID: UUID? = nil,
         isActive: Bool? = nil,
         onMessage: ((User) async -> Void)? = nil
     ) {
         _user = State(initialValue: user)
         self.repository = repository
+        self.callRepository = callRepository
         self.conversationID = conversationID
         self.isActive = isActive
         self.onMessage = onMessage
@@ -74,7 +77,7 @@ struct PublicProfileView: View {
             }
         }
         .fullScreenCover(item: $activeVoiceCall) { call in
-            VoiceCallView(call: call)
+            VoiceCallView(call: call, repository: callRepository)
         }
         .confirmationDialog(
             "Block \(user.participantName)?",

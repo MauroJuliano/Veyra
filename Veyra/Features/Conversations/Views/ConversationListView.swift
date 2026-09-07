@@ -6,13 +6,16 @@ struct ConversationListView: View {
     @State private var selectedConversation: Conversation?
     @State private var conversationPendingDeletion: Conversation?
     private let messageCache: any MessageCacheRepository
+    private let callRepository: (any CallRepository)?
 
     init(
         viewModel: ConversationListViewModel = ConversationListViewModel(),
-        messageCache: any MessageCacheRepository = InMemoryMessageCacheRepository()
+        messageCache: any MessageCacheRepository = InMemoryMessageCacheRepository(),
+        callRepository: (any CallRepository)? = nil
     ) {
         _viewModel = State(initialValue: viewModel)
         self.messageCache = messageCache
+        self.callRepository = callRepository
     }
 
     var body: some View {
@@ -82,7 +85,7 @@ struct ConversationListView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(item: $selectedConversation) { conversation in
-            MessageTimelineView(conversation: conversation, repository: viewModel.chatRepository, cache: messageCache, messages: [])
+            MessageTimelineView(conversation: conversation, repository: viewModel.chatRepository, callRepository: callRepository, cache: messageCache, messages: [])
         }
         .sheet(isPresented: $presentsNewConversation) {
             NewConversationView(repository: viewModel.chatRepository) { user in

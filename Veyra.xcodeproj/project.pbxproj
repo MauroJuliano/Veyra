@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F04000000000000000000001 /* CallRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04000000000000000000011 /* CallRepository.swift */; };
+		F04000000000000000000002 /* SupabaseCallRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04000000000000000000012 /* SupabaseCallRepository.swift */; };
+		F04000000000000000000003 /* IncomingCallCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04000000000000000000013 /* IncomingCallCoordinator.swift */; };
 		F03900000000000000000001 /* VoiceCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = F03900000000000000000011 /* VoiceCall.swift */; };
 		F03900000000000000000002 /* VoiceCallCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F03900000000000000000012 /* VoiceCallCoordinator.swift */; };
 		F03900000000000000000003 /* VoiceCallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F03900000000000000000013 /* VoiceCallView.swift */; };
@@ -100,6 +103,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		F04000000000000000000011 /* CallRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CallRepository.swift; sourceTree = "<group>"; };
+		F04000000000000000000012 /* SupabaseCallRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SupabaseCallRepository.swift; sourceTree = "<group>"; };
+		F04000000000000000000013 /* IncomingCallCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IncomingCallCoordinator.swift; sourceTree = "<group>"; };
 		F03900000000000000000011 /* VoiceCall.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoiceCall.swift; sourceTree = "<group>"; };
 		F03900000000000000000012 /* VoiceCallCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoiceCallCoordinator.swift; sourceTree = "<group>"; };
 		F03900000000000000000013 /* VoiceCallView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoiceCallView.swift; sourceTree = "<group>"; };
@@ -206,10 +212,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F04000000000000000000021 /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				F04000000000000000000011 /* CallRepository.swift */,
+			);
+			path = Data;
+			sourceTree = "<group>";
+		};
 		F03900000000000000000021 /* Calls */ = {
 			isa = PBXGroup;
 			children = (
 				F03900000000000000000022 /* Models */,
+				F04000000000000000000021 /* Data */,
 				F03900000000000000000023 /* Presentation */,
 				F03900000000000000000024 /* Views */,
 			);
@@ -228,6 +243,7 @@
 			isa = PBXGroup;
 			children = (
 				F03900000000000000000012 /* VoiceCallCoordinator.swift */,
+				F04000000000000000000013 /* IncomingCallCoordinator.swift */,
 			);
 			path = Presentation;
 			sourceTree = "<group>";
@@ -545,6 +561,7 @@
 		CD4A7C3978F85DD2937EF67D /* Supabase */ = {
 			isa = PBXGroup;
 			children = (
+				F04000000000000000000012 /* SupabaseCallRepository.swift */,
 				9429A6F0A5F3BA4C90324820 /* SupabaseConfiguration.swift */,
 				B56D78C652AAAB9D315E96DF /* SupabaseClientProvider.swift */,
 				D2CE854CD6EA2E1365260700 /* SupabaseChatRepository.swift */,
@@ -776,6 +793,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F04000000000000000000001 /* CallRepository.swift in Sources */,
+				F04000000000000000000002 /* SupabaseCallRepository.swift in Sources */,
+				F04000000000000000000003 /* IncomingCallCoordinator.swift in Sources */,
 				F03900000000000000000001 /* VoiceCall.swift in Sources */,
 				F03900000000000000000002 /* VoiceCallCoordinator.swift in Sources */,
 				F03900000000000000000003 /* VoiceCallView.swift in Sources */,

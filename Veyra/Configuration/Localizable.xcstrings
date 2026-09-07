@@ -1,6 +1,18 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Accept": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Aceitar" } } }
+    },
+    "Decline": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Recusar" } } }
+    },
+    "Incoming call…": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Chamada recebida…" } } }
+    },
+    "This user cannot receive calls right now.": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Este usuário não pode receber chamadas agora." } } }
+    },
     "Call": {
       "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Ligar" } } }
     },
