@@ -34,7 +34,10 @@ final class SupabaseAuthenticationService: AuthenticationService {
         self.client = client
     }
 
-    var hasSession: Bool { client.auth.currentSession != nil }
+    var hasSession: Bool {
+        guard let session = client.auth.currentSession else { return false }
+        return !session.isExpired
+    }
 
     func signIn(email: String, password: String) async throws {
         try await client.auth.signIn(email: email, password: password)

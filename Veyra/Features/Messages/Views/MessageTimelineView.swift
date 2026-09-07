@@ -23,6 +23,7 @@ struct MessageTimelineView: View {
             isParticipantActive: conversation.isOnline,
             participantLastSeenAt: conversation.lastSeenAt,
             repository: repository,
+            callRepository: callRepository,
             cache: cache,
             messages: messages ?? (repository == nil ? MessagePreviewData.messages(for: conversation) : [])
         ))
@@ -66,7 +67,9 @@ struct MessageTimelineView: View {
             .fullScreenCover(item: $selectedImage) { image in
                 FullScreenImageView(url: image.url, canSave: image.canSave) { selectedImage = nil }
             }
-            .fullScreenCover(item: $activeVoiceCall) { call in
+            .fullScreenCover(item: $activeVoiceCall, onDismiss: {
+                Task { await viewModel.loadCallHistory() }
+            }) { call in
                 VoiceCallView(call: call, repository: callRepository)
             }
             .overlay {
@@ -128,7 +131,19 @@ struct MessageTimelineView: View {
     private var messageList: some View {
         ScrollView {
             LazyVStack(spacing: VeyraSpacing.sm) {
-                if viewModel.isLoading { ProgressView().padding() }
+                if viewModel.messages.isEmpty && !viewModel.hasLoadedInitialPage {
+                    VStack(spacing: VeyraSpacing.md) {
+                        ProgressView()
+                            .controlSize(.large)
+                            .tint(VeyraColor.accent)
+                        Text("Loading messages…")
+                            .font(VeyraTypography.caption)
+                            .foregroundStyle(VeyraColor.textSecondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 72)
+                    .transition(.opacity)
+                }
                 if viewModel.hasEarlierMessages && !viewModel.messages.isEmpty {
                     Button {
                         Task { await viewModel.loadEarlierMessages() }
@@ -147,7 +162,7 @@ struct MessageTimelineView: View {
                 if let errorMessage = viewModel.errorMessage {
                     Text(errorMessage).font(VeyraTypography.caption).foregroundStyle(VeyraColor.danger)
                 }
-                ForEach(viewModel.days) { day in
+                ForEach(viewModel.timelineDays) { day in
                     Text(day.date, format: .dateTime.day().month(.wide))
                         .font(VeyraTypography.caption)
                         .foregroundStyle(VeyraColor.textPrimary)
@@ -156,8 +171,11 @@ struct MessageTimelineView: View {
                         .background(VeyraColor.surfaceElevated)
                         .clipShape(Capsule())
                         .padding(.vertical, VeyraSpacing.md)
-                    ForEach(day.messages) { message in
-                        messageRow(message)
+                    ForEach(day.items) { item in
+                        switch item {
+                        case let .message(message): messageRow(message)
+                        case let .call(call): CallHistoryRow(call: call)
+                        }
                     }
                 }
             }
@@ -302,6 +320,68 @@ struct MessageTimelineView: View {
             }
             selectedPhoto = nil
         }
+    }
+}
+
+private struct CallHistoryRow: View {
+    let call: VoiceCallHistory
+
+    var body: some View {
+        HStack(spacing: VeyraSpacing.md) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundStyle(iconColor)
+                .frame(width: 42, height: 42)
+                .background(iconColor.opacity(0.14))
+                .clipShape(Circle())
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(VeyraTypography.bodyEmphasized)
+                    .foregroundStyle(VeyraColor.textPrimary)
+                HStack(spacing: 5) {
+                    Text(call.startedAt, format: .dateTime.hour().minute())
+                    if let duration = call.duration {
+                        Text("•")
+                        Text(durationText(duration))
+                    }
+                }
+                .font(VeyraTypography.caption)
+                .foregroundStyle(VeyraColor.textSecondary)
+            }
+            Spacer()
+        }
+        .padding(VeyraSpacing.md)
+        .background(GlassBackground(tintOpacity: 0.09, glowOpacity: 0.1))
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .padding(.horizontal, 36)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var title: String {
+        switch (call.direction, call.status) {
+        case (.incoming, .declined): String(localized: "Declined incoming call")
+        case (.incoming, .missed), (.incoming, .ringing): String(localized: "Missed incoming call")
+        case (.outgoing, .declined): String(localized: "Declined outgoing call")
+        case (.outgoing, .missed), (.outgoing, .ringing): String(localized: "Unanswered outgoing call")
+        case (.incoming, _): String(localized: "Incoming call")
+        case (.outgoing, _): String(localized: "Outgoing call")
+        }
+    }
+
+    private var icon: String {
+        call.direction == .incoming ? "phone.arrow.down.left.fill" : "phone.arrow.up.right.fill"
+    }
+
+    private var iconColor: Color {
+        call.status == .missed || call.status == .declined ? VeyraColor.danger : VeyraColor.accent
+    }
+
+    private func durationText(_ duration: TimeInterval) -> String {
+        let seconds = max(0, Int(duration.rounded()))
+        let minutes = seconds / 60
+        let remainder = seconds % 60
+        return minutes > 0 ? "\(minutes):\(String(format: "%02d", remainder))" : "0:\(String(format: "%02d", remainder))"
     }
 }
 

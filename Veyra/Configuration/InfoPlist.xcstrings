@@ -1,6 +1,22 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "NSMicrophoneUsageDescription" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veyra uses the microphone for voice calls you start or answer."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Veyra usa o microfone nas chamadas de voz que você inicia ou atende."
+          }
+        }
+      }
+    },
     "CFBundleName" : {
       "localizations" : {
         "en" : {

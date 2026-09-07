@@ -60,3 +60,28 @@ struct MessageDay: Identifiable, Hashable {
 
     var id: Date { date }
 }
+
+enum ChatTimelineItem: Identifiable, Hashable {
+    case message(Message)
+    case call(VoiceCallHistory)
+
+    var id: UUID {
+        switch self {
+        case let .message(message): message.id
+        case let .call(call): call.id
+        }
+    }
+
+    var date: Date {
+        switch self {
+        case let .message(message): message.sentAt
+        case let .call(call): call.startedAt
+        }
+    }
+}
+
+struct ChatTimelineDay: Identifiable, Hashable {
+    let date: Date
+    let items: [ChatTimelineItem]
+    var id: Date { date }
+}

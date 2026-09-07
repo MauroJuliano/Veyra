@@ -38,7 +38,10 @@ final class SupabaseCallRepository: CallRepository, @unchecked Sendable {
     }
 
     func activeCallEvents() async throws -> AsyncStream<[VoiceCallUpdate]> {
-        let channel = client.channel("veyra:voice-calls")
+        // A repository stream can be recreated while a previous channel is still
+        // being removed. Reusing the same topic makes Supabase return the already
+        // subscribed channel, where new postgres callbacks can no longer be added.
+        let channel = client.channel("veyra:voice-calls:\(UUID().uuidString)")
         let changes = channel.postgresChange(AnyAction.self, table: "voice_calls")
         try await channel.subscribeWithError()
         let initialCalls = try await fetchActiveCalls()
@@ -59,6 +62,86 @@ final class SupabaseCallRepository: CallRepository, @unchecked Sendable {
                 Task { await client.removeChannel(channel) }
             }
         }
+    }
+
+    func fetchCallHistory(with participantID: UUID) async throws -> [VoiceCallHistory] {
+        let currentUserID = try await client.auth.session.user.id
+        let rows: [VoiceCallHistoryRow] = try await client
+            .rpc("list_call_history", params: ["target_user_id": participantID])
+            .execute()
+            .value
+        return rows.compactMap { row in
+            guard let status = VoiceCallHistoryStatus(rawValue: row.callStatus) else { return nil }
+            return VoiceCallHistory(
+                id: row.callID,
+                direction: row.callerID == currentUserID ? .outgoing : .incoming,
+                status: status,
+                startedAt: row.createdAt,
+                answeredAt: row.answeredAt,
+                endedAt: row.endedAt
+            )
+        }
+    }
+
+    func sendSignal(_ signal: CallSignal, callID: UUID) async throws {
+        let currentUserID = try await client.auth.session.user.id
+        let encoded: (type: String, payload: [String: String]) = switch signal {
+        case let .offer(sdp): ("offer", ["sdp": sdp])
+        case let .answer(sdp): ("answer", ["sdp": sdp])
+        case let .ice(candidate, sdpMid, sdpMLineIndex):
+            ("ice", [
+                "candidate": candidate,
+                "sdp_mid": sdpMid ?? "",
+                "sdp_mline_index": String(sdpMLineIndex)
+            ])
+        }
+        try await client.from("voice_call_signals")
+            .insert(VoiceCallSignalInsert(
+                callID: callID,
+                senderID: currentUserID,
+                signalType: encoded.type,
+                payload: encoded.payload
+            ))
+            .execute()
+    }
+
+    func signalEvents(callID: UUID) async throws -> AsyncStream<[CallSignalEnvelope]> {
+        let currentUserID = try await client.auth.session.user.id
+        let channel = client.channel("voice-call-signals:\(callID.uuidString):\(UUID().uuidString)")
+        let changes = channel.postgresChange(
+            AnyAction.self,
+            table: "voice_call_signals",
+            filter: .eq("call_id", value: callID)
+        )
+        try await channel.subscribeWithError()
+        let initialSignals = try await fetchSignals(callID: callID, excluding: currentUserID)
+
+        return AsyncStream { continuation in
+            continuation.yield(initialSignals)
+            let changesTask = Task {
+                for await _ in changes {
+                    guard !Task.isCancelled else { break }
+                    if let signals = try? await self.fetchSignals(callID: callID, excluding: currentUserID) {
+                        continuation.yield(signals)
+                    }
+                }
+            }
+            continuation.onTermination = { [client] _ in
+                changesTask.cancel()
+                Task { await client.removeChannel(channel) }
+            }
+        }
+    }
+
+    private func fetchSignals(callID: UUID, excluding currentUserID: UUID) async throws -> [CallSignalEnvelope] {
+        let rows: [VoiceCallSignalRow] = try await client.from("voice_call_signals")
+            .select()
+            .eq("call_id", value: callID)
+            .neq("sender_id", value: currentUserID)
+            .order("id", ascending: true)
+            .execute()
+            .value
+        return rows.compactMap(\.envelope)
     }
 
     private func fetchActiveCalls() async throws -> [VoiceCallUpdate] {
@@ -94,6 +177,49 @@ final class SupabaseCallRepository: CallRepository, @unchecked Sendable {
     }
 }
 
+private struct VoiceCallSignalInsert: Encodable {
+    let callID: UUID
+    let senderID: UUID
+    let signalType: String
+    let payload: [String: String]
+
+    enum CodingKeys: String, CodingKey {
+        case callID = "call_id"
+        case senderID = "sender_id"
+        case signalType = "signal_type"
+        case payload
+    }
+}
+
+private struct VoiceCallSignalRow: Decodable {
+    let id: Int64
+    let signalType: String
+    let payload: [String: String]
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case signalType = "signal_type"
+        case payload
+    }
+
+    var envelope: CallSignalEnvelope? {
+        let signal: CallSignal?
+        switch signalType {
+        case "offer": signal = payload["sdp"].map(CallSignal.offer)
+        case "answer": signal = payload["sdp"].map(CallSignal.answer)
+        case "ice":
+            if let candidate = payload["candidate"],
+               let line = payload["sdp_mline_index"].flatMap(Int32.init) {
+                signal = .ice(candidate: candidate, sdpMid: payload["sdp_mid"], sdpMLineIndex: line)
+            } else {
+                signal = nil
+            }
+        default: signal = nil
+        }
+        return signal.map { CallSignalEnvelope(id: id, signal: $0) }
+    }
+}
+
 private struct AnswerCallParameters: Encodable {
     let targetCallID: UUID
     let shouldAccept: Bool
@@ -125,5 +251,23 @@ private struct ActiveVoiceCallRow: Decodable {
         case callStatus = "call_status"
         case createdAt = "created_at"
         case answeredAt = "answered_at"
+    }
+}
+
+private struct VoiceCallHistoryRow: Decodable {
+    let callID: UUID
+    let callerID: UUID
+    let callStatus: String
+    let createdAt: Date
+    let answeredAt: Date?
+    let endedAt: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case callID = "call_id"
+        case callerID = "caller_id"
+        case callStatus = "call_status"
+        case createdAt = "created_at"
+        case answeredAt = "answered_at"
+        case endedAt = "ended_at"
     }
 }

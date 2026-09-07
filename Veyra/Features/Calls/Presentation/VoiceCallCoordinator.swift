@@ -13,12 +13,14 @@ final class VoiceCallCoordinator {
     private(set) var call: VoiceCall
     private(set) var errorMessage: String?
     private let repository: (any CallRepository)?
+    private let audioEngine: (any VoiceCallAudioEngine)?
     private var eventsTask: Task<Void, Never>?
     private var hasObservedActiveCall = false
 
-    init(call: VoiceCall, repository: (any CallRepository)? = nil) {
+    init(call: VoiceCall, repository: (any CallRepository)? = nil, audioEngine: (any VoiceCallAudioEngine)? = nil) {
         self.call = call
         self.repository = repository
+        self.audioEngine = audioEngine
         state = call.direction == .incoming ? .ringing : .idle
     }
 
@@ -32,6 +34,7 @@ final class VoiceCallCoordinator {
         do {
             call = try await repository.startCall(to: call)
             observeEvents()
+            try await audioEngine?.startOutgoing(callID: call.id)
         } catch {
             errorMessage = error.localizedDescription
             state = .failed
@@ -52,11 +55,18 @@ final class VoiceCallCoordinator {
     func toggleMute() {
         guard state != .ended else { return }
         isMuted.toggle()
+        audioEngine?.setMuted(isMuted)
     }
 
     func toggleSpeaker() {
         guard state != .ended else { return }
-        isSpeakerEnabled.toggle()
+        do {
+            let newValue = !isSpeakerEnabled
+            try audioEngine?.setSpeakerEnabled(newValue)
+            isSpeakerEnabled = newValue
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 
     func fail() {
@@ -70,6 +80,7 @@ final class VoiceCallCoordinator {
         do {
             try await repository.answerCall(id: call.id, accept: true)
             observeEvents()
+            try await audioEngine?.startIncoming(callID: call.id)
         } catch {
             errorMessage = error.localizedDescription
             state = .failed
@@ -91,6 +102,7 @@ final class VoiceCallCoordinator {
         let callID = call.id
         let repository = repository
         eventsTask?.cancel()
+        audioEngine?.stop()
         endedAt = date
         state = .ended
         if repository != nil {

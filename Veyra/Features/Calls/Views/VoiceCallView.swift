@@ -5,7 +5,12 @@ struct VoiceCallView: View {
     @State private var coordinator: VoiceCallCoordinator
 
     init(call: VoiceCall, repository: (any CallRepository)? = nil) {
-        _coordinator = State(initialValue: VoiceCallCoordinator(call: call, repository: repository))
+        let audioEngine = repository.map(WebRTCVoiceCallEngine.init(repository:))
+        _coordinator = State(initialValue: VoiceCallCoordinator(
+            call: call,
+            repository: repository,
+            audioEngine: audioEngine
+        ))
     }
 
     var body: some View {

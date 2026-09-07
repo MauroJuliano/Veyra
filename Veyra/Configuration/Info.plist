@@ -8,6 +8,8 @@
 	<string>$(SUPABASE_URL)</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Veyra saves received chat images to your photo library when you request it.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Veyra uses the microphone for voice calls you start or answer.</string>
 	<key>PushNotificationsEnabled</key>
 	<false/>
 </dict>

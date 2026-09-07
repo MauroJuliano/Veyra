@@ -25,7 +25,7 @@ struct VoiceCall: Identifiable, Equatable, Sendable {
     }
 }
 
-enum VoiceCallDirection: Equatable, Sendable {
+enum VoiceCallDirection: Hashable, Sendable {
     case incoming
     case outgoing
 }
@@ -38,4 +38,26 @@ enum VoiceCallState: Equatable, Sendable {
     case connected
     case ended
     case failed
+}
+
+struct VoiceCallHistory: Identifiable, Hashable, Sendable {
+    let id: UUID
+    let direction: VoiceCallDirection
+    let status: VoiceCallHistoryStatus
+    let startedAt: Date
+    let answeredAt: Date?
+    let endedAt: Date?
+
+    var duration: TimeInterval? {
+        guard let answeredAt, let endedAt else { return nil }
+        return max(0, endedAt.timeIntervalSince(answeredAt))
+    }
+}
+
+enum VoiceCallHistoryStatus: String, Hashable, Sendable {
+    case ringing
+    case accepted
+    case declined
+    case ended
+    case missed
 }

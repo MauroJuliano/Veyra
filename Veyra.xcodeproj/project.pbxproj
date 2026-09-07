@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F04100000000000000000001 /* VoiceCallAudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04100000000000000000011 /* VoiceCallAudioEngine.swift */; };
+		F04100000000000000000002 /* WebRTCVoiceCallEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04100000000000000000012 /* WebRTCVoiceCallEngine.swift */; };
+		F04100000000000000000003 /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = F04100000000000000000031 /* WebRTC */; };
 		F04000000000000000000001 /* CallRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04000000000000000000011 /* CallRepository.swift */; };
 		F04000000000000000000002 /* SupabaseCallRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04000000000000000000012 /* SupabaseCallRepository.swift */; };
 		F04000000000000000000003 /* IncomingCallCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04000000000000000000013 /* IncomingCallCoordinator.swift */; };
@@ -103,6 +106,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		F04100000000000000000011 /* VoiceCallAudioEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoiceCallAudioEngine.swift; sourceTree = "<group>"; };
+		F04100000000000000000012 /* WebRTCVoiceCallEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WebRTCVoiceCallEngine.swift; sourceTree = "<group>"; };
 		F04000000000000000000011 /* CallRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CallRepository.swift; sourceTree = "<group>"; };
 		F04000000000000000000012 /* SupabaseCallRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SupabaseCallRepository.swift; sourceTree = "<group>"; };
 		F04000000000000000000013 /* IncomingCallCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IncomingCallCoordinator.swift; sourceTree = "<group>"; };
@@ -204,6 +209,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F04100000000000000000003 /* WebRTC in Frameworks */,
 				880A32328EAACEC3D916197A /* Foundation.framework in Frameworks */,
 				591FE0FE5282B61592A26CD7 /* Supabase in Frameworks */,
 			);
@@ -216,6 +222,8 @@
 			isa = PBXGroup;
 			children = (
 				F04000000000000000000011 /* CallRepository.swift */,
+				F04100000000000000000011 /* VoiceCallAudioEngine.swift */,
+				F04100000000000000000012 /* WebRTCVoiceCallEngine.swift */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -682,6 +690,7 @@
 			name = Veyra;
 			packageProductDependencies = (
 				884AE89A91B4CADAB1F7563C /* Supabase */,
+				F04100000000000000000031 /* WebRTC */,
 			);
 			productName = Veyra;
 			productReference = 778776CB7DBCAB1C013FD617 /* Veyra.app */;
@@ -735,6 +744,7 @@
 			mainGroup = CD51C17E867393530457834D;
 			packageReferences = (
 				56DCD800BB6344D687F6B05F /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				F04100000000000000000021 /* XCRemoteSwiftPackageReference "WebRTC" */,
 			);
 			productRefGroup = 7D7EEB33674F43D0F024F961 /* Products */;
 			projectDirPath = "";
@@ -793,6 +803,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F04100000000000000000001 /* VoiceCallAudioEngine.swift in Sources */,
+				F04100000000000000000002 /* WebRTCVoiceCallEngine.swift in Sources */,
 				F04000000000000000000001 /* CallRepository.swift in Sources */,
 				F04000000000000000000002 /* SupabaseCallRepository.swift in Sources */,
 				F04000000000000000000003 /* IncomingCallCoordinator.swift in Sources */,
@@ -1120,6 +1132,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		F04100000000000000000021 /* XCRemoteSwiftPackageReference "WebRTC" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stasel/WebRTC.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 152.0.0;
+			};
+		};
 		56DCD800BB6344D687F6B05F /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/supabase/supabase-swift.git";
@@ -1131,6 +1151,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		F04100000000000000000031 /* WebRTC */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F04100000000000000000021 /* XCRemoteSwiftPackageReference "WebRTC" */;
+			productName = WebRTC;
+		};
 		884AE89A91B4CADAB1F7563C /* Supabase */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 56DCD800BB6344D687F6B05F /* XCRemoteSwiftPackageReference "supabase-swift" */;

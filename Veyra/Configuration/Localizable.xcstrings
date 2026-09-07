@@ -1,6 +1,36 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Loading messages…": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Carregando mensagens…" } } }
+    },
+    "Voice call": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Chamada de voz" } } }
+    },
+    "Declined incoming call": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Chamada recebida recusada" } } }
+    },
+    "Missed incoming call": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Chamada recebida perdida" } } }
+    },
+    "Declined outgoing call": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Chamada realizada recusada" } } }
+    },
+    "Unanswered outgoing call": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Chamada realizada não atendida" } } }
+    },
+    "Incoming call": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Chamada recebida" } } }
+    },
+    "Outgoing call": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Chamada realizada" } } }
+    },
+    "Microphone access is required for voice calls.": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "O acesso ao microfone é necessário para chamadas de voz." } } }
+    },
+    "Unable to connect audio for this call.": {
+      "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Não foi possível conectar o áudio desta chamada." } } }
+    },
     "Accept": {
       "localizations": { "pt-BR": { "stringUnit": { "state": "translated", "value": "Aceitar" } } }
     },
