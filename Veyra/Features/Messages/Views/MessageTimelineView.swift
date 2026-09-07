@@ -13,6 +13,7 @@ struct MessageTimelineView: View {
     @State private var messageShowingActions: Message?
     @State private var showsParticipantProfile = false
     @State private var activeVoiceCall: VoiceCall?
+    @State private var audioRecorder = AudioMessageRecorder()
 
     init(conversation: Conversation, repository: (any RemoteChatRepository)? = nil, callRepository: (any CallRepository)? = nil, cache: any MessageCacheRepository = InMemoryMessageCacheRepository(), messages: [Message]? = nil) {
         self.conversation = conversation
@@ -56,7 +57,10 @@ struct MessageTimelineView: View {
             .task { await viewModel.observeMessages() }
             .onChange(of: viewModel.draft) { _, _ in viewModel.draftDidChange() }
             .onChange(of: selectedPhoto) { _, item in sendSelectedPhoto(item) }
-            .onDisappear { Task { await viewModel.stopTyping() } }
+            .onDisappear {
+                audioRecorder.cancel()
+                Task { await viewModel.stopTyping() }
+            }
             .animation(.easeInOut(duration: 0.2), value: viewModel.isParticipantTyping)
             .alert("Delete message?", isPresented: deletionAlertIsPresented, presenting: messagePendingDeletion) { message in
                 Button("Delete", role: .destructive) { Task { await viewModel.delete(message) } }
@@ -122,6 +126,8 @@ struct MessageTimelineView: View {
                     onSend: { Task { await viewModel.send() } },
                     selectedPhoto: $selectedPhoto,
                     onSendSticker: { sticker in Task { await viewModel.sendSticker(sticker) } },
+                    audioRecorder: audioRecorder,
+                    onSendAudio: { recording in Task { await viewModel.sendAudio(recording) } },
                     isReplying: viewModel.replyingTo != nil
                 )
             }
@@ -211,7 +217,7 @@ struct MessageTimelineView: View {
                     Text(message.direction == .outgoing ? String(localized: "You") : conversation.participantName)
                         .font(VeyraTypography.bodyEmphasized)
                         .foregroundStyle(VeyraColor.accent)
-                    Text(message.imageURL == nil ? message.text : "Photo")
+                    Text(message.audioURL != nil ? "Audio" : (message.imageURL == nil ? message.text : "Photo"))
                         .font(VeyraTypography.body)
                         .foregroundStyle(VeyraColor.textPrimary.opacity(0.9))
                         .lineLimit(1)
@@ -437,7 +443,7 @@ private struct MessageActionsOverlay: View {
         VStack(spacing: 0) {
             actionButton("Reply", icon: "arrowshape.turn.up.left", action: onReply)
             Divider().overlay(Color.white.opacity(0.1))
-            if message.imageURL == nil {
+            if message.imageURL == nil && message.audioURL == nil {
                 actionButton("Copy", icon: "doc.on.doc", action: onCopy)
                 Divider().overlay(Color.white.opacity(0.1))
             }

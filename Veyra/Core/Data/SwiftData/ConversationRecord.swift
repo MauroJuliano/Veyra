@@ -103,6 +103,8 @@ final class LocalMessageRecord {
     var directionRaw: String
     var receiptRaw: String
     var imageURLString: String?
+    var audioURLString: String?
+    var audioDuration: Double?
     var isSticker: Bool
     var replyMessageID: UUID?
     var replyText: String?
@@ -118,6 +120,8 @@ final class LocalMessageRecord {
         directionRaw = message.direction == .outgoing ? "outgoing" : "incoming"
         receiptRaw = message.receipt == .read ? "read" : "sent"
         imageURLString = message.imageURL?.absoluteString
+        audioURLString = message.audioURL?.absoluteString
+        audioDuration = message.audioDuration
         isSticker = message.isSticker
         replyMessageID = message.replyPreview?.messageID
         replyText = message.replyPreview?.text
@@ -140,6 +144,8 @@ final class LocalMessageRecord {
             direction: directionRaw == "outgoing" ? .outgoing : .incoming,
             receipt: receiptRaw == "read" ? .read : .sent,
             imageURL: imageURLString.flatMap(URL.init(string:)),
+            audioURL: audioURLString.flatMap(URL.init(string:)),
+            audioDuration: audioDuration,
             isSticker: isSticker,
             replyPreview: reply,
             reactions: reactions,
@@ -154,6 +160,8 @@ final class LocalMessageRecord {
         directionRaw = message.direction == .outgoing ? "outgoing" : "incoming"
         receiptRaw = message.receipt == .read ? "read" : "sent"
         imageURLString = message.imageURL?.absoluteString
+        audioURLString = message.audioURL?.absoluteString
+        audioDuration = message.audioDuration
         isSticker = message.isSticker
         replyMessageID = message.replyPreview?.messageID
         replyText = message.replyPreview?.text

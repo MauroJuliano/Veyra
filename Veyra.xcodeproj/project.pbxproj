@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F04300000000000000000001 /* AudioMessageRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04300000000000000000011 /* AudioMessageRecorder.swift */; };
+		F04300000000000000000002 /* AudioMessagePlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04300000000000000000012 /* AudioMessagePlayerView.swift */; };
 		F04100000000000000000001 /* VoiceCallAudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04100000000000000000011 /* VoiceCallAudioEngine.swift */; };
 		F04100000000000000000002 /* WebRTCVoiceCallEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04100000000000000000012 /* WebRTCVoiceCallEngine.swift */; };
 		F04100000000000000000003 /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = F04100000000000000000031 /* WebRTC */; };
@@ -106,6 +108,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		F04300000000000000000011 /* AudioMessageRecorder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioMessageRecorder.swift; sourceTree = "<group>"; };
+		F04300000000000000000012 /* AudioMessagePlayerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioMessagePlayerView.swift; sourceTree = "<group>"; };
 		F04100000000000000000011 /* VoiceCallAudioEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoiceCallAudioEngine.swift; sourceTree = "<group>"; };
 		F04100000000000000000012 /* WebRTCVoiceCallEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WebRTCVoiceCallEngine.swift; sourceTree = "<group>"; };
 		F04000000000000000000011 /* CallRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CallRepository.swift; sourceTree = "<group>"; };
@@ -365,6 +369,7 @@
 		52F35888B0023302ABF8F350 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				F04300000000000000000012 /* AudioMessagePlayerView.swift */,
 				67E4FA0E7A4E39541CF5B110 /* MessageBubbleView.swift */,
 				AAAAD678B15A97CA475953DB /* MessageComposerView.swift */,
 				FF5389180DA0846CECDD8509 /* MessageTimelineView.swift */,
@@ -505,6 +510,7 @@
 		B1EEE824C219217C75F29061 /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				F04300000000000000000011 /* AudioMessageRecorder.swift */,
 				8DF296E5214CCEBFA8ABE939 /* MessagePreviewData.swift */,
 			);
 			path = Data;
@@ -830,6 +836,8 @@
 				734597C19877BA0641165DB5 /* ConversationRowView.swift in Sources */,
 				2F5A1E8DC77B696C08789C3F /* AppRoute.swift in Sources */,
 				95A91251246566BEA392862D /* Message.swift in Sources */,
+				F04300000000000000000001 /* AudioMessageRecorder.swift in Sources */,
+				F04300000000000000000002 /* AudioMessagePlayerView.swift in Sources */,
 				44755A60DDB5415B6345E48C /* MessagePreviewData.swift in Sources */,
 				462039CDAE80A4380ECB29CE /* MessageTimelineViewModel.swift in Sources */,
 				76FC6800A2D4B7B8493ACFC2 /* MessageBubbleView.swift in Sources */,
