@@ -42,6 +42,7 @@ struct MessageTimelineViewModelTests {
 
         #expect(viewModel.messages.map(\.id) == [cachedMessage.id])
         #expect(viewModel.errorMessage == nil)
+        #expect(viewModel.hasLoadedInitialPage)
     }
 
     @Test func sendsTrimmedOutgoingMessageAndClearsDraft() async {

@@ -37,6 +37,12 @@ final class SupabaseCallRepository: CallRepository, @unchecked Sendable {
             .execute()
     }
 
+    func heartbeatCall(id: UUID) async throws {
+        try await client
+            .rpc("heartbeat_voice_call", params: ["target_call_id": id])
+            .execute()
+    }
+
     func activeCallEvents() async throws -> AsyncStream<[VoiceCallUpdate]> {
         // A repository stream can be recreated while a previous channel is still
         // being removed. Reusing the same topic makes Supabase return the already

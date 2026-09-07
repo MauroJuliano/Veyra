@@ -47,4 +47,121 @@ struct VoiceCallCoordinatorTests {
         #expect(coordinator.endedAt == endedAt)
         #expect(!coordinator.isMuted)
     }
+
+    @Test func unansweredCallEndsAfterTimeout() async throws {
+        let repository = CallRepositorySpy()
+        let coordinator = VoiceCallCoordinator(
+            call: call,
+            repository: repository,
+            audioEngine: VoiceCallAudioEngineSpy(),
+            unansweredTimeout: .milliseconds(20)
+        )
+
+        await coordinator.start()
+        try await Task.sleep(for: .milliseconds(60))
+
+        #expect(coordinator.state == .ended)
+        #expect(await repository.endCallCount == 1)
+    }
+
+    @Test func connectedCallCancelsUnansweredTimeout() async throws {
+        let repository = CallRepositorySpy()
+        let coordinator = VoiceCallCoordinator(
+            call: call,
+            repository: repository,
+            audioEngine: VoiceCallAudioEngineSpy(),
+            unansweredTimeout: .milliseconds(20)
+        )
+
+        await coordinator.start()
+        coordinator.markConnecting()
+        coordinator.markConnected()
+        try await Task.sleep(for: .milliseconds(60))
+
+        #expect(coordinator.state == .connected)
+        #expect(await repository.endCallCount == 0)
+        coordinator.end()
+    }
+
+    @Test func leavingCallScreenEndsPersistedCall() async throws {
+        let repository = CallRepositorySpy()
+        let coordinator = VoiceCallCoordinator(
+            call: call,
+            repository: repository,
+            audioEngine: VoiceCallAudioEngineSpy()
+        )
+
+        await coordinator.start()
+        coordinator.abandonIfNeeded()
+        try await Task.sleep(for: .milliseconds(20))
+
+        #expect(coordinator.state == .ended)
+        #expect(await repository.endCallCount == 1)
+    }
+
+    @Test func audioSetupFailureEndsPersistedCall() async throws {
+        let repository = CallRepositorySpy()
+        let coordinator = VoiceCallCoordinator(
+            call: call,
+            repository: repository,
+            audioEngine: VoiceCallAudioEngineSpy(shouldFailStart: true)
+        )
+
+        await coordinator.start()
+        try await Task.sleep(for: .milliseconds(20))
+
+        #expect(coordinator.state == .failed)
+        #expect(await repository.endCallCount == 1)
+    }
+}
+
+private actor CallRepositorySpy: CallRepository {
+    private(set) var endCallCount = 0
+
+    func startCall(to participant: VoiceCall) async throws -> VoiceCall {
+        VoiceCall(
+            id: UUID(),
+            participantID: participant.participantID,
+            participantName: participant.participantName,
+            participantAvatarURL: participant.participantAvatarURL,
+            direction: participant.direction
+        )
+    }
+
+    func answerCall(id: UUID, accept: Bool) async throws {}
+    func endCall(id: UUID) async throws { endCallCount += 1 }
+    func heartbeatCall(id: UUID) async throws {}
+    func activeCallEvents() async throws -> AsyncStream<[VoiceCallUpdate]> {
+        AsyncStream { _ in }
+    }
+    func fetchCallHistory(with participantID: UUID) async throws -> [VoiceCallHistory] { [] }
+    func sendSignal(_ signal: CallSignal, callID: UUID) async throws {}
+    func signalEvents(callID: UUID) async throws -> AsyncStream<[CallSignalEnvelope]> {
+        AsyncStream { _ in }
+    }
+}
+
+@MainActor
+private final class VoiceCallAudioEngineSpy: VoiceCallAudioEngine {
+    let shouldFailStart: Bool
+
+    init(shouldFailStart: Bool = false) {
+        self.shouldFailStart = shouldFailStart
+    }
+
+    func startOutgoing(callID: UUID) async throws {
+        if shouldFailStart { throw VoiceCallAudioEngineSpyError.startFailed }
+    }
+
+    func startIncoming(callID: UUID) async throws {
+        if shouldFailStart { throw VoiceCallAudioEngineSpyError.startFailed }
+    }
+
+    func setMuted(_ isMuted: Bool) {}
+    func setSpeakerEnabled(_ isEnabled: Bool) throws {}
+    func stop() {}
+}
+
+private enum VoiceCallAudioEngineSpyError: Error {
+    case startFailed
 }

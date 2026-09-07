@@ -32,6 +32,7 @@ struct VoiceCallView: View {
                 dismiss()
             }
         }
+        .onDisappear { coordinator.abandonIfNeeded() }
         .interactiveDismissDisabled()
     }
 
