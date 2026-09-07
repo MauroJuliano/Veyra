@@ -59,11 +59,10 @@ final class WebRTCVoiceCallEngine: NSObject, VoiceCallAudioEngine {
         guard peerConnection == nil else { return }
         self.callID = callID
 
-        let resources = await Task.detached(priority: .userInitiated) {
-            RTCInitializeSSL()
-            return WebRTCFactoryBox(factory: RTCPeerConnectionFactory())
-        }.value
-        let factory = resources.factory
+        // WebRTC objects have signaling-thread affinity. The factory and the
+        // peer connection must be created and used from this same actor.
+        RTCInitializeSSL()
+        let factory = RTCPeerConnectionFactory()
         self.factory = factory
 
         try await Task.detached(priority: .userInitiated) {
@@ -178,14 +177,6 @@ final class WebRTCVoiceCallEngine: NSObject, VoiceCallAudioEngine {
                 else { continuation.resume(returning: ()) }
             }
         }
-    }
-}
-
-private final class WebRTCFactoryBox: @unchecked Sendable {
-    let factory: RTCPeerConnectionFactory
-
-    init(factory: RTCPeerConnectionFactory) {
-        self.factory = factory
     }
 }
 
