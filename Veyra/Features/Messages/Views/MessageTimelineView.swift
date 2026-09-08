@@ -238,8 +238,10 @@ struct MessageTimelineView: View {
 
     @MainActor
     private func loadCurrentUserProfile() async {
-        guard let repository = viewModel.profileRepository else { return }
-        currentUserProfile = try? await repository.fetchMyProfile()
+        currentUserProfile = UserDefaultsProfileStore().load()
+        guard let repository = viewModel.profileRepository,
+              let remoteProfile = try? await repository.fetchMyProfile() else { return }
+        currentUserProfile = remoteProfile
     }
 
     @ViewBuilder private var replyComposerPreview: some View {
