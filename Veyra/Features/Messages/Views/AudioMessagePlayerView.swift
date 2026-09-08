@@ -95,3 +95,13 @@ private actor AudioMessageCache {
         return localURL
     }
 }
+
+#Preview("Audio message player") {
+    AudioMessagePlayerView(
+        url: URL(fileURLWithPath: "/tmp/veyra-audio-preview.m4a"),
+        duration: 42
+    )
+    .padding()
+    .background(VeyraColor.background)
+    .preferredColorScheme(.dark)
+}
