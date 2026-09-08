@@ -9,6 +9,7 @@ struct MessageBubbleView: View {
     var onReply: () -> Void = {}
     var onImageTap: (URL) -> Void = { _ in }
     var onRetry: () -> Void = {}
+    var onToggleHeartReaction: () -> Void = {}
     @State private var replyDragOffset: CGFloat = 0
 
     var body: some View {
@@ -64,6 +65,7 @@ struct MessageBubbleView: View {
                         Text(message.text)
                             .padding(.horizontal, VeyraSpacing.md)
                             .padding(.vertical, VeyraSpacing.sm)
+                            .onTapGesture(count: 2, perform: onToggleHeartReaction)
                     }
                 }
                     .font(VeyraTypography.body)

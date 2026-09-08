@@ -228,7 +228,10 @@ struct MessageTimelineView: View {
             onImageTap: { url in
                 selectedImage = FullScreenImage(url: url, canSave: message.direction == .incoming)
             },
-            onRetry: { Task { await viewModel.retry(message) } }
+            onRetry: { Task { await viewModel.retry(message) } },
+            onToggleHeartReaction: {
+                Task { await viewModel.toggleReaction("❤️", on: message) }
+            }
         )
         .onLongPressGesture(minimumDuration: 0.35) {
             guard !viewModel.isMessagingBlocked else { return }
