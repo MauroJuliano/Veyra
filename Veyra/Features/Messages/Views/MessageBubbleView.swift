@@ -35,7 +35,14 @@ struct MessageBubbleView: View {
                 }
                 Group {
                     if let audioURL = message.audioURL {
-                        AudioMessagePlayerView(url: audioURL, duration: message.audioDuration ?? 0)
+                        AudioMessagePlayerView(
+                            url: audioURL,
+                            duration: message.audioDuration ?? 0,
+                            avatarName: message.direction == .incoming ? participantName : nil,
+                            avatarURL: message.direction == .incoming ? participantAvatarURL : nil,
+                            avatarSize: .medium,
+                            direction: message.direction
+                        )
                     } else if let imageURL = message.imageURL {
                         Button { onImageTap(imageURL) } label: {
                             VeyraCachedImage(url: imageURL) { image in

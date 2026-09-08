@@ -4,11 +4,37 @@ import SwiftUI
 struct AudioMessagePlayerView: View {
     let url: URL
     let duration: TimeInterval
+    let avatarName: String?
+    let avatarURL: URL?
+    let avatarSize: VeyraAvatarSize
+    let showsOnlineIndicator: Bool
+    let direction: Message.Direction
     @State private var player: AVPlayer?
     @State private var isPlaying = false
     @State private var progress = 0.0
     @State private var isPreparing = true
     @State private var waveformSamples = AudioWaveformSamples.placeholder
+
+    init(
+        url: URL,
+        duration: TimeInterval,
+        avatarName: String? = nil,
+        avatarURL: URL? = nil,
+        avatarSize: VeyraAvatarSize = .medium,
+        showsOnlineIndicator: Bool = false,
+        direction: Message.Direction = .incoming
+    ) {
+        self.url = url
+        self.duration = duration
+        self.avatarName = avatarName
+        self.avatarURL = avatarURL
+        self.avatarSize = avatarSize
+        self.showsOnlineIndicator = showsOnlineIndicator
+        self.direction = direction
+    }
+
+    var isOutgoing: Bool { direction == .outgoing }
+    var hasAvatar: Bool { avatarName != nil }
 
     var body: some View {
         HStack(spacing: VeyraSpacing.sm) {
@@ -107,7 +133,11 @@ private actor AudioMessageCache {
 #Preview("Audio message player") {
     AudioMessagePlayerView(
         url: URL(fileURLWithPath: "/tmp/veyra-audio-preview.m4a"),
-        duration: 42
+        duration: 42,
+        avatarName: "Martha Nielsen",
+        avatarSize: .medium,
+        showsOnlineIndicator: true,
+        direction: .incoming
     )
     .padding()
     .background(VeyraColor.background)
