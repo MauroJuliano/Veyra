@@ -253,7 +253,7 @@ struct MessageTimelineView: View {
             HStack(spacing: 0) {
                 Rectangle().fill(VeyraColor.accent).frame(width: 4, height: 64)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(message.direction == .outgoing ? String(localized: "You") : conversation.participantName)
+                    Text(message.direction == .outgoing ? AppLocalization.string("You") : conversation.participantName)
                         .font(VeyraTypography.bodyEmphasized)
                         .foregroundStyle(VeyraColor.accent)
                     Text(message.audioURL != nil ? "Audio" : (message.imageURL == nil ? message.text : "Photo"))
@@ -347,9 +347,18 @@ struct MessageTimelineView: View {
     }
 
     private var participantStatus: String {
-        if viewModel.isParticipantActive { return String(localized: "Active") }
-        guard let lastSeenAt = viewModel.participantLastSeenAt else { return String(localized: "Offline") }
-        return String(localized: "Last seen at \(lastSeenAt.formatted(date: .omitted, time: .shortened))")
+        let locale = AppLocalization.locale
+
+        if viewModel.isParticipantActive {
+            return AppLocalization.string("Active", table: "Language", locale: locale)
+        }
+        guard let lastSeenAt = viewModel.participantLastSeenAt else {
+            return AppLocalization.string("Offline", table: "Language", locale: locale)
+        }
+        let time = lastSeenAt.formatted(
+            Date.FormatStyle(date: .omitted, time: .shortened).locale(locale)
+        )
+        return AppLocalization.string("Last seen at \(time)", table: "Language", locale: locale)
     }
 
     private func sendSelectedPhoto(_ item: PhotosPickerItem?) {
@@ -405,12 +414,12 @@ private struct CallHistoryRow: View {
 
     private var title: String {
         switch (call.direction, call.status) {
-        case (.incoming, .declined): String(localized: "Declined incoming call")
-        case (.incoming, .missed), (.incoming, .ringing): String(localized: "Missed incoming call")
-        case (.outgoing, .declined): String(localized: "Declined outgoing call")
-        case (.outgoing, .missed), (.outgoing, .ringing): String(localized: "Unanswered outgoing call")
-        case (.incoming, _): String(localized: "Incoming call")
-        case (.outgoing, _): String(localized: "Outgoing call")
+        case (.incoming, .declined): AppLocalization.string("Declined incoming call")
+        case (.incoming, .missed), (.incoming, .ringing): AppLocalization.string("Missed incoming call")
+        case (.outgoing, .declined): AppLocalization.string("Declined outgoing call")
+        case (.outgoing, .missed), (.outgoing, .ringing): AppLocalization.string("Unanswered outgoing call")
+        case (.incoming, _): AppLocalization.string("Incoming call")
+        case (.outgoing, _): AppLocalization.string("Outgoing call")
         }
     }
 
@@ -514,7 +523,7 @@ private struct MessageActionsOverlay: View {
 private enum ImageSelectionError: LocalizedError {
     case noData
 
-    var errorDescription: String? { String(localized: "The selected image could not be loaded.") }
+    var errorDescription: String? { AppLocalization.string("The selected image could not be loaded.") }
 }
 
 struct FullScreenImage: Identifiable {
@@ -609,14 +618,14 @@ struct FullScreenImageView: View {
             guard let url = currentImage?.url else { return }
             let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
             guard status == .authorized || status == .limited else {
-                saveMessage = String(localized: "Allow photo access in Settings to save received images.")
+                saveMessage = AppLocalization.string("Allow photo access in Settings to save received images.")
                 return
             }
             let (data, _) = try await URLSession.shared.data(from: url)
             try await saveImageData(data)
-            saveMessage = String(localized: "Image saved to Photos.")
+            saveMessage = AppLocalization.string("Image saved to Photos.")
         } catch {
-            saveMessage = String(localized: "The image could not be saved. \(error.localizedDescription)")
+            saveMessage = AppLocalization.string("The image could not be saved. \(error.localizedDescription)")
         }
     }
 
@@ -641,7 +650,7 @@ private enum PhotoSaveError: LocalizedError {
     case unknownFailure
 
     var errorDescription: String? {
-        String(localized: "Photos did not complete the save operation.")
+        AppLocalization.string("Photos did not complete the save operation.")
     }
 }
 

@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F04610000000000000000001 /* AppLocalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04610000000000000000011 /* AppLocalization.swift */; };
+		F04600000000000000000001 /* AppLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04600000000000000000011 /* AppLanguage.swift */; };
+		F04600000000000000000002 /* LanguageSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04600000000000000000012 /* LanguageSelectionView.swift */; };
+		F04600000000000000000003 /* Language.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F04600000000000000000013 /* Language.xcstrings */; };
 		F04500000000000000000001 /* AudioWaveformSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04500000000000000000011 /* AudioWaveformSampler.swift */; };
 		F04500000000000000000002 /* AudioWaveformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04500000000000000000012 /* AudioWaveformView.swift */; };
 		C04400000000000000000001 /* RemoteChatRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04400000000000000000011 /* RemoteChatRepository.swift */; };
@@ -111,6 +115,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		F04610000000000000000011 /* AppLocalization.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppLocalization.swift; sourceTree = "<group>"; };
+		F04600000000000000000011 /* AppLanguage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppLanguage.swift; sourceTree = "<group>"; };
+		F04600000000000000000012 /* LanguageSelectionView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LanguageSelectionView.swift; sourceTree = "<group>"; };
+		F04600000000000000000013 /* Language.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json.xcstrings; path = Language.xcstrings; sourceTree = "<group>"; };
 		F04500000000000000000011 /* AudioWaveformSampler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioWaveformSampler.swift; sourceTree = "<group>"; };
 		F04500000000000000000012 /* AudioWaveformView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioWaveformView.swift; sourceTree = "<group>"; };
 		C04400000000000000000011 /* RemoteChatRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RemoteChatRepository.swift; sourceTree = "<group>"; };
@@ -228,6 +236,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F04610000000000000000021 /* Localization */ = {
+			isa = PBXGroup;
+			children = (
+				F04610000000000000000011 /* AppLocalization.swift */,
+			);
+			path = Localization;
+			sourceTree = "<group>";
+		};
 		F04000000000000000000021 /* Data */ = {
 			isa = PBXGroup;
 			children = (
@@ -303,6 +319,7 @@
 		1B8448D1A22795F940FD4664 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				F04600000000000000000011 /* AppLanguage.swift */,
 				1F545AD5822812B8446B21C3 /* UserProfile.swift */,
 			);
 			path = Models;
@@ -346,6 +363,7 @@
 		443FA02DB0E706D8F1FD2D5C /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				F04610000000000000000021 /* Localization */,
 				7B110D4A85DA09EF80C1A7D2 /* AppMetadata.swift */,
 				12575B7C86C1FF310C6440A5 /* DesignSystem */,
 				61676F069A96A091937AFF57 /* Data */,
@@ -487,6 +505,7 @@
 		9376C378D0F533FA16874658 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				F04600000000000000000012 /* LanguageSelectionView.swift */,
 				6931A3E0FFF2CFD78CBCC110 /* ProfileView.swift */,
 				5EBE432F2420C29F7249B975 /* PersonalDetailsView.swift */,
 				A13D54BE227B4FA49E8C0302 /* PublicProfileView.swift */,
@@ -494,6 +513,14 @@
 				C35F76D0449D61C6B0AE2502 /* ReportUserView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		F04600000000000000000021 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F04600000000000000000013 /* Language.xcstrings */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		9824A6DF97E584A24DA4F34F /* Profile */ = {
@@ -653,6 +680,7 @@
 				9376C378D0F533FA16874658 /* Views */,
 				1B8448D1A22795F940FD4664 /* Models */,
 				74D184FDBE681B2E017A91C1 /* Presentation */,
+				F04600000000000000000021 /* Resources */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -752,6 +780,7 @@
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				de,
 				en,
 				"pt-BR",
 				Base,
@@ -783,6 +812,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F04600000000000000000003 /* Language.xcstrings in Resources */,
 				F03800000000000000000001 /* Localizable.xcstrings in Resources */,
 				F03800000000000000000002 /* InfoPlist.xcstrings in Resources */,
 			);
@@ -818,6 +848,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F04610000000000000000001 /* AppLocalization.swift in Sources */,
+				F04600000000000000000001 /* AppLanguage.swift in Sources */,
+				F04600000000000000000002 /* LanguageSelectionView.swift in Sources */,
 				F04500000000000000000001 /* AudioWaveformSampler.swift in Sources */,
 				F04500000000000000000002 /* AudioWaveformView.swift in Sources */,
 				C04400000000000000000001 /* RemoteChatRepository.swift in Sources */,

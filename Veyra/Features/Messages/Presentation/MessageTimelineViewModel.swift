@@ -448,8 +448,8 @@ final class MessageTimelineViewModel {
     }
 
     private func replyDescription(for message: Message) -> String {
-        if message.audioURL != nil { return String(localized: "Audio") }
-        if message.imageURL != nil { return String(localized: "Photo") }
+        if message.audioURL != nil { return AppLocalization.string("Audio") }
+        if message.imageURL != nil { return AppLocalization.string("Photo") }
         return message.text
     }
 

@@ -220,14 +220,14 @@ struct VoiceCallView: View {
 
     private func status(at date: Date) -> String {
         switch coordinator.state {
-        case .idle: String(localized: "Preparing call…")
-        case .ringing: String(localized: "Incoming call…")
-        case .calling: String(localized: "Calling…")
-        case .connecting: String(localized: "Connecting…")
+        case .idle: AppLocalization.string("Preparing call…")
+        case .ringing: AppLocalization.string("Incoming call…")
+        case .calling: AppLocalization.string("Calling…")
+        case .connecting: AppLocalization.string("Connecting…")
         case .connected:
-            coordinator.connectedAt.map { duration(from: $0, to: date) } ?? String(localized: "Connected")
-        case .ended: String(localized: "Call ended")
-        case .failed: String(localized: "Call failed")
+            coordinator.connectedAt.map { duration(from: $0, to: date) } ?? AppLocalization.string("Connected")
+        case .ended: AppLocalization.string("Call ended")
+        case .failed: AppLocalization.string("Call failed")
         }
     }
 

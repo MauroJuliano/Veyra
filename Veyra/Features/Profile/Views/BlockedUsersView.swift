@@ -69,7 +69,7 @@ struct BlockedUsersView: View {
         do {
             users = try await repository.fetchBlockedUsers()
         } catch {
-            errorMessage = String(localized: "Unable to load blocked users.")
+            errorMessage = AppLocalization.string("Unable to load blocked users.")
         }
     }
 
@@ -82,7 +82,7 @@ struct BlockedUsersView: View {
             try await repository.setUserBlocked(userID: userID, isBlocked: false)
             users.removeAll { $0.id == user.id }
         } catch {
-            errorMessage = String(localized: "Unable to unblock this user.")
+            errorMessage = AppLocalization.string("Unable to unblock this user.")
         }
     }
 }

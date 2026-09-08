@@ -257,8 +257,8 @@ enum VoiceCallAudioError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .microphonePermissionDenied: String(localized: "Microphone access is required for voice calls.")
-        default: String(localized: "Unable to connect audio for this call.")
+        case .microphonePermissionDenied: AppLocalization.string("Microphone access is required for voice calls.")
+        default: AppLocalization.string("Unable to connect audio for this call.")
         }
     }
 }

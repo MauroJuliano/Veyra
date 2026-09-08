@@ -4,6 +4,7 @@ struct AppRootView: View {
     private let dependencies: AppDependencies
     @State private var authentication: AuthenticationCoordinator
     @State private var incomingCalls: IncomingCallCoordinator
+    @AppStorage(AppLanguage.storageKey) private var selectedLanguage = AppLanguage.system.rawValue
 
     init(
         dependencies: AppDependencies = AppDependencies(),
@@ -15,6 +16,12 @@ struct AppRootView: View {
     }
 
     var body: some View {
+        content
+            .environment(\.locale, appLanguage.locale)
+    }
+
+    @ViewBuilder
+    private var content: some View {
         switch authentication.route {
         case .authenticated:
             authenticatedContent
@@ -43,6 +50,10 @@ struct AppRootView: View {
             EmailConfirmationView(email: email, onBack: authentication.showLogin)
                 .transition(.opacity)
         }
+    }
+
+    private var appLanguage: AppLanguage {
+        AppLanguage(rawValue: selectedLanguage) ?? .system
     }
 
     private var authenticatedContent: some View {
