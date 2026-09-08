@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct LanguageSelectionView: View {
+    @Environment(\.dismiss) private var dismiss
     @AppStorage(AppLanguage.storageKey) private var selectedLanguage = AppLanguage.system.rawValue
 
     var body: some View {
@@ -17,6 +18,19 @@ struct LanguageSelectionView: View {
         .background(languageBackground)
         .navigationTitle("Language")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden()
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button(action: dismiss.callAsFunction) {
+                    Label {
+                        Text("Back", tableName: "Language")
+                    } icon: {
+                        Image(systemName: "chevron.left")
+                    }
+                }
+                .accessibilityLabel(Text("Back", tableName: "Language"))
+            }
+        }
         .toolbar(.hidden, for: .tabBar)
     }
 
@@ -107,6 +121,7 @@ struct LanguageSelectionView: View {
         case .system: "🌐"
         case .english: "🇬🇧"
         case .portugueseBrazil: "🇧🇷"
+        case .german: "🇩🇪"
         }
     }
 

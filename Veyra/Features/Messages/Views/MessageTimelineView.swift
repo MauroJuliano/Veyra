@@ -4,6 +4,7 @@ import Photos
 import UIKit
 
 struct MessageTimelineView: View {
+    @Environment(\.locale) private var locale
     let conversation: Conversation
     let callRepository: (any CallRepository)?
     @State private var viewModel: MessageTimelineViewModel
@@ -347,9 +348,16 @@ struct MessageTimelineView: View {
     }
 
     private var participantStatus: String {
-        if viewModel.isParticipantActive { return String(localized: "Active") }
-        guard let lastSeenAt = viewModel.participantLastSeenAt else { return String(localized: "Offline") }
-        return String(localized: "Last seen at \(lastSeenAt.formatted(date: .omitted, time: .shortened))")
+        if viewModel.isParticipantActive {
+            return String(localized: "Active", table: "Language", locale: locale)
+        }
+        guard let lastSeenAt = viewModel.participantLastSeenAt else {
+            return String(localized: "Offline", table: "Language", locale: locale)
+        }
+        let time = lastSeenAt.formatted(
+            Date.FormatStyle(date: .omitted, time: .shortened).locale(locale)
+        )
+        return String(localized: "Last seen at \(time)", table: "Language", locale: locale)
     }
 
     private func sendSelectedPhoto(_ item: PhotosPickerItem?) {

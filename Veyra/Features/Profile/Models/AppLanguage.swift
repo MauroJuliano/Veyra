@@ -6,6 +6,7 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     case system
     case english
     case portugueseBrazil
+    case german
 
     var id: String { rawValue }
 
@@ -14,6 +15,7 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         case .system: String(localized: "System language", table: "Language")
         case .english: "English"
         case .portugueseBrazil: "Português (Brasil)"
+        case .german: "Deutsch"
         }
     }
 
@@ -22,6 +24,7 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         case .system: String(localized: "Follow your device language", table: "Language")
         case .english: "English"
         case .portugueseBrazil: "Português do Brasil"
+        case .german: "Deutsch"
         }
     }
 
@@ -30,6 +33,7 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         case .system: .autoupdatingCurrent
         case .english: Locale(identifier: "en")
         case .portugueseBrazil: Locale(identifier: "pt-BR")
+        case .german: Locale(identifier: "de")
         }
     }
 
@@ -38,6 +42,7 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         case .system: nil
         case .english: "en"
         case .portugueseBrazil: "pt-BR"
+        case .german: "de"
         }
     }
 
