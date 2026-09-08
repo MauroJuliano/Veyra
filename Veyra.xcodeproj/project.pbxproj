@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F04710000000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F04710000000000000000011 /* Assets.xcassets */; };
 		F04610000000000000000001 /* AppLocalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04610000000000000000011 /* AppLocalization.swift */; };
 		F04600000000000000000001 /* AppLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04600000000000000000011 /* AppLanguage.swift */; };
 		F04600000000000000000002 /* LanguageSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04600000000000000000012 /* LanguageSelectionView.swift */; };
@@ -115,6 +116,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		F04710000000000000000011 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F04610000000000000000011 /* AppLocalization.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppLocalization.swift; sourceTree = "<group>"; };
 		F04600000000000000000011 /* AppLanguage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppLanguage.swift; sourceTree = "<group>"; };
 		F04600000000000000000012 /* LanguageSelectionView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LanguageSelectionView.swift; sourceTree = "<group>"; };
@@ -236,6 +238,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F04710000000000000000021 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F04710000000000000000011 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		F04610000000000000000021 /* Localization */ = {
 			isa = PBXGroup;
 			children = (
@@ -691,6 +701,7 @@
 				EE202FB336242A4D8F791965 /* App */,
 				443FA02DB0E706D8F1FD2D5C /* Core */,
 				6577D3D2341D28983B36E493 /* Features */,
+				F04710000000000000000021 /* Resources */,
 				C9B2B5790BD3B93BB1DBD5C6 /* Configuration */,
 			);
 			path = Veyra;
@@ -812,6 +823,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F04710000000000000000001 /* Assets.xcassets in Resources */,
 				F04600000000000000000003 /* Language.xcstrings in Resources */,
 				F03800000000000000000001 /* Localizable.xcstrings in Resources */,
 				F03800000000000000000002 /* InfoPlist.xcstrings in Resources */,
