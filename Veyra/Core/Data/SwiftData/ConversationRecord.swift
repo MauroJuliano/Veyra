@@ -171,6 +171,59 @@ final class LocalMessageRecord {
     }
 }
 
+@Model
+final class LocalCallHistoryRecord {
+    @Attribute(.unique) var id: UUID
+    var participantID: UUID
+    var directionRaw: String
+    var statusRaw: String
+    var startedAt: Date
+    var answeredAt: Date?
+    var endedAt: Date?
+
+    init(call: VoiceCallHistory, participantID: UUID) {
+        id = call.id
+        self.participantID = participantID
+        directionRaw = call.direction == .incoming ? "incoming" : "outgoing"
+        statusRaw = call.status.rawValue
+        startedAt = call.startedAt
+        answeredAt = call.answeredAt
+        endedAt = call.endedAt
+    }
+
+    var call: VoiceCallHistory? {
+        guard let status = VoiceCallHistoryStatus(rawValue: statusRaw) else { return nil }
+        return VoiceCallHistory(
+            id: id,
+            direction: directionRaw == "incoming" ? .incoming : .outgoing,
+            status: status,
+            startedAt: startedAt,
+            answeredAt: answeredAt,
+            endedAt: endedAt
+        )
+    }
+
+    func update(with call: VoiceCallHistory, participantID: UUID) {
+        self.participantID = participantID
+        directionRaw = call.direction == .incoming ? "incoming" : "outgoing"
+        statusRaw = call.status.rawValue
+        startedAt = call.startedAt
+        answeredAt = call.answeredAt
+        endedAt = call.endedAt
+    }
+}
+
+@Model
+final class CallHistorySyncRecord {
+    @Attribute(.unique) var participantID: UUID
+    var synchronizedAt: Date
+
+    init(participantID: UUID, synchronizedAt: Date = .now) {
+        self.participantID = participantID
+        self.synchronizedAt = synchronizedAt
+    }
+}
+
 private struct CachedReaction: Codable {
     let emoji: String
     let count: Int

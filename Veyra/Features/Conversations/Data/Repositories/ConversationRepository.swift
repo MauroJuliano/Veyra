@@ -9,10 +9,15 @@ protocol MessageCacheRepository {
     func fetchMessages(conversationID: UUID, before: Date?, limit: Int) -> [Message]
     func saveMessages(_ messages: [Message], conversationID: UUID)
     func deleteMessage(id: UUID)
+    func fetchCallHistory(participantID: UUID) -> [VoiceCallHistory]
+    func replaceCallHistory(_ calls: [VoiceCallHistory], participantID: UUID)
+    func hasCachedCallHistory(participantID: UUID) -> Bool
 }
 
 final class InMemoryMessageCacheRepository: MessageCacheRepository {
     private var storage: [UUID: [Message]] = [:]
+    private var callStorage: [UUID: [VoiceCallHistory]] = [:]
+    private var synchronizedCallParticipants: Set<UUID> = []
 
     func fetchMessages(conversationID: UUID, before: Date?, limit: Int) -> [Message] {
         let messages = storage[conversationID, default: []]
@@ -32,6 +37,19 @@ final class InMemoryMessageCacheRepository: MessageCacheRepository {
         for conversationID in storage.keys {
             storage[conversationID]?.removeAll { $0.id == id }
         }
+    }
+
+    func fetchCallHistory(participantID: UUID) -> [VoiceCallHistory] {
+        callStorage[participantID, default: []].sorted { $0.startedAt < $1.startedAt }
+    }
+
+    func replaceCallHistory(_ calls: [VoiceCallHistory], participantID: UUID) {
+        callStorage[participantID] = calls
+        synchronizedCallParticipants.insert(participantID)
+    }
+
+    func hasCachedCallHistory(participantID: UUID) -> Bool {
+        synchronizedCallParticipants.contains(participantID)
     }
 }
 
