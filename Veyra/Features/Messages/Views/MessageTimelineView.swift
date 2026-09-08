@@ -4,7 +4,6 @@ import Photos
 import UIKit
 
 struct MessageTimelineView: View {
-    @Environment(\.locale) private var locale
     let conversation: Conversation
     let callRepository: (any CallRepository)?
     @State private var viewModel: MessageTimelineViewModel
@@ -348,6 +347,8 @@ struct MessageTimelineView: View {
     }
 
     private var participantStatus: String {
+        let locale = AppLocalization.locale
+
         if viewModel.isParticipantActive {
             return AppLocalization.string("Active", table: "Language", locale: locale)
         }

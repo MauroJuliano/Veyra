@@ -30,7 +30,14 @@ struct LocalizationTests {
         try assertCoverage(
             at: repositoryRoot.appending(path: "Veyra/Configuration/Localizable.xcstrings"),
             locales: ["pt-BR", "de"],
-            ignoredKeys: [""]
+            // The extractor mirrors these custom-resolver calls into the default
+            // catalog; their authoritative translations live in Language.xcstrings.
+            ignoredKeys: [
+                "",
+                "Follow your device language",
+                "Some content may update after you reopen Veyra.",
+                "System language"
+            ]
         )
         try assertCoverage(
             at: repositoryRoot.appending(path: "Veyra/Features/Profile/Resources/Language.xcstrings"),
