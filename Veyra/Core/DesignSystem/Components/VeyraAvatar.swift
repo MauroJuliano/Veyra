@@ -57,14 +57,10 @@ struct VeyraAvatar: View {
                 VeyraCachedImage(url: imageURL) { image in
                     image.resizable().scaledToFill()
                 } placeholder: {
-                    ProgressView().tint(VeyraColor.accent)
+                    avatarPlaceholder
                 }
             } else {
-                Text(AvatarInitials.make(from: name))
-                    .font(size.font)
-                    .foregroundStyle(VeyraColor.accent)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(VeyraColor.accentMuted)
+                avatarPlaceholder
             }
         }
         .frame(width: size.dimension, height: size.dimension)
@@ -80,6 +76,14 @@ struct VeyraAvatar: View {
         }
         .accessibilityLabel(name)
     }
+
+    private var avatarPlaceholder: some View {
+        Text(AvatarInitials.make(from: name))
+            .font(size.font)
+            .foregroundStyle(VeyraColor.accent)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(VeyraColor.accentMuted)
+    }
 }
 
 struct VeyraCachedImage<Content: View, Placeholder: View>: View {
@@ -87,6 +91,17 @@ struct VeyraCachedImage<Content: View, Placeholder: View>: View {
     @ViewBuilder let content: (Image) -> Content
     @ViewBuilder let placeholder: () -> Placeholder
     @State private var loadedImage: UIImage?
+
+    init(
+        url: URL,
+        @ViewBuilder content: @escaping (Image) -> Content,
+        @ViewBuilder placeholder: @escaping () -> Placeholder
+    ) {
+        self.url = url
+        self.content = content
+        self.placeholder = placeholder
+        _loadedImage = State(initialValue: VeyraImagePipeline.cachedImage(for: url))
+    }
 
     var body: some View {
         Group {
@@ -97,6 +112,10 @@ struct VeyraCachedImage<Content: View, Placeholder: View>: View {
             }
         }
         .task(id: url) {
+            if let cachedImage = VeyraImagePipeline.cachedImage(for: url) {
+                loadedImage = cachedImage
+                return
+            }
             loadedImage = nil
             guard let data = try? await VeyraImagePipeline.shared.data(for: url),
                   let image = UIImage(data: data) else { return }
@@ -105,10 +124,14 @@ struct VeyraCachedImage<Content: View, Placeholder: View>: View {
     }
 }
 
+private final class VeyraImageMemoryCache: @unchecked Sendable {
+    let storage = NSCache<NSString, NSData>()
+}
+
 actor VeyraImagePipeline {
     static let shared = VeyraImagePipeline()
 
-    private let memoryCache = NSCache<NSString, NSData>()
+    private nonisolated static let memoryCache = VeyraImageMemoryCache()
     private let cacheDirectory: URL
     private var runningTasks: [String: Task<Data, Error>] = [:]
 
@@ -116,18 +139,18 @@ actor VeyraImagePipeline {
         let root = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
         cacheDirectory = root.appendingPathComponent("VeyraImages", isDirectory: true)
         try? FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
-        memoryCache.totalCostLimit = 48 * 1_024 * 1_024
+        Self.memoryCache.storage.totalCostLimit = 48 * 1_024 * 1_024
     }
 
     func data(for url: URL) async throws -> Data {
         let key = Self.cacheKey(for: url)
-        if let cached = memoryCache.object(forKey: key as NSString) {
+        if let cached = Self.memoryCache.storage.object(forKey: key as NSString) {
             return cached as Data
         }
 
         let fileURL = cacheDirectory.appendingPathComponent(key)
         if let diskData = try? Data(contentsOf: fileURL) {
-            memoryCache.setObject(diskData as NSData, forKey: key as NSString, cost: diskData.count)
+            Self.memoryCache.storage.setObject(diskData as NSData, forKey: key as NSString, cost: diskData.count)
             return diskData
         }
 
@@ -151,7 +174,7 @@ actor VeyraImagePipeline {
         do {
             let data = try await task.value
             try? data.write(to: fileURL, options: .atomic)
-            memoryCache.setObject(data as NSData, forKey: key as NSString, cost: data.count)
+            Self.memoryCache.storage.setObject(data as NSData, forKey: key as NSString, cost: data.count)
             runningTasks[key] = nil
             return data
         } catch {
@@ -160,7 +183,14 @@ actor VeyraImagePipeline {
         }
     }
 
-    static func cacheKey(for url: URL) -> String {
+    nonisolated static func cachedImage(for url: URL) -> UIImage? {
+        guard let data = memoryCache.storage.object(forKey: cacheKey(for: url) as NSString) else {
+            return nil
+        }
+        return UIImage(data: data as Data)
+    }
+
+    nonisolated static func cacheKey(for url: URL) -> String {
         var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
         components?.query = nil
         components?.fragment = nil
