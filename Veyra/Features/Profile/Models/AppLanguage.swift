@@ -12,7 +12,7 @@ enum AppLanguage: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .system: String(localized: "System language", table: "Language")
+        case .system: AppLocalization.string("System language", table: "Language")
         case .english: "English"
         case .portugueseBrazil: "Português (Brasil)"
         case .german: "Deutsch"
@@ -21,7 +21,7 @@ enum AppLanguage: String, CaseIterable, Identifiable {
 
     var subtitle: String {
         switch self {
-        case .system: String(localized: "Follow your device language", table: "Language")
+        case .system: AppLocalization.string("Follow your device language", table: "Language")
         case .english: "English"
         case .portugueseBrazil: "Português do Brasil"
         case .german: "Deutsch"

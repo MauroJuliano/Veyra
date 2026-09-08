@@ -94,7 +94,7 @@ struct ConversationListView: View {
                     selectedConversation = conversation
                     return nil
                 }
-                return viewModel.errorMessage ?? String(localized: "Unable to start this conversation.")
+                return viewModel.errorMessage ?? AppLocalization.string("Unable to start this conversation.")
             }
         }
         .task { await viewModel.observeConversations() }

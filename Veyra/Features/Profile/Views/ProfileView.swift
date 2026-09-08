@@ -11,11 +11,11 @@ struct ProfileView: View {
 
         var title: String {
             switch self {
-            case .personalDetails: String(localized: "Personal details")
-            case .privacy: String(localized: "Privacy")
-            case .notifications: String(localized: "Notifications")
-            case .help: String(localized: "Help & Support")
-            case .language: String(localized: "Language")
+            case .personalDetails: AppLocalization.string("Personal details")
+            case .privacy: AppLocalization.string("Privacy")
+            case .notifications: AppLocalization.string("Notifications")
+            case .help: AppLocalization.string("Help & Support")
+            case .language: AppLocalization.string("Language")
             }
         }
 
@@ -122,7 +122,7 @@ struct ProfileView: View {
                 Text(viewModel.profile.formattedUsername)
                     .font(VeyraTypography.caption)
                     .foregroundStyle(.secondary)
-                Text(viewModel.profile.bio.isEmpty ? String(localized: "No bio yet") : viewModel.profile.bio)
+                Text(viewModel.profile.bio.isEmpty ? AppLocalization.string("No bio yet") : viewModel.profile.bio)
                     .font(VeyraTypography.body)
                     .foregroundStyle(VeyraColor.textSecondary)
                     .lineLimit(2)
@@ -229,16 +229,16 @@ struct ProfileView: View {
 
     private var accountItems: [SettingsItem] {
         [
-            SettingsItem(route: .personalDetails, subtitle: String(localized: "Edit your info and preferences")),
-            SettingsItem(route: .privacy, subtitle: String(localized: "Control who can see you")),
-            SettingsItem(route: .notifications, subtitle: String(localized: "Manage your alerts and sounds"))
+            SettingsItem(route: .personalDetails, subtitle: AppLocalization.string("Edit your info and preferences")),
+            SettingsItem(route: .privacy, subtitle: AppLocalization.string("Control who can see you")),
+            SettingsItem(route: .notifications, subtitle: AppLocalization.string("Manage your alerts and sounds"))
         ]
     }
 
     private var supportItems: [SettingsItem] {
         [
-            SettingsItem(route: .help, subtitle: String(localized: "Get help or contact us")),
-            SettingsItem(route: .language, subtitle: String(localized: "Choose your preferred language"))
+            SettingsItem(route: .help, subtitle: AppLocalization.string("Get help or contact us")),
+            SettingsItem(route: .language, subtitle: AppLocalization.string("Choose your preferred language"))
         ]
     }
 

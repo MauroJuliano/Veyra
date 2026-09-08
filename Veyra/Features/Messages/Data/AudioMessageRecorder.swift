@@ -23,7 +23,7 @@ final class AudioMessageRecorder: NSObject, AVAudioRecorderDelegate {
         guard !isRecording else { return }
         let allowed = await AVAudioApplication.requestRecordPermission()
         guard allowed else {
-            errorMessage = String(localized: "Microphone access is required to record audio messages.")
+            errorMessage = AppLocalization.string("Microphone access is required to record audio messages.")
             return
         }
 
@@ -107,8 +107,8 @@ private enum AudioMessageError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .couldNotStart: String(localized: "Audio recording could not be started.")
-        case .noRecording: String(localized: "No audio recording is available.")
+        case .couldNotStart: AppLocalization.string("Audio recording could not be started.")
+        case .noRecording: AppLocalization.string("No audio recording is available.")
         }
     }
 }

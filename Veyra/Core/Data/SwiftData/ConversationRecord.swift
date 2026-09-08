@@ -135,7 +135,7 @@ final class LocalMessageRecord {
         let storedDeliveryState = Message.DeliveryState(rawValue: deliveryStateRaw) ?? .sent
         let restoredDeliveryState: Message.DeliveryState = storedDeliveryState == .sending ? .failed : storedDeliveryState
         let reply = replyMessageID.map {
-            Message.ReplyPreview(messageID: $0, text: replyText ?? String(localized: "Message unavailable"), isOwnMessage: replyIsOwnMessage ?? false)
+            Message.ReplyPreview(messageID: $0, text: replyText ?? AppLocalization.string("Message unavailable"), isOwnMessage: replyIsOwnMessage ?? false)
         }
         return Message(
             id: id,

@@ -96,7 +96,7 @@ struct LanguageSelectionView: View {
 
     private var restartNotice: some View {
         Label(
-            String(localized: "Some content may update after you reopen Veyra.", table: "Language"),
+            AppLocalization.string("Some content may update after you reopen Veyra.", table: "Language"),
             systemImage: "info.circle"
         )
             .font(VeyraTypography.caption)

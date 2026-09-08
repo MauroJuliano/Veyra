@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F04610000000000000000001 /* AppLocalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04610000000000000000011 /* AppLocalization.swift */; };
 		F04600000000000000000001 /* AppLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04600000000000000000011 /* AppLanguage.swift */; };
 		F04600000000000000000002 /* LanguageSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04600000000000000000012 /* LanguageSelectionView.swift */; };
 		F04600000000000000000003 /* Language.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F04600000000000000000013 /* Language.xcstrings */; };
@@ -114,6 +115,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		F04610000000000000000011 /* AppLocalization.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppLocalization.swift; sourceTree = "<group>"; };
 		F04600000000000000000011 /* AppLanguage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppLanguage.swift; sourceTree = "<group>"; };
 		F04600000000000000000012 /* LanguageSelectionView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LanguageSelectionView.swift; sourceTree = "<group>"; };
 		F04600000000000000000013 /* Language.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json.xcstrings; path = Language.xcstrings; sourceTree = "<group>"; };
@@ -234,6 +236,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F04610000000000000000021 /* Localization */ = {
+			isa = PBXGroup;
+			children = (
+				F04610000000000000000011 /* AppLocalization.swift */,
+			);
+			path = Localization;
+			sourceTree = "<group>";
+		};
 		F04000000000000000000021 /* Data */ = {
 			isa = PBXGroup;
 			children = (
@@ -353,6 +363,7 @@
 		443FA02DB0E706D8F1FD2D5C /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				F04610000000000000000021 /* Localization */,
 				7B110D4A85DA09EF80C1A7D2 /* AppMetadata.swift */,
 				12575B7C86C1FF310C6440A5 /* DesignSystem */,
 				61676F069A96A091937AFF57 /* Data */,
@@ -837,6 +848,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F04610000000000000000001 /* AppLocalization.swift in Sources */,
 				F04600000000000000000001 /* AppLanguage.swift in Sources */,
 				F04600000000000000000002 /* LanguageSelectionView.swift in Sources */,
 				F04500000000000000000001 /* AudioWaveformSampler.swift in Sources */,

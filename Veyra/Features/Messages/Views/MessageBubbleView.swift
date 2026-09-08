@@ -23,7 +23,7 @@ struct MessageBubbleView: View {
             VStack(alignment: message.direction == .incoming ? .leading : .trailing, spacing: VeyraSpacing.xs) {
                 if let reply = message.replyPreview {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(reply.isOwnMessage ? String(localized: "You") : participantName)
+                        Text(reply.isOwnMessage ? AppLocalization.string("You") : participantName)
                             .font(VeyraTypography.caption)
                             .foregroundStyle(VeyraColor.accent)
                         Text(reply.text)
