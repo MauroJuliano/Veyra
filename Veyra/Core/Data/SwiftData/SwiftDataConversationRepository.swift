@@ -18,7 +18,14 @@ final class SwiftDataConversationRepository: ConversationRepository, ContactRepo
 
     convenience init(isStoredInMemoryOnly: Bool = false, seed: [Conversation] = []) throws {
         let configuration = ModelConfiguration(isStoredInMemoryOnly: isStoredInMemoryOnly)
-        let container = try ModelContainer(for: ConversationRecord.self, ContactRecord.self, LocalMessageRecord.self, configurations: configuration)
+        let container = try ModelContainer(
+            for: ConversationRecord.self,
+            ContactRecord.self,
+            LocalMessageRecord.self,
+            LocalCallHistoryRecord.self,
+            CallHistorySyncRecord.self,
+            configurations: configuration
+        )
         self.init(container: container, seed: seed)
     }
 
@@ -93,6 +100,51 @@ final class SwiftDataConversationRepository: ConversationRepository, ContactRepo
         let descriptor = FetchDescriptor<LocalMessageRecord>(predicate: #Predicate { $0.id == identifier })
         if let record = try? context.fetch(descriptor).first { context.delete(record) }
         try? context.save()
+    }
+
+    func fetchCallHistory(participantID: UUID) -> [VoiceCallHistory] {
+        let identifier = participantID
+        let descriptor = FetchDescriptor<LocalCallHistoryRecord>(
+            predicate: #Predicate { $0.participantID == identifier },
+            sortBy: [SortDescriptor(\.startedAt)]
+        )
+        return ((try? context.fetch(descriptor)) ?? []).compactMap(\.call)
+    }
+
+    func replaceCallHistory(_ calls: [VoiceCallHistory], participantID: UUID) {
+        let identifier = participantID
+        let descriptor = FetchDescriptor<LocalCallHistoryRecord>(
+            predicate: #Predicate { $0.participantID == identifier }
+        )
+        let existing = (try? context.fetch(descriptor)) ?? []
+        let incomingIDs = Set(calls.map(\.id))
+        existing.filter { !incomingIDs.contains($0.id) }.forEach(context.delete)
+
+        for call in calls {
+            if let record = existing.first(where: { $0.id == call.id }) {
+                record.update(with: call, participantID: participantID)
+            } else {
+                context.insert(LocalCallHistoryRecord(call: call, participantID: participantID))
+            }
+        }
+
+        let syncDescriptor = FetchDescriptor<CallHistorySyncRecord>(
+            predicate: #Predicate { $0.participantID == identifier }
+        )
+        if let syncRecord = try? context.fetch(syncDescriptor).first {
+            syncRecord.synchronizedAt = .now
+        } else {
+            context.insert(CallHistorySyncRecord(participantID: participantID))
+        }
+        try? context.save()
+    }
+
+    func hasCachedCallHistory(participantID: UUID) -> Bool {
+        let identifier = participantID
+        let descriptor = FetchDescriptor<CallHistorySyncRecord>(
+            predicate: #Predicate { $0.participantID == identifier }
+        )
+        return ((try? context.fetchCount(descriptor)) ?? 0) > 0
     }
 
     private func trimMessages(conversationID: UUID) {

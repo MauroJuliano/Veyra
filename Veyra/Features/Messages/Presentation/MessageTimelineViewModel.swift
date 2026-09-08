@@ -62,7 +62,23 @@ final class MessageTimelineViewModel {
         let cached = cache.fetchMessages(conversationID: conversationID, before: nil, limit: pageSize)
         if messages.isEmpty && !cached.isEmpty { messages = cached }
         hasEarlierMessages = cached.count == pageSize
-        guard let repository else { return }
+
+        let hasLocalCallSnapshot: Bool
+        if let participantID, callRepository != nil {
+            callHistory = cache.fetchCallHistory(participantID: participantID)
+            hasLocalCallSnapshot = cache.hasCachedCallHistory(participantID: participantID)
+        } else {
+            hasLocalCallSnapshot = true
+        }
+
+        // Once calls have been synchronized at least once, the complete local
+        // timeline can be rendered immediately while remote refresh continues.
+        if hasLocalCallSnapshot { hasLoadedInitialPage = true }
+
+        guard let repository else {
+            hasLoadedInitialPage = true
+            return
+        }
         isLoading = true
         defer {
             isLoading = false
@@ -86,6 +102,7 @@ final class MessageTimelineViewModel {
         guard let callRepository, let participantID else { return }
         do {
             callHistory = try await callRepository.fetchCallHistory(with: participantID)
+            cache.replaceCallHistory(callHistory, participantID: participantID)
         } catch {
             // Call history enriches the conversation but must not hide messages
             // when its backend migration has not been deployed yet.

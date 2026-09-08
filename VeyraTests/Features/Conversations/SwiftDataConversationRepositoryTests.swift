@@ -140,4 +140,33 @@ struct SwiftDataConversationRepositoryTests {
         #expect(restored.avatarURL == avatarURL)
         #expect(restored.isOnline == false)
     }
+
+    @Test func persistsAndReconcilesCallHistoryOffline() throws {
+        let repository = try SwiftDataConversationRepository(isStoredInMemoryOnly: true)
+        let participantID = UUID()
+        let oldCall = VoiceCallHistory(
+            id: UUID(),
+            direction: .incoming,
+            status: .missed,
+            startedAt: Date(timeIntervalSince1970: 100),
+            answeredAt: nil,
+            endedAt: Date(timeIntervalSince1970: 120)
+        )
+        let latestCall = VoiceCallHistory(
+            id: UUID(),
+            direction: .outgoing,
+            status: .ended,
+            startedAt: Date(timeIntervalSince1970: 200),
+            answeredAt: Date(timeIntervalSince1970: 205),
+            endedAt: Date(timeIntervalSince1970: 230)
+        )
+
+        #expect(!repository.hasCachedCallHistory(participantID: participantID))
+        repository.replaceCallHistory([oldCall, latestCall], participantID: participantID)
+        #expect(repository.hasCachedCallHistory(participantID: participantID))
+        #expect(repository.fetchCallHistory(participantID: participantID) == [oldCall, latestCall])
+
+        repository.replaceCallHistory([latestCall], participantID: participantID)
+        #expect(repository.fetchCallHistory(participantID: participantID) == [latestCall])
+    }
 }
