@@ -4,34 +4,73 @@ import SwiftUI
 struct AudioMessagePlayerView: View {
     let url: URL
     let duration: TimeInterval
+    let avatarName: String?
+    let avatarURL: URL?
+    let avatarSize: VeyraAvatarSize
+    let showsOnlineIndicator: Bool
+    let direction: Message.Direction
     @State private var player: AVPlayer?
     @State private var isPlaying = false
     @State private var progress = 0.0
     @State private var isPreparing = true
-
+    @State private var waveformSamples = AudioWaveformSamples.placeholder
+    
+    init(
+        url: URL,
+        duration: TimeInterval,
+        avatarName: String? = nil,
+        avatarURL: URL? = nil,
+        avatarSize: VeyraAvatarSize = .medium,
+        showsOnlineIndicator: Bool = false,
+        direction: Message.Direction = .incoming
+    ) {
+        self.url = url
+        self.duration = duration
+        self.avatarName = avatarName
+        self.avatarURL = avatarURL
+        self.avatarSize = avatarSize
+        self.showsOnlineIndicator = showsOnlineIndicator
+        self.direction = direction
+    }
+    
+    var isOutgoing: Bool { direction == .outgoing }
+    var hasAvatar: Bool { avatarName != nil }
+    
     var body: some View {
-        HStack(spacing: VeyraSpacing.sm) {
-            Button(action: togglePlayback) {
-                Group {
-                    if isPreparing { ProgressView().controlSize(.small) }
-                    else { Image(systemName: isPlaying ? "pause.fill" : "play.fill") }
-                }
-                    .frame(width: 34, height: 34)
-                    .background(VeyraColor.accent.opacity(0.22))
-                    .clipShape(Circle())
+        HStack(alignment: .center, spacing: VeyraSpacing.sm) {
+            if let name = avatarName {
+                VeyraAvatar(
+                    name: name,
+                    imageURL: avatarURL,
+                    size: avatarSize,
+                    showsOnlineIndicator: showsOnlineIndicator
+                )
             }
-            .disabled(isPreparing)
-            .accessibilityLabel(isPlaying ? "Pause audio" : "Play audio")
-
-            VStack(alignment: .leading, spacing: 5) {
-                ProgressView(value: progress)
-                    .tint(VeyraColor.accent)
+            
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Button(action: togglePlayback) {
+                        Group {
+                            if isPreparing { ProgressView().controlSize(.small) }
+                            else { Image(systemName: isPlaying ? "pause.fill" : "play.fill") }
+                        }
+                        .frame(width: 34, height: 34)
+                    }
+                    .disabled(isPreparing)
+                    .accessibilityLabel(isPlaying ? "Pause audio" : "Play audio")
+                    
+                    
+                    AudioWaveformView(samples: waveformSamples, progress: progress, onSeek: seek)
+                }
+                
                 Text(formattedDuration)
                     .font(VeyraTypography.caption)
                     .foregroundStyle(VeyraColor.textSecondary)
+                    .padding(.leading, 34 + VeyraSpacing.sm)
+                
             }
         }
-        .frame(width: 210)
+        .frame(width: hasAvatar ? 270 : 210)
         .padding(.horizontal, VeyraSpacing.md)
         .padding(.vertical, VeyraSpacing.sm)
         .task(id: isPlaying) {
@@ -53,6 +92,7 @@ struct AudioMessagePlayerView: View {
             guard player == nil else { return }
             if let playableURL = try? await AudioMessageCache.shared.localURL(for: url) {
                 player = AVPlayer(url: playableURL)
+                waveformSamples = await AudioWaveformSampler.shared.samples(for: playableURL)
             } else {
                 player = AVPlayer(url: url)
             }
@@ -60,12 +100,12 @@ struct AudioMessagePlayerView: View {
         }
         .onDisappear { player?.pause() }
     }
-
+    
     private var formattedDuration: String {
         let value = Int(duration.rounded())
         return String(format: "%d:%02d", value / 60, value % 60)
     }
-
+    
     private func togglePlayback() {
         if player == nil { player = AVPlayer(url: url) }
         guard let player else { return }
@@ -77,11 +117,18 @@ struct AudioMessagePlayerView: View {
         }
         isPlaying.toggle()
     }
+    
+    private func seek(to value: Double) {
+        let value = min(max(value, 0), 1)
+        progress = value
+        let time = CMTime(seconds: duration * value, preferredTimescale: 600)
+        player?.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero)
+    }
 }
 
 private actor AudioMessageCache {
     static let shared = AudioMessageCache()
-
+    
     func localURL(for remoteURL: URL) async throws -> URL {
         let directory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("VeyraAudio", isDirectory: true)
@@ -94,4 +141,18 @@ private actor AudioMessageCache {
         try data.write(to: localURL, options: .atomic)
         return localURL
     }
+}
+
+#Preview("Audio message player") {
+    AudioMessagePlayerView(
+        url: URL(fileURLWithPath: "/tmp/veyra-audio-preview.m4a"),
+        duration: 42,
+        avatarName: "Martha Nielsen",
+        avatarSize: .medium,
+        showsOnlineIndicator: true,
+        direction: .incoming
+    )
+    .padding()
+    .background(VeyraColor.background)
+    .preferredColorScheme(.dark)
 }

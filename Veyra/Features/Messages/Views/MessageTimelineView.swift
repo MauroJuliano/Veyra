@@ -14,6 +14,9 @@ struct MessageTimelineView: View {
     @State private var showsParticipantProfile = false
     @State private var activeVoiceCall: VoiceCall?
     @State private var audioRecorder = AudioMessageRecorder()
+    @State private var currentUserProfile: UserProfile?
+    @State private var hasPositionedInitialTimeline = false
+    private let timelineBottomAnchor = "timeline-bottom"
 
     init(conversation: Conversation, repository: (any RemoteChatRepository)? = nil, callRepository: (any CallRepository)? = nil, cache: any MessageCacheRepository = InMemoryMessageCacheRepository(), messages: [Message]? = nil) {
         self.conversation = conversation
@@ -55,6 +58,7 @@ struct MessageTimelineView: View {
                 )
             }
             .task { await viewModel.observeMessages() }
+            .task { await loadCurrentUserProfile() }
             .onChange(of: viewModel.draft) { _, _ in viewModel.draftDidChange() }
             .onChange(of: selectedPhoto) { _, item in sendSelectedPhoto(item) }
             .onDisappear {
@@ -135,61 +139,83 @@ struct MessageTimelineView: View {
     }
 
     private var messageList: some View {
-        ScrollView {
-            LazyVStack(spacing: VeyraSpacing.sm) {
-                if viewModel.messages.isEmpty && !viewModel.hasLoadedInitialPage {
-                    VStack(spacing: VeyraSpacing.md) {
-                        ProgressView()
-                            .controlSize(.large)
-                            .tint(VeyraColor.accent)
-                        Text("Loading messages…")
-                            .font(VeyraTypography.caption)
-                            .foregroundStyle(VeyraColor.textSecondary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 72)
-                    .transition(.opacity)
-                }
-                if viewModel.hasEarlierMessages && !viewModel.messages.isEmpty {
-                    Button {
-                        Task { await viewModel.loadEarlierMessages() }
-                    } label: {
-                        if viewModel.isLoadingEarlier {
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(spacing: VeyraSpacing.sm) {
+                    if !viewModel.hasLoadedInitialPage {
+                        VStack(spacing: VeyraSpacing.md) {
                             ProgressView()
-                        } else {
-                            Label("Load earlier messages", systemImage: "clock.arrow.circlepath")
+                                .controlSize(.large)
+                                .tint(VeyraColor.accent)
+                            Text("Loading messages…")
+                                .font(VeyraTypography.caption)
+                                .foregroundStyle(VeyraColor.textSecondary)
                         }
-                    }
-                    .font(VeyraTypography.caption)
-                    .foregroundStyle(VeyraColor.accent)
-                    .disabled(viewModel.isLoadingEarlier)
-                    .padding(.vertical, VeyraSpacing.sm)
-                }
-                if let errorMessage = viewModel.errorMessage {
-                    Text(errorMessage).font(VeyraTypography.caption).foregroundStyle(VeyraColor.danger)
-                }
-                ForEach(viewModel.timelineDays) { day in
-                    Text(day.date, format: .dateTime.day().month(.wide))
-                        .font(VeyraTypography.caption)
-                        .foregroundStyle(VeyraColor.textPrimary)
-                        .padding(.horizontal, VeyraSpacing.md)
-                        .padding(.vertical, VeyraSpacing.xs)
-                        .background(VeyraColor.surfaceElevated)
-                        .clipShape(Capsule())
-                        .padding(.vertical, VeyraSpacing.md)
-                    ForEach(day.items) { item in
-                        switch item {
-                        case let .message(message): messageRow(message)
-                        case let .call(call): CallHistoryRow(call: call)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 72)
+                        .transition(.opacity)
+                    } else {
+                        if viewModel.hasEarlierMessages && !viewModel.messages.isEmpty {
+                            Button {
+                                Task { await viewModel.loadEarlierMessages() }
+                            } label: {
+                                if viewModel.isLoadingEarlier {
+                                    ProgressView()
+                                } else {
+                                    Label("Load earlier messages", systemImage: "clock.arrow.circlepath")
+                                }
+                            }
+                            .font(VeyraTypography.caption)
+                            .foregroundStyle(VeyraColor.accent)
+                            .disabled(viewModel.isLoadingEarlier)
+                            .padding(.vertical, VeyraSpacing.sm)
                         }
+                        if let errorMessage = viewModel.errorMessage {
+                            Text(errorMessage).font(VeyraTypography.caption).foregroundStyle(VeyraColor.danger)
+                        }
+                        ForEach(viewModel.timelineDays) { day in
+                            Text(day.date, format: .dateTime.day().month(.wide))
+                                .font(VeyraTypography.caption)
+                                .foregroundStyle(VeyraColor.textPrimary)
+                                .padding(.horizontal, VeyraSpacing.md)
+                                .padding(.vertical, VeyraSpacing.xs)
+                                .background(VeyraColor.surfaceElevated)
+                                .clipShape(Capsule())
+                                .padding(.vertical, VeyraSpacing.md)
+                            ForEach(day.items) { item in
+                                switch item {
+                                case let .message(message): messageRow(message)
+                                case let .call(call): CallHistoryRow(call: call)
+                                }
+                            }
+                        }
+                        Color.clear
+                            .frame(height: 1)
+                            .id(timelineBottomAnchor)
                     }
                 }
+                .padding(VeyraSpacing.md)
             }
-            .padding(VeyraSpacing.md)
+            .defaultScrollAnchor(.bottom)
+            .scrollDismissesKeyboard(.interactively)
+            .dismissKeyboardOnTap()
+            .onAppear { positionInitialTimeline(using: proxy) }
+            .onChange(of: viewModel.hasLoadedInitialPage) { _, _ in
+                positionInitialTimeline(using: proxy)
+            }
         }
-        .defaultScrollAnchor(.bottom)
-        .scrollDismissesKeyboard(.interactively)
-        .dismissKeyboardOnTap()
+    }
+
+    private func positionInitialTimeline(using proxy: ScrollViewProxy) {
+        guard viewModel.hasLoadedInitialPage, !hasPositionedInitialTimeline else { return }
+        hasPositionedInitialTimeline = true
+        Task { @MainActor in
+            // Calls are fetched after messages and audio rows finish their first
+            // layout asynchronously. Waiting one run-loop turn makes the anchor
+            // represent the complete, chronologically merged timeline.
+            await Task.yield()
+            proxy.scrollTo(timelineBottomAnchor, anchor: .bottom)
+        }
     }
 
     private func messageRow(_ message: Message) -> some View {
@@ -197,16 +223,29 @@ struct MessageTimelineView: View {
             message: message,
             participantName: conversation.participantName,
             participantAvatarURL: conversation.participantAvatarURL,
+            currentUserName: currentUserProfile?.displayName,
+            currentUserAvatarURL: currentUserProfile?.avatarURL,
             onReply: { viewModel.beginReply(to: message) },
             onImageTap: { url in
                 selectedImage = FullScreenImage(url: url, canSave: message.direction == .incoming)
             },
-            onRetry: { Task { await viewModel.retry(message) } }
+            onRetry: { Task { await viewModel.retry(message) } },
+            onToggleHeartReaction: {
+                Task { await viewModel.toggleReaction("❤️", on: message) }
+            }
         )
         .onLongPressGesture(minimumDuration: 0.35) {
             guard !viewModel.isMessagingBlocked else { return }
             withAnimation(.easeOut(duration: 0.18)) { messageShowingActions = message }
         }
+    }
+
+    @MainActor
+    private func loadCurrentUserProfile() async {
+        currentUserProfile = UserDefaultsProfileStore().load()
+        guard let repository = viewModel.profileRepository,
+              let remoteProfile = try? await repository.fetchMyProfile() else { return }
+        currentUserProfile = remoteProfile
     }
 
     @ViewBuilder private var replyComposerPreview: some View {

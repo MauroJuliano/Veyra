@@ -4,14 +4,17 @@ struct MessageBubbleView: View {
     let message: Message
     let participantName: String
     var participantAvatarURL: URL? = nil
+    var currentUserName: String? = nil
+    var currentUserAvatarURL: URL? = nil
     var onReply: () -> Void = {}
     var onImageTap: (URL) -> Void = { _ in }
     var onRetry: () -> Void = {}
+    var onToggleHeartReaction: () -> Void = {}
     @State private var replyDragOffset: CGFloat = 0
 
     var body: some View {
         HStack(alignment: .bottom, spacing: VeyraSpacing.sm) {
-            if message.direction == .incoming {
+            if message.direction == .incoming && message.audioURL == nil {
                 VeyraAvatar(name: participantName, imageURL: participantAvatarURL, size: .small)
             } else {
                 Spacer(minLength: 64)
@@ -35,7 +38,16 @@ struct MessageBubbleView: View {
                 }
                 Group {
                     if let audioURL = message.audioURL {
-                        AudioMessagePlayerView(url: audioURL, duration: message.audioDuration ?? 0)
+                        AudioMessagePlayerView(
+                            url: audioURL,
+                            duration: message.audioDuration ?? 0,
+                            avatarName: message.direction == .incoming ? participantName : currentUserName,
+                            avatarURL: message.direction == .incoming ? participantAvatarURL : currentUserAvatarURL,
+                            avatarSize: .medium,
+                            direction: message.direction
+                        )
+                        .contentShape(RoundedRectangle(cornerRadius: 18))
+                        .onTapGesture(count: 2, perform: onToggleHeartReaction)
                     } else if let imageURL = message.imageURL {
                         Button { onImageTap(imageURL) } label: {
                             VeyraCachedImage(url: imageURL) { image in
@@ -55,6 +67,7 @@ struct MessageBubbleView: View {
                         Text(message.text)
                             .padding(.horizontal, VeyraSpacing.md)
                             .padding(.vertical, VeyraSpacing.sm)
+                            .onTapGesture(count: 2, perform: onToggleHeartReaction)
                     }
                 }
                     .font(VeyraTypography.body)
@@ -70,27 +83,7 @@ struct MessageBubbleView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 18))
 
                 HStack(spacing: VeyraSpacing.xs) {
-                    Text(message.sentAt, format: .dateTime.hour().minute())
-                    if message.direction == .outgoing {
-                        if message.deliveryState == .failed {
-                            Button(action: onRetry) {
-                                Image(systemName: "arrow.clockwise.circle.fill")
-                                    .foregroundStyle(VeyraColor.danger)
-                            }
-                            .accessibilityLabel("Retry sending")
-                        } else if message.deliveryState == .sending {
-                            ProgressView().controlSize(.mini)
-                        } else {
-                            MessageReceiptIcon(isRead: message.receipt == .read)
-                        }
-                    }
-                }
-                .font(VeyraTypography.caption)
-                .foregroundStyle(VeyraColor.textSecondary)
-                .padding(.horizontal, VeyraSpacing.sm)
-
-                if !message.reactions.isEmpty {
-                    HStack(spacing: VeyraSpacing.xs) {
+                    if !message.reactions.isEmpty {
                         ForEach(message.reactions) { reaction in
                             Text("\(reaction.emoji) \(reaction.count)")
                                 .font(VeyraTypography.caption)
@@ -106,8 +99,30 @@ struct MessageBubbleView: View {
                                 }
                         }
                     }
-                    .offset(y: -3)
+
+                    Spacer(minLength: VeyraSpacing.sm)
+
+                    HStack(spacing: VeyraSpacing.xs) {
+                        Text(message.sentAt, format: .dateTime.hour().minute())
+                        if message.direction == .outgoing {
+                            if message.deliveryState == .failed {
+                                Button(action: onRetry) {
+                                    Image(systemName: "arrow.clockwise.circle.fill")
+                                        .foregroundStyle(VeyraColor.danger)
+                                }
+                                .accessibilityLabel("Retry sending")
+                            } else if message.deliveryState == .sending {
+                                ProgressView().controlSize(.mini)
+                            } else {
+                                MessageReceiptIcon(isRead: message.receipt == .read)
+                            }
+                        }
+                    }
+                    .font(VeyraTypography.caption)
+                    .foregroundStyle(VeyraColor.textSecondary)
                 }
+                .frame(width: message.audioURL == nil ? 220 : 270)
+                .padding(.horizontal, VeyraSpacing.sm)
             }
 
             if message.direction == .incoming { Spacer(minLength: 64) }

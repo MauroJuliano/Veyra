@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F04500000000000000000001 /* AudioWaveformSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04500000000000000000011 /* AudioWaveformSampler.swift */; };
+		F04500000000000000000002 /* AudioWaveformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04500000000000000000012 /* AudioWaveformView.swift */; };
+		C04400000000000000000001 /* RemoteChatRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04400000000000000000011 /* RemoteChatRepository.swift */; };
 		F04300000000000000000001 /* AudioMessageRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04300000000000000000011 /* AudioMessageRecorder.swift */; };
 		F04300000000000000000002 /* AudioMessagePlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04300000000000000000012 /* AudioMessagePlayerView.swift */; };
 		F04100000000000000000001 /* VoiceCallAudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04100000000000000000011 /* VoiceCallAudioEngine.swift */; };
@@ -108,6 +111,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		F04500000000000000000011 /* AudioWaveformSampler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioWaveformSampler.swift; sourceTree = "<group>"; };
+		F04500000000000000000012 /* AudioWaveformView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioWaveformView.swift; sourceTree = "<group>"; };
+		C04400000000000000000011 /* RemoteChatRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RemoteChatRepository.swift; sourceTree = "<group>"; };
 		F04300000000000000000011 /* AudioMessageRecorder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioMessageRecorder.swift; sourceTree = "<group>"; };
 		F04300000000000000000012 /* AudioMessagePlayerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioMessagePlayerView.swift; sourceTree = "<group>"; };
 		F04100000000000000000011 /* VoiceCallAudioEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoiceCallAudioEngine.swift; sourceTree = "<group>"; };
@@ -118,10 +124,10 @@
 		F03900000000000000000011 /* VoiceCall.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoiceCall.swift; sourceTree = "<group>"; };
 		F03900000000000000000012 /* VoiceCallCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoiceCallCoordinator.swift; sourceTree = "<group>"; };
 		F03900000000000000000013 /* VoiceCallView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoiceCallView.swift; sourceTree = "<group>"; };
-		F03900000000000000000014 /* VoiceCallCoordinatorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoiceCallCoordinatorTests.swift; sourceTree = "<group>"; };
+		F03900000000000000000014 /* VoiceCallCoordinatorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Features/Calls/VoiceCallCoordinatorTests.swift; sourceTree = "<group>"; };
 		F03800000000000000000011 /* Localizable.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		F03800000000000000000012 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
-		F03800000000000000000013 /* LocalizationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LocalizationTests.swift; sourceTree = "<group>"; };
+		F03800000000000000000013 /* LocalizationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Core/LocalizationTests.swift; sourceTree = "<group>"; };
 		038CE3E0EAE19CBFD20112BA /* VeyraAvatar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraAvatar.swift; sourceTree = "<group>"; };
 		082AFEC3EDA6622C035B8FC8 /* ConversationRowView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationRowView.swift; sourceTree = "<group>"; };
 		0C09556DC67E480428C19D11 /* ProfileStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProfileStore.swift; sourceTree = "<group>"; };
@@ -133,13 +139,13 @@
 		17D3DEB07FE517FDFC254469 /* Contact.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Contact.swift; sourceTree = "<group>"; };
 		1F545AD5822812B8446B21C3 /* UserProfile.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
 		208DF70C250EDFE8C75411CE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
-		2678BF2576CF692192367CA9 /* MessageTimelineViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessageTimelineViewModelTests.swift; sourceTree = "<group>"; };
+		2678BF2576CF692192367CA9 /* MessageTimelineViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Features/Messages/MessageTimelineViewModelTests.swift; sourceTree = "<group>"; };
 		3193A4162DD922E516262590 /* AuthenticationCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthenticationCoordinator.swift; sourceTree = "<group>"; };
-		31A020A334F10D814DB2DC6C /* DesignTokenTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DesignTokenTests.swift; sourceTree = "<group>"; };
-		3A02FA30EF6A1C531E680055 /* ProfileViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProfileViewModelTests.swift; sourceTree = "<group>"; };
-		441519C505B18A6B80C92E7B /* RegistrationViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RegistrationViewModelTests.swift; sourceTree = "<group>"; };
-		498246899EA244F2F82A14F1 /* RepositoryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RepositoryTests.swift; sourceTree = "<group>"; };
-		518FAE9C5EAC0D5F6FA3C072 /* SessionStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SessionStoreTests.swift; sourceTree = "<group>"; };
+		31A020A334F10D814DB2DC6C /* DesignTokenTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Core/DesignTokenTests.swift; sourceTree = "<group>"; };
+		3A02FA30EF6A1C531E680055 /* ProfileViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Features/Profile/ProfileViewModelTests.swift; sourceTree = "<group>"; };
+		441519C505B18A6B80C92E7B /* RegistrationViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Features/Authentication/RegistrationViewModelTests.swift; sourceTree = "<group>"; };
+		498246899EA244F2F82A14F1 /* RepositoryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Core/RepositoryTests.swift; sourceTree = "<group>"; };
+		518FAE9C5EAC0D5F6FA3C072 /* SessionStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Core/SessionStoreTests.swift; sourceTree = "<group>"; };
 		5698CE11ECAE96D995835FCD /* Conversation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Conversation.swift; sourceTree = "<group>"; };
 		5819FAF79B8D19C6656AC295 /* Base.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 		5917AB74FE9969FED29ED57E /* NewConversationView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NewConversationView.swift; sourceTree = "<group>"; };
@@ -151,33 +157,33 @@
 		612257922E48B3ACB47078A3 /* VeyraRadius.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraRadius.swift; sourceTree = "<group>"; };
 		67E4FA0E7A4E39541CF5B110 /* MessageBubbleView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessageBubbleView.swift; sourceTree = "<group>"; };
 		6931A3E0FFF2CFD78CBCC110 /* ProfileView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
-		6B4C091B2C571B56F0C49F39 /* ConversationListViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationListViewModelTests.swift; sourceTree = "<group>"; };
+		6B4C091B2C571B56F0C49F39 /* ConversationListViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Features/Conversations/ConversationListViewModelTests.swift; sourceTree = "<group>"; };
 		778776CB7DBCAB1C013FD617 /* Veyra.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Veyra.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		79FC21B9F9899BED11DEF736 /* VeyraTypography.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraTypography.swift; sourceTree = "<group>"; };
 		7B110D4A85DA09EF80C1A7D2 /* AppMetadata.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppMetadata.swift; sourceTree = "<group>"; };
 		7F4875B03CC2A5078E3B2831 /* LoginView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		815CF3D51D8A2E92364C8777 /* VeyraApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraApp.swift; sourceTree = "<group>"; };
 		8429D3FC53470967204274B2 /* ProfileViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProfileViewModel.swift; sourceTree = "<group>"; };
-		86669357F39C6F6B80BFB3CE /* AuthenticationCoordinatorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthenticationCoordinatorTests.swift; sourceTree = "<group>"; };
+		86669357F39C6F6B80BFB3CE /* AuthenticationCoordinatorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Features/Authentication/AuthenticationCoordinatorTests.swift; sourceTree = "<group>"; };
 		8A13B7B5A102C3620656316F /* AuthenticationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthenticationService.swift; sourceTree = "<group>"; };
 		8DF296E5214CCEBFA8ABE939 /* MessagePreviewData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessagePreviewData.swift; sourceTree = "<group>"; };
 		92D1807482AB6926E4DA3AFB /* DesignSystemCatalogView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DesignSystemCatalogView.swift; sourceTree = "<group>"; };
 		9429A6F0A5F3BA4C90324820 /* SupabaseConfiguration.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SupabaseConfiguration.swift; sourceTree = "<group>"; };
-		96D6F9076981087963B2FF89 /* AppMetadataTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppMetadataTests.swift; sourceTree = "<group>"; };
-		994EA17041AD6A2C9DAA0CC3 /* ContactRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactRepository.swift; sourceTree = "<group>"; };
+		96D6F9076981087963B2FF89 /* AppMetadataTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Core/AppMetadataTests.swift; sourceTree = "<group>"; };
+		994EA17041AD6A2C9DAA0CC3 /* ContactRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Veyra/Features/Contacts/Data/ContactRepository.swift; sourceTree = SOURCE_ROOT; };
 		99FCB349C1FDF1744BC06562 /* RegistrationViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RegistrationViewModel.swift; sourceTree = "<group>"; };
-		9BF8B6FD286458DDB74C22F1 /* AvatarInitialsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AvatarInitialsTests.swift; sourceTree = "<group>"; };
+		9BF8B6FD286458DDB74C22F1 /* AvatarInitialsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Core/AvatarInitialsTests.swift; sourceTree = "<group>"; };
 		A18C29846BD4E660FFF3319F /* VeyraColor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraColor.swift; sourceTree = "<group>"; };
 		A1D4A58FBF3FD75D6CFB8D01 /* EmailConfirmationView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EmailConfirmationView.swift; sourceTree = "<group>"; };
 		A9132EAB30465364009C03A6 /* GlassBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassBackground.swift; sourceTree = "<group>"; };
-		A965E18330490AD1001365DE /* ContactListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactListView.swift; sourceTree = "<group>"; };
+		A965E18330490AD1001365DE /* ContactListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/ContactListView.swift; sourceTree = "<group>"; };
 		A98352873048F106002DC64A /* RecentConversationRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentConversationRowView.swift; sourceTree = "<group>"; };
 		A98352893048F384002DC64A /* RecentConversationPreviewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentConversationPreviewData.swift; sourceTree = "<group>"; };
 		A983528B3048F587002DC64A /* RecentConversationListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentConversationListView.swift; sourceTree = "<group>"; };
 		AAA6A3BB479DAFD774307B9D /* VeyraSpacing.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraSpacing.swift; sourceTree = "<group>"; };
 		AAAAD678B15A97CA475953DB /* MessageComposerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessageComposerView.swift; sourceTree = "<group>"; };
 		ACE1C7EE7B619D59D5529C04 /* VeyraTextField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VeyraTextField.swift; sourceTree = "<group>"; };
-		AF646664F27E3856206D966C /* SwiftDataConversationRepositoryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDataConversationRepositoryTests.swift; sourceTree = "<group>"; };
+		AF646664F27E3856206D966C /* SwiftDataConversationRepositoryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Features/Conversations/SwiftDataConversationRepositoryTests.swift; sourceTree = "<group>"; };
 		B38DAB0E23CBA856810C467B /* SessionStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		B56D78C652AAAB9D315E96DF /* SupabaseClientProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SupabaseClientProvider.swift; sourceTree = "<group>"; };
 		B6B6EEED8A124464784C2B17 /* Message.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
@@ -187,12 +193,12 @@
 		C2F212E6EB3EFE613A12BF21 /* ContactPreviewData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactPreviewData.swift; sourceTree = "<group>"; };
 		D2CE854CD6EA2E1365260700 /* SupabaseChatRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SupabaseChatRepository.swift; sourceTree = "<group>"; };
 		DDF0E692A9671F543EED8718 /* MessageTimelineViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MessageTimelineViewModel.swift; sourceTree = "<group>"; };
-		E0E79AFD1721697118A5B30F /* ConversationRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationRepository.swift; sourceTree = "<group>"; };
+		E0E79AFD1721697118A5B30F /* ConversationRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Veyra/Features/Conversations/Data/Repositories/ConversationRepository.swift; sourceTree = SOURCE_ROOT; };
 		E0EAA93FD7CD9802592B73FA /* ConversationPreviewData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationPreviewData.swift; sourceTree = "<group>"; };
-		E39EA489B16A28A2CA94C2CB /* SupabaseConfigurationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SupabaseConfigurationTests.swift; sourceTree = "<group>"; };
-		E4959CA35782AD866F12C222 /* NewConversationViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NewConversationViewModelTests.swift; sourceTree = "<group>"; };
+		E39EA489B16A28A2CA94C2CB /* SupabaseConfigurationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Core/SupabaseConfigurationTests.swift; sourceTree = "<group>"; };
+		E4959CA35782AD866F12C222 /* NewConversationViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Features/Conversations/NewConversationViewModelTests.swift; sourceTree = "<group>"; };
 		E810F31ADEB4011D2EC7D5EF /* AppRoute.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppRoute.swift; sourceTree = "<group>"; };
-		E812827318A22C6360199016 /* LoginViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LoginViewModelTests.swift; sourceTree = "<group>"; };
+		E812827318A22C6360199016 /* LoginViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Features/Authentication/LoginViewModelTests.swift; sourceTree = "<group>"; };
 		E827789E667ED520D1F288BC /* VeyraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VeyraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED09F370FA57E9D2202E653F /* AppRootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
 		F5B95E0AB67F2F623383C13E /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -369,6 +375,7 @@
 		52F35888B0023302ABF8F350 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				F04500000000000000000012 /* AudioWaveformView.swift */,
 				F04300000000000000000012 /* AudioMessagePlayerView.swift */,
 				67E4FA0E7A4E39541CF5B110 /* MessageBubbleView.swift */,
 				AAAAD678B15A97CA475953DB /* MessageComposerView.swift */,
@@ -380,10 +387,19 @@
 		591BCD800B625EE7F7F37664 /* Backend */ = {
 			isa = PBXGroup;
 			children = (
+				C04400000000000000000021 /* Contracts */,
 				CD4A7C3978F85DD2937EF67D /* Supabase */,
 				319BB9F586381A13BE290554 /* Authentication */,
 			);
 			path = Backend;
+			sourceTree = "<group>";
+		};
+		C04400000000000000000021 /* Contracts */ = {
+			isa = PBXGroup;
+			children = (
+				C04400000000000000000011 /* RemoteChatRepository.swift */,
+			);
+			path = Contracts;
 			sourceTree = "<group>";
 		};
 		5DAD1BA9E9AE5532069D387E /* Views */ = {
@@ -422,7 +438,6 @@
 		61676F069A96A091937AFF57 /* Data */ = {
 			isa = PBXGroup;
 			children = (
-				D0AD1E06E47C792CA10EF1FD /* Repositories */,
 				D50FA23D7E52344B0DFD4339 /* Dependency */,
 				5FB644311B3D511515ABBACA /* SwiftData */,
 				D7F6FA284BAA8FED8447B40D /* Session */,
@@ -435,7 +450,7 @@
 			isa = PBXGroup;
 			children = (
 				F03900000000000000000021 /* Calls */,
-				A965E18230490AB4001365DE /* Contatos */,
+				A965E18230490AB4001365DE /* Contacts */,
 				B7F33F1CEFEA5169702DB93D /* Conversations */,
 				D62F192FE2C61BF9C279E612 /* Messages */,
 				D7BA5F00FE6D5579086D0425 /* Authentication */,
@@ -492,6 +507,7 @@
 		9F28206FAEF3B238B07E55EC /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				E0E79AFD1721697118A5B30F /* ConversationRepository.swift */,
 				A98352893048F384002DC64A /* RecentConversationPreviewData.swift */,
 				E0EAA93FD7CD9802592B73FA /* ConversationPreviewData.swift */,
 				C2F212E6EB3EFE613A12BF21 /* ContactPreviewData.swift */,
@@ -499,17 +515,19 @@
 			path = Data;
 			sourceTree = "<group>";
 		};
-		A965E18230490AB4001365DE /* Contatos */ = {
+		A965E18230490AB4001365DE /* Contacts */ = {
 			isa = PBXGroup;
 			children = (
+				994EA17041AD6A2C9DAA0CC3 /* ContactRepository.swift */,
 				A965E18330490AD1001365DE /* ContactListView.swift */,
 			);
-			path = Contatos;
+			path = Contacts;
 			sourceTree = "<group>";
 		};
 		B1EEE824C219217C75F29061 /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				F04500000000000000000011 /* AudioWaveformSampler.swift */,
 				F04300000000000000000011 /* AudioMessageRecorder.swift */,
 				8DF296E5214CCEBFA8ABE939 /* MessagePreviewData.swift */,
 			);
@@ -591,15 +609,6 @@
 				EC94D5BA68BF5A79522EEAB5 /* Veyra */,
 				BFBF3C2D03A9534B3FA12D2E /* VeyraTests */,
 			);
-			sourceTree = "<group>";
-		};
-		D0AD1E06E47C792CA10EF1FD /* Repositories */ = {
-			isa = PBXGroup;
-			children = (
-				E0E79AFD1721697118A5B30F /* ConversationRepository.swift */,
-				994EA17041AD6A2C9DAA0CC3 /* ContactRepository.swift */,
-			);
-			path = Repositories;
 			sourceTree = "<group>";
 		};
 		D50FA23D7E52344B0DFD4339 /* Dependency */ = {
@@ -809,6 +818,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F04500000000000000000001 /* AudioWaveformSampler.swift in Sources */,
+				F04500000000000000000002 /* AudioWaveformView.swift in Sources */,
+				C04400000000000000000001 /* RemoteChatRepository.swift in Sources */,
 				F04100000000000000000001 /* VoiceCallAudioEngine.swift in Sources */,
 				F04100000000000000000002 /* WebRTCVoiceCallEngine.swift in Sources */,
 				F04000000000000000000001 /* CallRepository.swift in Sources */,
