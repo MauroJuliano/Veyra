@@ -14,6 +14,7 @@ struct MessageTimelineView: View {
     @State private var showsParticipantProfile = false
     @State private var activeVoiceCall: VoiceCall?
     @State private var audioRecorder = AudioMessageRecorder()
+    @State private var currentUserProfile: UserProfile?
     @State private var hasPositionedInitialTimeline = false
     private let timelineBottomAnchor = "timeline-bottom"
 
@@ -57,6 +58,7 @@ struct MessageTimelineView: View {
                 )
             }
             .task { await viewModel.observeMessages() }
+            .task { await loadCurrentUserProfile() }
             .onChange(of: viewModel.draft) { _, _ in viewModel.draftDidChange() }
             .onChange(of: selectedPhoto) { _, item in sendSelectedPhoto(item) }
             .onDisappear {
@@ -220,6 +222,8 @@ struct MessageTimelineView: View {
             message: message,
             participantName: conversation.participantName,
             participantAvatarURL: conversation.participantAvatarURL,
+            currentUserName: currentUserProfile?.displayName,
+            currentUserAvatarURL: currentUserProfile?.avatarURL,
             onReply: { viewModel.beginReply(to: message) },
             onImageTap: { url in
                 selectedImage = FullScreenImage(url: url, canSave: message.direction == .incoming)
@@ -230,6 +234,12 @@ struct MessageTimelineView: View {
             guard !viewModel.isMessagingBlocked else { return }
             withAnimation(.easeOut(duration: 0.18)) { messageShowingActions = message }
         }
+    }
+
+    @MainActor
+    private func loadCurrentUserProfile() async {
+        guard let repository = viewModel.profileRepository else { return }
+        currentUserProfile = try? await repository.fetchMyProfile()
     }
 
     @ViewBuilder private var replyComposerPreview: some View {

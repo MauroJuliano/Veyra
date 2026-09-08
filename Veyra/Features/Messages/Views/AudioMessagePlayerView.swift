@@ -14,7 +14,7 @@ struct AudioMessagePlayerView: View {
     @State private var progress = 0.0
     @State private var isPreparing = true
     @State private var waveformSamples = AudioWaveformSamples.placeholder
-
+    
     init(
         url: URL,
         duration: TimeInterval,
@@ -32,32 +32,45 @@ struct AudioMessagePlayerView: View {
         self.showsOnlineIndicator = showsOnlineIndicator
         self.direction = direction
     }
-
+    
     var isOutgoing: Bool { direction == .outgoing }
     var hasAvatar: Bool { avatarName != nil }
-
+    
     var body: some View {
-        HStack(spacing: VeyraSpacing.sm) {
-            Button(action: togglePlayback) {
-                Group {
-                    if isPreparing { ProgressView().controlSize(.small) }
-                    else { Image(systemName: isPlaying ? "pause.fill" : "play.fill") }
-                }
-                    .frame(width: 34, height: 34)
-                    .background(VeyraColor.accent.opacity(0.22))
-                    .clipShape(Circle())
+        HStack(alignment: .center, spacing: VeyraSpacing.sm) {
+            if let name = avatarName {
+                VeyraAvatar(
+                    name: name,
+                    imageURL: avatarURL,
+                    size: avatarSize,
+                    showsOnlineIndicator: showsOnlineIndicator
+                )
             }
-            .disabled(isPreparing)
-            .accessibilityLabel(isPlaying ? "Pause audio" : "Play audio")
-
-            VStack(alignment: .leading, spacing: 5) {
-                AudioWaveformView(samples: waveformSamples, progress: progress, onSeek: seek)
+            
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Button(action: togglePlayback) {
+                        Group {
+                            if isPreparing { ProgressView().controlSize(.small) }
+                            else { Image(systemName: isPlaying ? "pause.fill" : "play.fill") }
+                        }
+                        .frame(width: 34, height: 34)
+                    }
+                    .disabled(isPreparing)
+                    .accessibilityLabel(isPlaying ? "Pause audio" : "Play audio")
+                    
+                    
+                    AudioWaveformView(samples: waveformSamples, progress: progress, onSeek: seek)
+                }
+                
                 Text(formattedDuration)
                     .font(VeyraTypography.caption)
                     .foregroundStyle(VeyraColor.textSecondary)
+                    .padding(.leading, 34 + VeyraSpacing.sm)
+                
             }
         }
-        .frame(width: 210)
+        .frame(width: hasAvatar ? 270 : 210)
         .padding(.horizontal, VeyraSpacing.md)
         .padding(.vertical, VeyraSpacing.sm)
         .task(id: isPlaying) {
@@ -87,12 +100,12 @@ struct AudioMessagePlayerView: View {
         }
         .onDisappear { player?.pause() }
     }
-
+    
     private var formattedDuration: String {
         let value = Int(duration.rounded())
         return String(format: "%d:%02d", value / 60, value % 60)
     }
-
+    
     private func togglePlayback() {
         if player == nil { player = AVPlayer(url: url) }
         guard let player else { return }
@@ -104,7 +117,7 @@ struct AudioMessagePlayerView: View {
         }
         isPlaying.toggle()
     }
-
+    
     private func seek(to value: Double) {
         let value = min(max(value, 0), 1)
         progress = value
@@ -115,7 +128,7 @@ struct AudioMessagePlayerView: View {
 
 private actor AudioMessageCache {
     static let shared = AudioMessageCache()
-
+    
     func localURL(for remoteURL: URL) async throws -> URL {
         let directory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("VeyraAudio", isDirectory: true)
