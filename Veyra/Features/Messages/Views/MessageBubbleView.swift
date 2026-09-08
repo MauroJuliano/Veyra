@@ -46,6 +46,8 @@ struct MessageBubbleView: View {
                             avatarSize: .medium,
                             direction: message.direction
                         )
+                        .contentShape(RoundedRectangle(cornerRadius: 18))
+                        .onTapGesture(count: 2, perform: onToggleHeartReaction)
                     } else if let imageURL = message.imageURL {
                         Button { onImageTap(imageURL) } label: {
                             VeyraCachedImage(url: imageURL) { image in
