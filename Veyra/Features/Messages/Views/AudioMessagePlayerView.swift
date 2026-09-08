@@ -8,6 +8,7 @@ struct AudioMessagePlayerView: View {
     @State private var isPlaying = false
     @State private var progress = 0.0
     @State private var isPreparing = true
+    @State private var waveformSamples = AudioWaveformSamples.placeholder
 
     var body: some View {
         HStack(spacing: VeyraSpacing.sm) {
@@ -24,8 +25,7 @@ struct AudioMessagePlayerView: View {
             .accessibilityLabel(isPlaying ? "Pause audio" : "Play audio")
 
             VStack(alignment: .leading, spacing: 5) {
-                ProgressView(value: progress)
-                    .tint(VeyraColor.accent)
+                AudioWaveformView(samples: waveformSamples, progress: progress, onSeek: seek)
                 Text(formattedDuration)
                     .font(VeyraTypography.caption)
                     .foregroundStyle(VeyraColor.textSecondary)
@@ -53,6 +53,7 @@ struct AudioMessagePlayerView: View {
             guard player == nil else { return }
             if let playableURL = try? await AudioMessageCache.shared.localURL(for: url) {
                 player = AVPlayer(url: playableURL)
+                waveformSamples = await AudioWaveformSampler.shared.samples(for: playableURL)
             } else {
                 player = AVPlayer(url: url)
             }
@@ -76,6 +77,13 @@ struct AudioMessagePlayerView: View {
             player.play()
         }
         isPlaying.toggle()
+    }
+
+    private func seek(to value: Double) {
+        let value = min(max(value, 0), 1)
+        progress = value
+        let time = CMTime(seconds: duration * value, preferredTimescale: 600)
+        player?.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero)
     }
 }
 
