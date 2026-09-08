@@ -142,7 +142,7 @@ struct MessageTimelineView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(spacing: VeyraSpacing.sm) {
-                    if viewModel.messages.isEmpty && !viewModel.hasLoadedInitialPage {
+                    if !viewModel.hasLoadedInitialPage {
                         VStack(spacing: VeyraSpacing.md) {
                             ProgressView()
                                 .controlSize(.large)
@@ -154,44 +154,45 @@ struct MessageTimelineView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 72)
                         .transition(.opacity)
-                    }
-                    if viewModel.hasEarlierMessages && !viewModel.messages.isEmpty {
-                        Button {
-                            Task { await viewModel.loadEarlierMessages() }
-                        } label: {
-                            if viewModel.isLoadingEarlier {
-                                ProgressView()
-                            } else {
-                                Label("Load earlier messages", systemImage: "clock.arrow.circlepath")
+                    } else {
+                        if viewModel.hasEarlierMessages && !viewModel.messages.isEmpty {
+                            Button {
+                                Task { await viewModel.loadEarlierMessages() }
+                            } label: {
+                                if viewModel.isLoadingEarlier {
+                                    ProgressView()
+                                } else {
+                                    Label("Load earlier messages", systemImage: "clock.arrow.circlepath")
+                                }
                             }
-                        }
-                        .font(VeyraTypography.caption)
-                        .foregroundStyle(VeyraColor.accent)
-                        .disabled(viewModel.isLoadingEarlier)
-                        .padding(.vertical, VeyraSpacing.sm)
-                    }
-                    if let errorMessage = viewModel.errorMessage {
-                        Text(errorMessage).font(VeyraTypography.caption).foregroundStyle(VeyraColor.danger)
-                    }
-                    ForEach(viewModel.timelineDays) { day in
-                        Text(day.date, format: .dateTime.day().month(.wide))
                             .font(VeyraTypography.caption)
-                            .foregroundStyle(VeyraColor.textPrimary)
-                            .padding(.horizontal, VeyraSpacing.md)
-                            .padding(.vertical, VeyraSpacing.xs)
-                            .background(VeyraColor.surfaceElevated)
-                            .clipShape(Capsule())
-                            .padding(.vertical, VeyraSpacing.md)
-                        ForEach(day.items) { item in
-                            switch item {
-                            case let .message(message): messageRow(message)
-                            case let .call(call): CallHistoryRow(call: call)
+                            .foregroundStyle(VeyraColor.accent)
+                            .disabled(viewModel.isLoadingEarlier)
+                            .padding(.vertical, VeyraSpacing.sm)
+                        }
+                        if let errorMessage = viewModel.errorMessage {
+                            Text(errorMessage).font(VeyraTypography.caption).foregroundStyle(VeyraColor.danger)
+                        }
+                        ForEach(viewModel.timelineDays) { day in
+                            Text(day.date, format: .dateTime.day().month(.wide))
+                                .font(VeyraTypography.caption)
+                                .foregroundStyle(VeyraColor.textPrimary)
+                                .padding(.horizontal, VeyraSpacing.md)
+                                .padding(.vertical, VeyraSpacing.xs)
+                                .background(VeyraColor.surfaceElevated)
+                                .clipShape(Capsule())
+                                .padding(.vertical, VeyraSpacing.md)
+                            ForEach(day.items) { item in
+                                switch item {
+                                case let .message(message): messageRow(message)
+                                case let .call(call): CallHistoryRow(call: call)
+                                }
                             }
                         }
+                        Color.clear
+                            .frame(height: 1)
+                            .id(timelineBottomAnchor)
                     }
-                    Color.clear
-                        .frame(height: 1)
-                        .id(timelineBottomAnchor)
                 }
                 .padding(VeyraSpacing.md)
             }
