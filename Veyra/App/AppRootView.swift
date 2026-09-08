@@ -96,7 +96,7 @@ struct AppRootView: View {
                     await authentication.signOut()
                 }
             })
-                .tabItem { Label("Profile", systemImage: "person.crop.circle.fill") }
+                .tabItem { Label("You", systemImage: "person.crop.circle.fill") }
         }
         .tint(VeyraColor.accent)
         .toolbarBackground(VeyraColor.surface, for: .tabBar)
