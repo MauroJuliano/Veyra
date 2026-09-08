@@ -42,7 +42,7 @@ struct AudioMessagePlayerView: View {
                 VeyraAvatar(
                     name: name,
                     imageURL: avatarURL,
-                    size: avatarSize,
+                    size: .large,
                     showsOnlineIndicator: showsOnlineIndicator
                 )
             }

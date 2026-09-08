@@ -28,13 +28,8 @@ struct ConversationListView: View {
                 Text("Messages")
                     .font(VeyraTypography.title)
                     .foregroundStyle(VeyraColor.textPrimary)
+
                 Spacer()
-                Text("Recent")
-                    .font(VeyraTypography.body)
-                    .foregroundStyle(VeyraColor.textSecondary)
-                Image(systemName: "chevron.down")
-                    .font(.caption.bold())
-                    .foregroundStyle(VeyraColor.textSecondary)
             }
             .padding(.horizontal, VeyraSpacing.md)
             .padding(.top, VeyraSpacing.xl)
@@ -107,10 +102,6 @@ struct ConversationListView: View {
             Text("The conversation with \(conversation.participantName) and all of its messages will be removed for both participants.")
         }
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                VeyraAvatar(name: "Mauro Juliano", size: .small)
-            }
-
             ToolbarItem(placement: .principal) {
                 Text("Chats")
                     .font(VeyraTypography.title)
@@ -119,7 +110,7 @@ struct ConversationListView: View {
 
             ToolbarItem(placement: .topBarTrailing) {
                 Button { presentsNewConversation = true } label: {
-                    Image(systemName: "ellipsis")
+                    Image(systemName: "plus")
                         .frame(width: 36, height: 36)
                         .background(VeyraColor.surfaceElevated)
                         .clipShape(Circle())
