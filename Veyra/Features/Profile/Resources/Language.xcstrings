@@ -1,0 +1,56 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "App language" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma do app"
+          }
+        }
+      }
+    },
+    "Choose the language used throughout Veyra." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha o idioma usado em todo o Veyra."
+          }
+        }
+      }
+    },
+    "Follow your device language" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar o idioma do seu dispositivo"
+          }
+        }
+      }
+    },
+    "Some content may update after you reopen Veyra." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alguns conteúdos podem ser atualizados depois que você reabrir o Veyra."
+          }
+        }
+      }
+    },
+    "System language" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma do sistema"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

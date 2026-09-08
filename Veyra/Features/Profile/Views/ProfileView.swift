@@ -66,6 +66,8 @@ struct ProfileView: View {
                     PersonalDetailsView(viewModel: viewModel)
                 } else if route == .privacy {
                     BlockedUsersView(repository: viewModel.profileRepository)
+                } else if route == .language {
+                    LanguageSelectionView()
                 } else {
                     ProfileDetailPlaceholder(route: route.title, systemImage: route.icon)
                 }
