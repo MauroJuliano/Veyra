@@ -40,6 +40,37 @@ struct SwiftDataConversationRepositoryTests {
         #expect(repository.fetchMessages(conversationID: conversation.id, before: nil, limit: 50).isEmpty)
     }
 
+    @Test func clearsAllSessionDataBeforeAnotherUserSignsIn() throws {
+        let repository = try SwiftDataConversationRepository(isStoredInMemoryOnly: true)
+        let conversation = Conversation(participantName: "Martha", lastMessage: "Private", updatedAt: .now)
+        let contact = Contact(name: "Martha", conversationID: conversation.id)
+        let message = Message(text: "Private", direction: .incoming)
+        let participantID = UUID()
+        let call = VoiceCallHistory(
+            id: UUID(),
+            direction: .incoming,
+            status: .ended,
+            startedAt: .now,
+            answeredAt: .now.addingTimeInterval(-1),
+            endedAt: .now
+        )
+
+        repository.save(conversation)
+        repository.saveContacts([contact])
+        repository.saveMessages([message], conversationID: conversation.id)
+        repository.replaceCallHistory([call], participantID: participantID)
+
+        repository.clearConversations()
+        repository.clearContacts()
+        repository.clearMessageCache()
+
+        #expect(repository.fetchConversations().isEmpty)
+        #expect(repository.fetchContacts().isEmpty)
+        #expect(repository.fetchMessages(conversationID: conversation.id, before: nil, limit: 50).isEmpty)
+        #expect(repository.fetchCallHistory(participantID: participantID).isEmpty)
+        #expect(!repository.hasCachedCallHistory(participantID: participantID))
+    }
+
     @Test func persistsConversationParticipantAndAvatarMetadata() throws {
         let repository = try SwiftDataConversationRepository(isStoredInMemoryOnly: true)
         let participantID = UUID()

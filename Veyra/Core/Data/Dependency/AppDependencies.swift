@@ -4,19 +4,22 @@ final class AppDependencies {
     let remoteChat: (any RemoteChatRepository)?
     let calls: (any CallRepository)?
     let messageCache: any MessageCacheRepository
+    let profileStore: any ProfileStore
 
     init(
         conversations: any ConversationRepository,
         contacts: any ContactRepository,
         remoteChat: (any RemoteChatRepository)? = nil,
         calls: (any CallRepository)? = nil,
-        messageCache: any MessageCacheRepository = InMemoryMessageCacheRepository()
+        messageCache: any MessageCacheRepository = InMemoryMessageCacheRepository(),
+        profileStore: any ProfileStore = UserDefaultsProfileStore()
     ) {
         self.conversations = conversations
         self.contacts = contacts
         self.remoteChat = remoteChat
         self.calls = calls
         self.messageCache = messageCache
+        self.profileStore = profileStore
     }
 
     convenience init() {
@@ -50,5 +53,12 @@ final class AppDependencies {
             calls: calls,
             messageCache: messageCache
         )
+    }
+
+    func clearLocalData() {
+        conversations.clearConversations()
+        contacts.clearContacts()
+        messageCache.clearMessageCache()
+        profileStore.clear()
     }
 }

@@ -88,12 +88,15 @@ struct AppRootView: View {
             }
                 .tabItem { Label("Connections", systemImage: "person.2.fill") }
 
-            ProfileView(viewModel: ProfileViewModel(remoteRepository: dependencies.remoteChat), onLogout: {
+            ProfileView(viewModel: ProfileViewModel(store: dependencies.profileStore, remoteRepository: dependencies.remoteChat), onLogout: {
                 Task {
                     if let token = UserDefaults.standard.string(forKey: PushNotificationRegistration.tokenKey) {
                         try? await dependencies.remoteChat?.unregisterPushToken(token)
                     }
                     await authentication.signOut()
+                    if authentication.route == .login {
+                        dependencies.clearLocalData()
+                    }
                 }
             })
                 .tabItem { Label("You", systemImage: "person.crop.circle.fill") }
