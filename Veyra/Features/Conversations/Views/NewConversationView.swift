@@ -46,7 +46,10 @@ struct NewConversationView: View {
     @ViewBuilder private var content: some View {
         if viewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines).count >= 2 {
             if viewModel.isSearching && viewModel.results.isEmpty {
-                ProgressView("Searching…").frame(maxWidth: .infinity)
+                LazyVStack(spacing: VeyraSpacing.sm) {
+                    ForEach(0..<4, id: \.self) { _ in VeyraSkeletonRow() }
+                }
+                .accessibilityLabel("Searching…")
             } else if viewModel.results.isEmpty && viewModel.errorMessage == nil {
                 ContentUnavailableView.search(text: viewModel.searchText)
             } else {

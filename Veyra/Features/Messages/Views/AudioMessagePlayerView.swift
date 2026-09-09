@@ -54,10 +54,11 @@ struct AudioMessagePlayerView: View {
                             if isPreparing { ProgressView().controlSize(.small) }
                             else { Image(systemName: isPlaying ? "pause.fill" : "play.fill") }
                         }
-                        .frame(width: 34, height: 34)
+                        .frame(width: 44, height: 44)
                     }
                     .disabled(isPreparing)
                     .accessibilityLabel(isPlaying ? "Pause audio" : "Play audio")
+                    .accessibilityValue(formattedDuration)
                     
                     
                     AudioWaveformView(samples: waveformSamples, progress: progress, onSeek: seek)
@@ -66,7 +67,7 @@ struct AudioMessagePlayerView: View {
                 Text(formattedDuration)
                     .font(VeyraTypography.caption)
                     .foregroundStyle(VeyraColor.textSecondary)
-                    .padding(.leading, 34 + VeyraSpacing.sm)
+                    .padding(.leading, 44 + VeyraSpacing.sm)
                 
             }
         }
