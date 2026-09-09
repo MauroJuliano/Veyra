@@ -31,8 +31,11 @@ final class RegistrationViewModel {
             validationMessage = AppLocalization.string("Enter your full name.")
             return false
         }
-        guard normalizedUsername.range(of: "^[a-z0-9_]{3,30}$", options: .regularExpression) != nil else {
-            validationMessage = AppLocalization.string("Username must contain 3–30 lowercase letters, numbers, or underscores.")
+        guard normalizedUsername.range(of: "^[a-z0-9._]{3,30}$", options: .regularExpression) != nil else {
+            validationMessage = AppLocalization.string(
+                "Username must contain 3–30 lowercase letters, numbers, periods, or underscores.",
+                table: "Errors"
+            )
             return false
         }
         guard normalizedEmail.range(of: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", options: .regularExpression) != nil else {

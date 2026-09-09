@@ -575,6 +575,29 @@
           }
         }
       }
+    },
+    "Username must contain 3–30 lowercase letters, numbers, periods, or underscores.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Benutzername muss aus 3–30 Kleinbuchstaben, Zahlen, Punkten oder Unterstrichen bestehen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Username must contain 3–30 lowercase letters, numbers, periods, or underscores."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O nome de usuário deve conter de 3 a 30 letras minúsculas, números, pontos ou sublinhados."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
