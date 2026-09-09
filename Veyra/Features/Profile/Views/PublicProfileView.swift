@@ -13,12 +13,13 @@ struct PublicProfileView: View {
     @State private var showsReport = false
     @State private var reportConfirmation: String?
     @State private var activeVoiceCall: VoiceCall?
+    @State private var isStartingConversation = false
 
     let repository: (any RemoteChatRepository)?
     let callRepository: (any CallRepository)?
     let conversationID: UUID?
     let isActive: Bool?
-    var onMessage: ((User) async -> Void)?
+    var onMessage: ((User) async -> String?)?
 
     init(
         user: User,
@@ -26,7 +27,7 @@ struct PublicProfileView: View {
         callRepository: (any CallRepository)? = nil,
         conversationID: UUID? = nil,
         isActive: Bool? = nil,
-        onMessage: ((User) async -> Void)? = nil
+        onMessage: ((User) async -> String?)? = nil
     ) {
         _user = State(initialValue: user)
         self.repository = repository
@@ -145,14 +146,22 @@ struct PublicProfileView: View {
                     } else if !blockRelationship.isBlockedByThem {
                         Task {
                             if let onMessage {
-                                await onMessage(user)
+                                isStartingConversation = true
+                                errorMessage = await onMessage(user)
+                                isStartingConversation = false
                             } else {
                                 dismiss()
                             }
                         }
                     }
                 } label: {
-                    Label(primaryActionTitle, systemImage: primaryActionIcon)
+                    Group {
+                        if isStartingConversation {
+                            ProgressView()
+                        } else {
+                            Label(primaryActionTitle, systemImage: primaryActionIcon)
+                        }
+                    }
                         .font(VeyraTypography.bodyEmphasized)
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
@@ -168,7 +177,7 @@ struct PublicProfileView: View {
                         .shadow(color: VeyraColor.accent.opacity(0.22), radius: 18, y: 8)
                 }
                 .buttonStyle(.plain)
-                .disabled(isUpdatingBlock || blockRelationship.isBlockedByThem)
+                .disabled(isUpdatingBlock || isStartingConversation || blockRelationship.isBlockedByThem)
 
                 Button {
                     activeVoiceCall = VoiceCall(

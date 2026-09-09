@@ -35,7 +35,7 @@ struct NewConversationView: View {
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
             .navigationDestination(item: $selectedUser) { user in
                 PublicProfileView(user: user, repository: viewModel.profileRepository) { selected in
-                    open(selected)
+                    await open(selected)
                 }
             }
         }
@@ -83,17 +83,17 @@ struct NewConversationView: View {
         .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 
-    private func open(_ user: User) {
-        guard openingUserID == nil else { return }
+    @MainActor
+    private func open(_ user: User) async -> String? {
+        guard openingUserID == nil else { return nil }
         openingUserID = user.id
-        Task {
-            startError = await onSelect(user)
-            if startError == nil {
-                viewModel.addRecent(user)
-                dismiss()
-            }
-            openingUserID = nil
+        defer { openingUserID = nil }
+        startError = await onSelect(user)
+        if startError == nil {
+            viewModel.addRecent(user)
+            dismiss()
         }
+        return startError
     }
 
     private func showProfile(_ user: User) {
