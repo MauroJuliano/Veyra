@@ -631,7 +631,7 @@ struct FullScreenImageView: View {
             try await saveImageData(data)
             saveMessage = AppLocalization.string("Image saved to Photos.")
         } catch {
-            saveMessage = AppLocalization.string("The image could not be saved. \(error.localizedDescription)")
+            saveMessage = UserFacingError.message(for: error, context: .imageSaving)
         }
     }
 

@@ -54,7 +54,7 @@ final class VoiceCallCoordinator {
             startHeartbeat()
             try await audioEngine?.startOutgoing(callID: call.id)
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .calls)
             state = .failed
             finishPersistedCallIfNeeded()
         }
@@ -88,7 +88,7 @@ final class VoiceCallCoordinator {
             try audioEngine?.setSpeakerEnabled(newValue)
             isSpeakerEnabled = newValue
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .calls)
         }
     }
 
@@ -109,7 +109,7 @@ final class VoiceCallCoordinator {
             startHeartbeat()
             try await audioEngine?.startIncoming(callID: call.id)
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .calls)
             state = .failed
             finishPersistedCallIfNeeded()
         }
@@ -120,7 +120,7 @@ final class VoiceCallCoordinator {
         do {
             try await repository?.answerCall(id: call.id, accept: false)
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .calls)
         }
         end()
     }
@@ -216,7 +216,7 @@ final class VoiceCallCoordinator {
                 return
             } catch {
                 guard let self else { return }
-                self.errorMessage = error.localizedDescription
+                self.errorMessage = UserFacingError.message(for: error, context: .calls)
                 self.state = .failed
             }
         }

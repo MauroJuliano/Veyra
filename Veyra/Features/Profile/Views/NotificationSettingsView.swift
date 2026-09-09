@@ -65,6 +65,7 @@ struct NotificationSettingsView: View {
                         .foregroundStyle(VeyraColor.textSecondary)
                 }
             }
+            .accessibilityElement(children: .combine)
 
             if permissionState == .notDetermined {
                 Button(action: requestPermission) {

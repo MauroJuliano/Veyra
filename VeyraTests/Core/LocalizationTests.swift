@@ -54,6 +54,10 @@ struct LocalizationTests {
             locales: ["pt-BR", "de"]
         )
         try assertCoverage(
+            at: repositoryRoot.appending(path: "Veyra/Configuration/Errors.xcstrings"),
+            locales: ["pt-BR", "de"]
+        )
+        try assertCoverage(
             at: repositoryRoot.appending(path: "Veyra/Features/Profile/Resources/Settings.xcstrings"),
             locales: ["pt-BR", "de"]
         )
@@ -68,7 +72,13 @@ struct LocalizationTests {
             let missing = strings.compactMap { key, rawValue -> String? in
                 if key.isEmpty || ignoredKeys.contains(key) { return nil }
 
-                guard let entry = rawValue as? [String: Any],
+                guard let entry = rawValue as? [String: Any] else { return key }
+                // Xcode can mirror keys handled by a custom table into the default
+                // catalog as empty extraction records. Their translations remain
+                // authoritative in the explicitly tested catalog.
+                if entry.isEmpty { return nil }
+
+                guard
                       let localizations = entry["localizations"] as? [String: Any],
                       let localization = localizations[locale] as? [String: Any],
                       let stringUnit = localization["stringUnit"] as? [String: Any],

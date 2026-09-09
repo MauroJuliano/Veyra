@@ -50,6 +50,8 @@ final class AuthenticationCoordinator {
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
-        do { try await operation() } catch { errorMessage = error.localizedDescription }
+        do { try await operation() } catch {
+            errorMessage = UserFacingError.message(for: error, context: .authentication)
+        }
     }
 }

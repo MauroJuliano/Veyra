@@ -37,7 +37,7 @@ final class NewConversationViewModel {
             return
         } catch {
             results = []
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .people)
         }
     }
 
