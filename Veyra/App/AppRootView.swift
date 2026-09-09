@@ -32,7 +32,15 @@ struct AppRootView: View {
                 externalError: authentication.errorMessage,
                 onBack: authentication.showLogin,
                 onRegistered: { name, username, email, password in
-                    Task { await authentication.signUp(name: name, username: username, email: email, password: password) }
+                    Task {
+                        await authentication.signUp(
+                            name: name,
+                            username: username,
+                            email: email,
+                            password: password,
+                            onRegistrationSucceeded: dependencies.clearLocalData
+                        )
+                    }
                 }
             )
             .transition(.opacity)

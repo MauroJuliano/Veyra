@@ -30,9 +30,22 @@ final class AuthenticationCoordinator {
         }
     }
 
-    func signUp(name: String, username: String, email: String, password: String) async {
+    func signUp(
+        name: String,
+        username: String,
+        email: String,
+        password: String,
+        onRegistrationSucceeded: () -> Void = {}
+    ) async {
         await perform(context: .registration) {
-            switch try await service.signUp(name: name, username: username, email: email, password: password) {
+            let outcome = try await service.signUp(
+                name: name,
+                username: username,
+                email: email,
+                password: password
+            )
+            onRegistrationSucceeded()
+            switch outcome {
             case .authenticated: route = .authenticated
             case .requiresEmailConfirmation(let email): route = .emailConfirmation(email)
             }
