@@ -2,81 +2,64 @@
 
 [![CI](https://github.com/MauroJuliano/Veyra/actions/workflows/ci.yml/badge.svg)](https://github.com/MauroJuliano/Veyra/actions/workflows/ci.yml)
 
-Veyra is a native iOS messaging app built as a portfolio project. It explores what a modern chat experience can feel like when it is designed around a quieter, more atmospheric visual identity — without losing the interactions people already expect from a messaging app.
+Veyra is a native iOS messaging app that combines familiar communication flows with a quieter, more atmospheric visual identity. It was rebuilt in SwiftUI from an early-career project as an exercise in product thinking, architecture, realtime communication, and thoughtful interaction design.
 
 > **Portfolio notice**
 >
-> Veyra is an educational and portfolio project. It is not an official commercial product, is not available on the App Store, and is not currently intended for a public launch. Some features and infrastructure are experimental and were created to demonstrate product thinking, native iOS development, architecture, and attention to user experience.
+> Veyra is an educational portfolio project. It is not a commercial product, is not available on the App Store, and is not currently intended for an official public launch. Some features and infrastructure are experimental.
 
-## The idea
+---
 
-This project started from an older chat app I built near the beginning of my career. Instead of simply polishing that code, I chose to rebuild the experience with SwiftUI and a more deliberate structure.
+## App walkthrough
 
-The goal was to turn a familiar idea into a space for practicing the things that matter in a real mobile product: clear navigation, responsive interfaces, realtime behavior, offline continuity, privacy decisions, accessibility, localization, testing, and maintainable code.
+<!-- Replace this placeholder with the walkthrough thumbnail and video link. -->
+<!-- Suggested asset: Docs/Assets/Veyra-Experience.png -->
 
-The result is a dark, purple-toned interface with glass-inspired surfaces and small neon accents. The visual direction is intentionally different from the more utilitarian appearance of traditional messaging apps, while the interactions remain familiar.
+> 🎬 **Video walkthrough coming soon**
+> A complete look at authentication, people discovery, realtime messaging, shared media, voice messages, calls, and profile settings will be added here.
 
-## What you can do in Veyra
+---
 
-- Create an account and maintain a profile with name, username, bio, email, and photo.
-- Find people by name or username and keep a list of recent searches.
-- Start one-to-one conversations and exchange text, images, stickers, and voice messages.
-- Reply to messages, react with emoji, and follow sent and read states.
-- See typing, presence, last-seen, unread, and recent activity indicators.
-- Browse shared media and open images in a swipeable full-screen gallery.
-- Make experimental realtime voice calls and keep call events in the conversation timeline.
-- Block, unblock, and report users through privacy-oriented flows.
-- Use the interface in English, Brazilian Portuguese, or German.
-- Reopen recent conversations from locally stored data when the network is unavailable.
+## Product preview
 
-Deletion is intentionally private to each participant. Removing a message or conversation hides it only for the person who requested the deletion; it does not erase the other participant's copy. This decision treats chat history as potentially important context instead of allowing one person to silently remove evidence from both sides.
+### Messaging experience
 
-## Product and design
+Find people by name or username, start one-to-one conversations, and exchange text, images, stickers, and voice messages. The timeline supports replies, emoji reactions, delivery and read states, typing presence, last-seen information, unread indicators, and call history. Veyra also explores experimental WebRTC voice calls with incoming, active, timeout, and missed-call states.
 
-Veyra was developed screen by screen, with each feature reviewed before moving to the next one. That process helped keep visual and behavioral decisions consistent across authentication, conversations, people, messages, calls, and profiles.
+<!-- Add one image containing Home, Chat, Voice Message, and Call screens. -->
+> 🖼️ **Messaging preview coming soon**
 
-The interface is supported by a small native design system containing semantic colors, typography, spacing, radii, glass backgrounds, buttons, text fields, and avatars. Reusable components include SwiftUI previews so that important states can be reviewed without navigating through the whole app.
+### People, media, and profile
 
-The app also includes its own icon, launch experience, dark-first palette, loading and empty states, keyboard handling, and localized copy. These details are part of the product work rather than decoration added at the end.
+Profiles include a name, unique username, bio, email, and photo. Shared images can be browsed in a dedicated gallery, while privacy flows make it possible to block, unblock, and report users. The interface is available in English, Brazilian Portuguese, and German.
 
-## How it is built
+<!-- Add one image containing People, Shared Media, and Profile screens. -->
+> 🖼️ **People and profile preview coming soon**
 
-Veyra is written in **Swift 6** and targets **iOS 17 or later**. The user interface is built with **SwiftUI**, while **SwiftData** provides the local conversation and message cache.
+---
 
-The codebase is organized by feature and follows an MVVM-inspired approach. Views focus on presentation, view models coordinate user actions and state, and repository protocols isolate local and remote data access. This separation also makes it possible to use lightweight in-memory implementations in previews and tests.
+## About the project
 
-Realtime accounts, conversations, messages, presence, media, and privacy rules are backed by **Supabase**. Voice-call media uses **WebRTC**. Both dependencies are managed with Swift Package Manager; the project does not use CocoaPods.
+The original version of this idea was one of the apps I created near the beginning of my career. Rebuilding it offered a useful way to revisit the same product with more experience: moving from isolated screens to a connected experience with authentication, persistent profiles, realtime data, offline continuity, privacy rules, and reusable UI foundations.
 
-Some of the technical areas explored in the project include:
+The interface uses a dark purple palette, glass-inspired surfaces, and restrained neon accents. These choices give Veyra its own personality while preserving interactions that feel natural in a messaging app.
 
-- Realtime subscriptions and optimistic message updates.
-- Local-first loading and reconciliation with remote data.
-- Image and audio upload, playback, waveform rendering, and caching.
-- Per-user deletion, blocking rules, and Row Level Security.
-- Dependency injection through repository contracts.
-- String Catalog localization and runtime language selection.
-- Unit tests with Swift Testing and automated build checks with GitHub Actions.
+One deliberate product decision is per-user deletion. Removing a message or conversation hides it only for the person who requested it; the other participant keeps their copy. This avoids allowing one person to silently remove shared context from both sides.
 
-## Project structure
+## Under the hood
 
-The main application is grouped by responsibility:
+Veyra is written in **Swift 6**, built with **SwiftUI**, and targets **iOS 17 or later**. The codebase follows an MVVM-inspired approach and is organized by feature, with repository contracts separating presentation, local persistence, and remote services.
 
-```text
-Veyra/
-├── App/                 # Application entry point and navigation
-├── Core/                # Backend access, persistence, localization, and design system
-├── Features/
-│   ├── Authentication/
-│   ├── Calls/
-│   ├── Contacts/
-│   ├── Conversations/
-│   ├── Messages/
-│   └── Profile/
-├── Configuration/       # Build settings and String Catalogs
-└── Resources/           # App icon, launch artwork, and assets
-```
+- **SwiftUI** for the interface and reusable design system.
+- **SwiftData** for locally cached conversations, messages, contacts, and offline continuity.
+- **Supabase** for authentication, profiles, realtime messaging, presence, media, and privacy rules.
+- **WebRTC** for experimental voice-call media.
+- **String Catalogs** for English, Brazilian Portuguese, and German.
+- **Swift Testing and GitHub Actions** for automated behavior and build validation.
 
-Supabase migrations, functions, triggers, and security policies are intentionally kept in the separate [Veyra-Supabase repository](https://github.com/MauroJuliano/Veyra-Supabase). This keeps this repository focused on the native iOS work while still making the supporting backend reproducible and reviewable.
+Message updates are optimistic, recent content is presented from the local cache first, and remote state is reconciled afterward. Images and audio include upload, playback, waveform, and caching behavior. In-memory repository implementations keep previews and tests independent from the live backend.
+
+The native repository is structured around `App`, `Core`, and feature folders for Authentication, Calls, Contacts, Conversations, Messages, and Profile. Supabase migrations, database functions, triggers, and Row Level Security policies live separately in [Veyra-Supabase](https://github.com/MauroJuliano/Veyra-Supabase), keeping this repository focused on the iOS application.
 
 ## Running locally
 
@@ -97,20 +80,8 @@ Never place a `service_role` key or database password in the iOS project. The lo
 
 Run the test suite with `Command-U`.
 
-## Development approach
-
-The repository history is part of the portfolio. Work was divided into focused branches and pull requests so that design, architecture, data, and realtime behavior could evolve in reviewable steps.
-
-The general workflow was:
-
-- Build one small product outcome at a time.
-- Keep features separated and reusable where it makes sense.
-- Add tests for important state and data behavior.
-- Compile and validate changes before moving forward.
-- Keep backend infrastructure outside the native app repository.
-
 ## Current status
 
-Veyra is a feature-rich portfolio build, but it should still be treated as a development project rather than a production-ready messenger. A public release would require additional security review, broader device and network testing, production monitoring, moderation operations, legal documentation, accessibility validation, and deployment infrastructure.
+Veyra should be treated as a portfolio build rather than a production-ready messenger. The repository history reflects an incremental workflow, with features developed in focused pull requests and validated before the next step.
 
-Within its intended scope, the project demonstrates the full journey from an early-career idea to a structured, realtime SwiftUI application with a distinct product identity.
+A real public release would require additional security review, broader device and network testing, production monitoring, moderation operations, legal documentation, accessibility validation, and deployment infrastructure. Within its intended scope, Veyra demonstrates the journey from an early-career idea to a structured realtime SwiftUI application with a distinct product identity.
