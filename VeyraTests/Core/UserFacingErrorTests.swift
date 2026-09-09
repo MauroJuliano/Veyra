@@ -43,4 +43,30 @@ struct UserFacingErrorTests {
         #expect(message == AppLocalization.string("Unable to remove this message. Please try again.", table: "Errors"))
         #expect(!message.contains("internal_table"))
     }
+
+    @Test
+    func usesRegistrationMessageWhenAccountCreationFails() {
+        let error = NSError(
+            domain: "Supabase.Auth",
+            code: 500,
+            userInfo: [NSLocalizedDescriptionKey: "Unexpected backend response"]
+        )
+
+        let message = UserFacingError.message(for: error, context: .registration)
+
+        #expect(message == AppLocalization.string("We couldn't create your account. Please try again.", table: "Errors"))
+    }
+
+    @Test
+    func mapsDuplicateRegistrationEmail() {
+        let error = NSError(
+            domain: "Supabase.Auth",
+            code: 422,
+            userInfo: [NSLocalizedDescriptionKey: "User already registered"]
+        )
+
+        let message = UserFacingError.message(for: error, context: .registration)
+
+        #expect(message == AppLocalization.string("This email is already in use.", table: "Errors"))
+    }
 }
