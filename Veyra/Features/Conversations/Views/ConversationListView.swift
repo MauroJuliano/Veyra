@@ -47,7 +47,9 @@ struct ConversationListView: View {
                 } else {
                     List {
                         ForEach(viewModel.filteredConversations) { conversation in
-                            NavigationLink(value: AppRoute.conversation(conversation)) {
+                            Button {
+                                selectedConversation = conversation
+                            } label: {
                                 ConversationRowView(conversation: conversation)
                             }
                             .buttonStyle(.plain)
