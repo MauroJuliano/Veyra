@@ -34,13 +34,20 @@ struct LocalizationTests {
             // catalog; their authoritative translations live in Language.xcstrings.
             ignoredKeys: [
                 "",
+                "English",
                 "Follow your device language",
+                "German",
+                "Portuguese",
                 "Some content may update after you reopen Veyra.",
                 "System language"
             ]
         )
         try assertCoverage(
             at: repositoryRoot.appending(path: "Veyra/Features/Profile/Resources/Language.xcstrings"),
+            locales: ["pt-BR", "de"]
+        )
+        try assertCoverage(
+            at: repositoryRoot.appending(path: "Veyra/Configuration/Deletion.xcstrings"),
             locales: ["pt-BR", "de"]
         )
     }

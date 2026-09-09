@@ -336,7 +336,6 @@ final class MessageTimelineViewModel {
 
     @MainActor
     func delete(_ message: Message) async {
-        guard message.direction == .outgoing else { return }
         guard let repository else {
             messages.removeAll { $0.id == message.id }
             cache.deleteMessage(id: message.id)

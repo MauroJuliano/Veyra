@@ -58,10 +58,15 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             .rpc("start_direct_conversation_with_user", params: ["target_user_id": contact.id])
             .execute()
             .value
-        guard let conversation = try await fetchConversations().first(where: { $0.id == conversationID }) else {
-            throw ChatRepositoryError.conversationNotFound
-        }
-        return conversation
+        return Conversation(
+            id: conversationID,
+            participantID: contact.id,
+            participantName: contact.name,
+            lastMessage: "",
+            updatedAt: .now,
+            isOnline: contact.isOnline,
+            participantAvatarURL: contact.avatarURL
+        )
     }
 
     // MARK: - Messages
@@ -178,9 +183,7 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
 
     func deleteMessage(id: UUID) async throws {
         try await client
-            .from("messages")
-            .delete()
-            .eq("id", value: id)
+            .rpc("delete_message_for_me", params: ["target_message_id": id])
             .execute()
     }
 
@@ -309,6 +312,7 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
         // RLS still limits events to the signed-in user's conversations, and
         // the timeline refetch below keeps this conversation consistent.
         let changes = messagesChannel.postgresChange(AnyAction.self, table: "messages")
+        let deletionChanges = messagesChannel.postgresChange(AnyAction.self, table: "message_deletions")
         let reactionChanges = messagesChannel.postgresChange(AnyAction.self, table: "message_reactions")
         let typingChanges = messagesChannel.postgresChange(
             AnyAction.self,
@@ -329,6 +333,12 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
         return AsyncStream { continuation in
             let messagesTask = Task {
                 for await _ in changes {
+                    guard !Task.isCancelled else { break }
+                    continuation.yield(.contentChanged)
+                }
+            }
+            let deletionsTask = Task {
+                for await _ in deletionChanges {
                     guard !Task.isCancelled else { break }
                     continuation.yield(.contentChanged)
                 }
@@ -369,6 +379,7 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
 
             continuation.onTermination = { [client] _ in
                 messagesTask.cancel()
+                deletionsTask.cancel()
                 reactionsTask.cancel()
                 typingTask.cancel()
                 presenceTask.cancel()

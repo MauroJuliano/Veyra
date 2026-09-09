@@ -66,16 +66,16 @@ struct MessageTimelineViewModelTests {
         #expect(viewModel.messages.isEmpty)
     }
 
-    @Test func deletesOnlyOutgoingMessages() async {
+    @Test func deletesIncomingAndOutgoingMessagesForCurrentUser() async {
         let incoming = Message(text: "Hi", direction: .incoming)
         let outgoing = Message(text: "Hello", direction: .outgoing)
         let viewModel = MessageTimelineViewModel(messages: [incoming, outgoing])
 
         await viewModel.delete(incoming)
-        #expect(viewModel.messages.map(\.id) == [incoming.id, outgoing.id])
+        #expect(viewModel.messages.map(\.id) == [outgoing.id])
 
         await viewModel.delete(outgoing)
-        #expect(viewModel.messages.map(\.id) == [incoming.id])
+        #expect(viewModel.messages.isEmpty)
     }
 
     @Test func sendsReplyWithOriginalMessagePreview() async {

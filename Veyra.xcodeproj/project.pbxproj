@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F04800000000000000000001 /* Deletion.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F04800000000000000000011 /* Deletion.xcstrings */; };
 		F04720000000000000000001 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F04720000000000000000011 /* LaunchScreen.storyboard */; };
 		F04710000000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F04710000000000000000011 /* Assets.xcassets */; };
 		F04610000000000000000001 /* AppLocalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04610000000000000000011 /* AppLocalization.swift */; };
@@ -117,6 +118,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		F04800000000000000000011 /* Deletion.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json.xcstrings; path = Deletion.xcstrings; sourceTree = "<group>"; };
 		F04720000000000000000011 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F04710000000000000000011 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F04610000000000000000011 /* AppLocalization.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppLocalization.swift; sourceTree = "<group>"; };
@@ -621,6 +623,7 @@
 		C9B2B5790BD3B93BB1DBD5C6 /* Configuration */ = {
 			isa = PBXGroup;
 			children = (
+				F04800000000000000000011 /* Deletion.xcstrings */,
 				F03800000000000000000011 /* Localizable.xcstrings */,
 				F03800000000000000000012 /* InfoPlist.xcstrings */,
 				5819FAF79B8D19C6656AC295 /* Base.xcconfig */,
@@ -826,6 +829,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F04800000000000000000001 /* Deletion.xcstrings in Resources */,
 				F04720000000000000000001 /* LaunchScreen.storyboard in Resources */,
 				F04710000000000000000001 /* Assets.xcassets in Resources */,
 				F04600000000000000000003 /* Language.xcstrings in Resources */,

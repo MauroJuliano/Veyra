@@ -66,11 +66,17 @@ struct MessageTimelineView: View {
                 Task { await viewModel.stopTyping() }
             }
             .animation(.easeInOut(duration: 0.2), value: viewModel.isParticipantTyping)
-            .alert("Delete message?", isPresented: deletionAlertIsPresented, presenting: messagePendingDeletion) { message in
-                Button("Delete", role: .destructive) { Task { await viewModel.delete(message) } }
-                Button("Cancel", role: .cancel) {}
+        .alert(
+            AppLocalization.string("Delete message?", table: "Deletion"),
+            isPresented: deletionAlertIsPresented,
+            presenting: messagePendingDeletion
+        ) { message in
+                Button(AppLocalization.string("Delete for me", table: "Deletion"), role: .destructive) {
+                    Task { await viewModel.delete(message) }
+                }
+                Button(AppLocalization.string("Cancel", table: "Deletion"), role: .cancel) {}
             } message: { _ in
-                Text("This message will be removed for everyone in the conversation.")
+                Text(AppLocalization.string("This message will be removed only from your chat.", table: "Deletion"))
             }
             .fullScreenCover(item: $selectedImage) { image in
                 FullScreenImageView(url: image.url, canSave: image.canSave) { selectedImage = nil }

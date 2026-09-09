@@ -50,6 +50,20 @@ final class SwiftDataConversationRepository: ConversationRepository, ContactRepo
         try? context.save()
     }
 
+    func deleteConversation(id: UUID) {
+        let identifier = id
+        let conversations = FetchDescriptor<ConversationRecord>(
+            predicate: #Predicate { $0.id == identifier }
+        )
+        let messages = FetchDescriptor<LocalMessageRecord>(
+            predicate: #Predicate { $0.conversationID == identifier }
+        )
+
+        (try? context.fetch(conversations))?.forEach(context.delete)
+        (try? context.fetch(messages))?.forEach(context.delete)
+        try? context.save()
+    }
+
     func fetchContacts() -> [Contact] {
         let descriptor = FetchDescriptor<ContactRecord>(sortBy: [SortDescriptor(\.name)])
         return ((try? context.fetch(descriptor)) ?? []).map(\.contact)
