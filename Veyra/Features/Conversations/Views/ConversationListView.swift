@@ -45,25 +45,35 @@ struct ConversationListView: View {
                         Text(LocalizedStringKey(viewModel.hasSearchQuery ? "Try another name or message." : "Your conversations will appear here."))
                     }
                 } else {
-                    ScrollView {
-                        LazyVStack(spacing: VeyraSpacing.sm) {
-                            ForEach(viewModel.filteredConversations) { conversation in
-                                NavigationLink(value: AppRoute.conversation(conversation)) {
-                                    ConversationRowView(conversation: conversation)
-                                }
-                                .buttonStyle(.plain)
-                                .background { GlassBackground() }
-                                .clipShape(RoundedRectangle(cornerRadius: 18))
-                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                    Button("Delete", systemImage: "trash", role: .destructive) {
-                                        conversationPendingDeletion = conversation
-                                    }
+                    List {
+                        ForEach(viewModel.filteredConversations) { conversation in
+                            NavigationLink(value: AppRoute.conversation(conversation)) {
+                                ConversationRowView(conversation: conversation)
+                            }
+                            .buttonStyle(.plain)
+                            .background { GlassBackground() }
+                            .clipShape(RoundedRectangle(cornerRadius: 18))
+                            .listRowInsets(
+                                EdgeInsets(
+                                    top: VeyraSpacing.xs,
+                                    leading: VeyraSpacing.md,
+                                    bottom: VeyraSpacing.xs,
+                                    trailing: VeyraSpacing.md
+                                )
+                            )
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button("Delete", systemImage: "trash", role: .destructive) {
+                                    conversationPendingDeletion = conversation
                                 }
                             }
                         }
-                        .padding(.horizontal, VeyraSpacing.md)
-                        .padding(.bottom, VeyraSpacing.xl)
                     }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+                    .contentMargins(.top, 0, for: .scrollContent)
+                    .contentMargins(.bottom, VeyraSpacing.xl, for: .scrollContent)
                     .scrollDismissesKeyboard(.interactively)
                     .dismissKeyboardOnTap()
                 }
