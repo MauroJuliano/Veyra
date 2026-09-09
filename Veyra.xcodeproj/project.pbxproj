@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F05000000000000000000001 /* NotificationSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F05000000000000000000011 /* NotificationSettingsView.swift */; };
+		F05000000000000000000002 /* HelpSupportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F05000000000000000000012 /* HelpSupportView.swift */; };
+		F05000000000000000000003 /* Settings.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F05000000000000000000013 /* Settings.xcstrings */; };
 		F04800000000000000000001 /* Deletion.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F04800000000000000000011 /* Deletion.xcstrings */; };
 		F04720000000000000000001 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F04720000000000000000011 /* LaunchScreen.storyboard */; };
 		F04710000000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F04710000000000000000011 /* Assets.xcassets */; };
@@ -118,6 +121,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		F05000000000000000000011 /* NotificationSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationSettingsView.swift; sourceTree = "<group>"; };
+		F05000000000000000000012 /* HelpSupportView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HelpSupportView.swift; sourceTree = "<group>"; };
+		F05000000000000000000013 /* Settings.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json.xcstrings; path = Settings.xcstrings; sourceTree = "<group>"; };
 		F04800000000000000000011 /* Deletion.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json.xcstrings; path = Deletion.xcstrings; sourceTree = "<group>"; };
 		F04720000000000000000011 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F04710000000000000000011 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -520,6 +526,8 @@
 		9376C378D0F533FA16874658 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				F05000000000000000000011 /* NotificationSettingsView.swift */,
+				F05000000000000000000012 /* HelpSupportView.swift */,
 				F04600000000000000000012 /* LanguageSelectionView.swift */,
 				6931A3E0FFF2CFD78CBCC110 /* ProfileView.swift */,
 				5EBE432F2420C29F7249B975 /* PersonalDetailsView.swift */,
@@ -533,6 +541,7 @@
 		F04600000000000000000021 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				F05000000000000000000013 /* Settings.xcstrings */,
 				F04600000000000000000013 /* Language.xcstrings */,
 			);
 			path = Resources;
@@ -829,6 +838,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F05000000000000000000003 /* Settings.xcstrings in Resources */,
 				F04800000000000000000001 /* Deletion.xcstrings in Resources */,
 				F04720000000000000000001 /* LaunchScreen.storyboard in Resources */,
 				F04710000000000000000001 /* Assets.xcassets in Resources */,
@@ -868,6 +878,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F05000000000000000000001 /* NotificationSettingsView.swift in Sources */,
+				F05000000000000000000002 /* HelpSupportView.swift in Sources */,
 				F04610000000000000000001 /* AppLocalization.swift in Sources */,
 				F04600000000000000000001 /* AppLanguage.swift in Sources */,
 				F04600000000000000000002 /* LanguageSelectionView.swift in Sources */,

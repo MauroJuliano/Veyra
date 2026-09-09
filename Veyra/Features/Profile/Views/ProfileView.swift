@@ -66,10 +66,12 @@ struct ProfileView: View {
                     PersonalDetailsView(viewModel: viewModel)
                 } else if route == .privacy {
                     BlockedUsersView(repository: viewModel.profileRepository)
+                } else if route == .notifications {
+                    NotificationSettingsView()
+                } else if route == .help {
+                    HelpSupportView()
                 } else if route == .language {
                     LanguageSelectionView()
-                } else {
-                    ProfileDetailPlaceholder(route: route.title, systemImage: route.icon)
                 }
             }
             .confirmationDialog("Log out of Veyra?", isPresented: $confirmsLogout, titleVisibility: .visible) {
@@ -250,17 +252,6 @@ struct ProfileView: View {
             }
             selectedAvatar = nil
         }
-    }
-}
-
-private struct ProfileDetailPlaceholder: View {
-    let route: String
-    let systemImage: String
-
-    var body: some View {
-        ContentUnavailableView(LocalizedStringKey(route), systemImage: systemImage, description: Text("This setting will be implemented in a focused pull request."))
-            .navigationTitle(route)
-            .navigationBarTitleDisplayMode(.inline)
     }
 }
 
