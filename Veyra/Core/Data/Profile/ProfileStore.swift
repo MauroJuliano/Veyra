@@ -3,6 +3,7 @@ import Foundation
 protocol ProfileStore {
     func load() -> UserProfile
     func save(_ profile: UserProfile)
+    func clear()
 }
 
 final class UserDefaultsProfileStore: ProfileStore {
@@ -24,6 +25,10 @@ final class UserDefaultsProfileStore: ProfileStore {
         guard let data = try? JSONEncoder().encode(profile) else { return }
         defaults.set(data, forKey: key)
     }
+
+    func clear() {
+        defaults.removeObject(forKey: key)
+    }
 }
 
 final class InMemoryProfileStore: ProfileStore {
@@ -35,4 +40,5 @@ final class InMemoryProfileStore: ProfileStore {
 
     func load() -> UserProfile { profile }
     func save(_ profile: UserProfile) { self.profile = profile }
+    func clear() { profile = .preview }
 }

@@ -4,6 +4,7 @@ protocol ConversationRepository {
     func fetchConversations() -> [Conversation]
     func save(_ conversation: Conversation)
     func deleteConversation(id: UUID)
+    func clearConversations()
 }
 
 protocol MessageCacheRepository {
@@ -13,6 +14,7 @@ protocol MessageCacheRepository {
     func fetchCallHistory(participantID: UUID) -> [VoiceCallHistory]
     func replaceCallHistory(_ calls: [VoiceCallHistory], participantID: UUID)
     func hasCachedCallHistory(participantID: UUID) -> Bool
+    func clearMessageCache()
 }
 
 final class InMemoryMessageCacheRepository: MessageCacheRepository {
@@ -52,6 +54,12 @@ final class InMemoryMessageCacheRepository: MessageCacheRepository {
     func hasCachedCallHistory(participantID: UUID) -> Bool {
         synchronizedCallParticipants.contains(participantID)
     }
+
+    func clearMessageCache() {
+        storage.removeAll()
+        callStorage.removeAll()
+        synchronizedCallParticipants.removeAll()
+    }
 }
 
 final class InMemoryConversationRepository: ConversationRepository {
@@ -72,5 +80,9 @@ final class InMemoryConversationRepository: ConversationRepository {
 
     func deleteConversation(id: UUID) {
         storage.removeAll { $0.id == id }
+    }
+
+    func clearConversations() {
+        storage.removeAll()
     }
 }

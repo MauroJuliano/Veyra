@@ -1,6 +1,7 @@
 protocol ContactRepository {
     func fetchContacts() -> [Contact]
     func saveContacts(_ contacts: [Contact])
+    func clearContacts()
 }
 
 final class InMemoryContactRepository: ContactRepository {
@@ -16,5 +17,9 @@ final class InMemoryContactRepository: ContactRepository {
 
     func saveContacts(_ contacts: [Contact]) {
         storage = contacts
+    }
+
+    func clearContacts() {
+        storage.removeAll()
     }
 }

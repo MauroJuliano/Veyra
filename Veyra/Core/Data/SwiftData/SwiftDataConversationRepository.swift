@@ -64,6 +64,10 @@ final class SwiftDataConversationRepository: ConversationRepository, ContactRepo
         try? context.save()
     }
 
+    func clearConversations() {
+        deleteAll(ConversationRecord.self)
+    }
+
     func fetchContacts() -> [Contact] {
         let descriptor = FetchDescriptor<ContactRecord>(sortBy: [SortDescriptor(\.name)])
         return ((try? context.fetch(descriptor)) ?? []).map(\.contact)
@@ -82,6 +86,10 @@ final class SwiftDataConversationRepository: ConversationRepository, ContactRepo
             }
         }
         try? context.save()
+    }
+
+    func clearContacts() {
+        deleteAll(ContactRecord.self)
     }
 
     func fetchMessages(conversationID: UUID, before: Date?, limit: Int) -> [Message] {
@@ -159,6 +167,21 @@ final class SwiftDataConversationRepository: ConversationRepository, ContactRepo
             predicate: #Predicate { $0.participantID == identifier }
         )
         return ((try? context.fetchCount(descriptor)) ?? 0) > 0
+    }
+
+    func clearMessageCache() {
+        deleteAll(LocalMessageRecord.self, savesChanges: false)
+        deleteAll(LocalCallHistoryRecord.self, savesChanges: false)
+        deleteAll(CallHistorySyncRecord.self)
+    }
+
+    private func deleteAll<Model: PersistentModel>(
+        _ model: Model.Type,
+        savesChanges: Bool = true
+    ) {
+        let descriptor = FetchDescriptor<Model>()
+        (try? context.fetch(descriptor))?.forEach(context.delete)
+        if savesChanges { try? context.save() }
     }
 
     private func trimMessages(conversationID: UUID) {
