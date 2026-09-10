@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F05100000000000000000001 /* UserFacingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = F05100000000000000000011 /* UserFacingError.swift */; };
+		F05100000000000000000002 /* Errors.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F05100000000000000000012 /* Errors.xcstrings */; };
+		F05100000000000000000003 /* UserFacingErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F05100000000000000000013 /* UserFacingErrorTests.swift */; };
 		F05000000000000000000001 /* NotificationSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F05000000000000000000011 /* NotificationSettingsView.swift */; };
 		F05000000000000000000002 /* HelpSupportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F05000000000000000000012 /* HelpSupportView.swift */; };
 		F05000000000000000000003 /* Settings.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F05000000000000000000013 /* Settings.xcstrings */; };
@@ -121,6 +124,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		F05100000000000000000011 /* UserFacingError.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UserFacingError.swift; sourceTree = "<group>"; };
+		F05100000000000000000012 /* Errors.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json.xcstrings; path = Errors.xcstrings; sourceTree = "<group>"; };
+		F05100000000000000000013 /* UserFacingErrorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Core/UserFacingErrorTests.swift; sourceTree = "<group>"; };
 		F05000000000000000000011 /* NotificationSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationSettingsView.swift; sourceTree = "<group>"; };
 		F05000000000000000000012 /* HelpSupportView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HelpSupportView.swift; sourceTree = "<group>"; };
 		F05000000000000000000013 /* Settings.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json.xcstrings; path = Settings.xcstrings; sourceTree = "<group>"; };
@@ -260,6 +266,7 @@
 		F04610000000000000000021 /* Localization */ = {
 			isa = PBXGroup;
 			children = (
+				F05100000000000000000011 /* UserFacingError.swift */,
 				F04610000000000000000011 /* AppLocalization.swift */,
 			);
 			path = Localization;
@@ -599,6 +606,7 @@
 		BFBF3C2D03A9534B3FA12D2E /* VeyraTests */ = {
 			isa = PBXGroup;
 			children = (
+				F05100000000000000000013 /* UserFacingErrorTests.swift */,
 				F03900000000000000000014 /* VoiceCallCoordinatorTests.swift */,
 				F03800000000000000000013 /* LocalizationTests.swift */,
 				96D6F9076981087963B2FF89 /* AppMetadataTests.swift */,
@@ -632,6 +640,7 @@
 		C9B2B5790BD3B93BB1DBD5C6 /* Configuration */ = {
 			isa = PBXGroup;
 			children = (
+				F05100000000000000000012 /* Errors.xcstrings */,
 				F04800000000000000000011 /* Deletion.xcstrings */,
 				F03800000000000000000011 /* Localizable.xcstrings */,
 				F03800000000000000000012 /* InfoPlist.xcstrings */,
@@ -838,6 +847,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F05100000000000000000002 /* Errors.xcstrings in Resources */,
 				F05000000000000000000003 /* Settings.xcstrings in Resources */,
 				F04800000000000000000001 /* Deletion.xcstrings in Resources */,
 				F04720000000000000000001 /* LaunchScreen.storyboard in Resources */,
@@ -855,6 +865,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F05100000000000000000003 /* UserFacingErrorTests.swift in Sources */,
 				F03900000000000000000004 /* VoiceCallCoordinatorTests.swift in Sources */,
 				F03800000000000000000003 /* LocalizationTests.swift in Sources */,
 				E03D522D231932CB9A16CA75 /* AppMetadataTests.swift in Sources */,
@@ -878,6 +889,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F05100000000000000000001 /* UserFacingError.swift in Sources */,
 				F05000000000000000000001 /* NotificationSettingsView.swift in Sources */,
 				F05000000000000000000002 /* HelpSupportView.swift in Sources */,
 				F04610000000000000000001 /* AppLocalization.swift in Sources */,

@@ -68,7 +68,7 @@ final class ProfileViewModel {
                 } else if description.contains("email") || description.contains("already registered") {
                     validationMessage = AppLocalization.string("This email is already in use.")
                 } else {
-                    validationMessage = error.localizedDescription
+                    validationMessage = UserFacingError.message(for: error, context: .profile)
                 }
                 return false
             }
@@ -97,7 +97,7 @@ final class ProfileViewModel {
             bio = remote.bio
             store.save(remote)
         } catch {
-            validationMessage = error.localizedDescription
+            validationMessage = UserFacingError.message(for: error, context: .profile)
         }
     }
 
@@ -115,7 +115,7 @@ final class ProfileViewModel {
             store.save(profile)
             validationMessage = nil
         } catch {
-            validationMessage = error.localizedDescription
+            validationMessage = UserFacingError.message(for: error, context: .profile)
         }
     }
 }

@@ -175,7 +175,7 @@ struct ContactListView: View {
             contacts = remoteContacts
             errorMessage = nil
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .people)
         }
     }
 
@@ -190,7 +190,7 @@ struct ContactListView: View {
             errorMessage = nil
             await load()
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .startConversation)
         }
     }
 }

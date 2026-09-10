@@ -53,7 +53,7 @@ final class AudioMessageRecorder: NSObject, AVAudioRecorderDelegate {
             isRecording = true
             startDurationUpdates()
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .audioRecording)
             cancel()
         }
     }

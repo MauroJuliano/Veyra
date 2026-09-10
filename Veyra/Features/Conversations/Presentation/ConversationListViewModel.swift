@@ -54,7 +54,7 @@ final class ConversationListViewModel {
             conversations = remoteConversations
             errorMessage = nil
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .conversations)
         }
     }
 
@@ -78,7 +78,7 @@ final class ConversationListViewModel {
         } catch is CancellationError {
             return
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .conversations)
         }
     }
 
@@ -95,7 +95,7 @@ final class ConversationListViewModel {
             errorMessage = nil
             return conversation
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .startConversation)
             return nil
         }
     }
@@ -113,7 +113,7 @@ final class ConversationListViewModel {
             errorMessage = nil
             return conversation
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .startConversation)
             return nil
         }
     }
@@ -131,7 +131,7 @@ final class ConversationListViewModel {
             repository.deleteConversation(id: conversation.id)
             errorMessage = nil
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .deleteConversation)
         }
     }
 

@@ -92,7 +92,7 @@ final class MessageTimelineViewModel {
             hasEarlierMessages = page.count == pageSize
             errorMessage = nil
         } catch {
-            errorMessage = cached.isEmpty ? error.localizedDescription : nil
+            errorMessage = cached.isEmpty ? UserFacingError.message(for: error, context: .messages) : nil
         }
         await loadCallHistory()
     }
@@ -127,7 +127,7 @@ final class MessageTimelineViewModel {
         } catch {
             let cachedPage = cache.fetchMessages(conversationID: conversationID, before: oldest.sentAt, limit: pageSize)
             if cachedPage.isEmpty {
-                errorMessage = error.localizedDescription
+                errorMessage = UserFacingError.message(for: error, context: .messages)
             } else {
                 merge(cachedPage)
                 hasEarlierMessages = cachedPage.count == pageSize
@@ -144,11 +144,7 @@ final class MessageTimelineViewModel {
         await load()
         guard let repository else { return }
         await refreshMessagingAvailability(using: repository)
-        do {
-            try await repository.markConversationRead(conversationID: conversationID)
-        } catch {
-            errorMessage = error.localizedDescription
-        }
+        try? await repository.markConversationRead(conversationID: conversationID)
 
         while !Task.isCancelled {
             do {
@@ -309,7 +305,7 @@ final class MessageTimelineViewModel {
 
     @MainActor
     func reportImageSelectionError(_ error: any Error) {
-        errorMessage = error.localizedDescription
+        errorMessage = UserFacingError.message(for: error, context: .imageLoading)
     }
 
     @MainActor
@@ -346,7 +342,7 @@ final class MessageTimelineViewModel {
             messages.removeAll { $0.id == message.id }
             errorMessage = nil
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .deleteMessage)
         }
     }
 
@@ -374,7 +370,7 @@ final class MessageTimelineViewModel {
             if let currentIndex = messages.firstIndex(where: { $0.id == message.id }) {
                 messages[currentIndex].reactions = previousReactions
             }
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .reaction)
         }
     }
 
@@ -392,7 +388,7 @@ final class MessageTimelineViewModel {
         if case ChatRepositoryError.messagingBlocked = error {
             isMessagingBlocked = true
         }
-        errorMessage = error.localizedDescription
+        errorMessage = UserFacingError.message(for: error, context: .sendMessage)
     }
 
     private func toggledReactions(_ reactions: [Message.Reaction], emoji: String) -> [Message.Reaction] {
@@ -425,7 +421,7 @@ final class MessageTimelineViewModel {
         } catch is CancellationError {
             return
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .messages)
         }
     }
 
