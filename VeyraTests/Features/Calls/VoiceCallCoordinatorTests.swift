@@ -58,7 +58,10 @@ struct VoiceCallCoordinatorTests {
         )
 
         await coordinator.start()
-        try await Task.sleep(for: .milliseconds(60))
+        try await waitUntil {
+            let endCallCount = await repository.endCallCount
+            return coordinator.state == .ended && endCallCount == 1
+        }
 
         #expect(coordinator.state == .ended)
         #expect(await repository.endCallCount == 1)
@@ -93,7 +96,9 @@ struct VoiceCallCoordinatorTests {
 
         await coordinator.start()
         coordinator.abandonIfNeeded()
-        try await Task.sleep(for: .milliseconds(20))
+        try await waitUntil {
+            await repository.endCallCount == 1
+        }
 
         #expect(coordinator.state == .ended)
         #expect(await repository.endCallCount == 1)
@@ -108,10 +113,24 @@ struct VoiceCallCoordinatorTests {
         )
 
         await coordinator.start()
-        try await Task.sleep(for: .milliseconds(20))
+        try await waitUntil {
+            await repository.endCallCount == 1
+        }
 
         #expect(coordinator.state == .failed)
         #expect(await repository.endCallCount == 1)
+    }
+
+    private func waitUntil(
+        timeout: Duration = .seconds(2),
+        condition: @escaping () async -> Bool
+    ) async throws {
+        let clock = ContinuousClock()
+        let deadline = clock.now.advanced(by: timeout)
+
+        while !(await condition()), clock.now < deadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
     }
 }
 
