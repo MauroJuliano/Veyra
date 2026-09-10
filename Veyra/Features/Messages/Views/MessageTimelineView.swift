@@ -1,6 +1,7 @@
 import SwiftUI
 import PhotosUI
 import Photos
+import ImageIO
 import UIKit
 
 struct MessageTimelineView: View {
@@ -627,18 +628,39 @@ struct FullScreenImageView: View {
                 saveMessage = AppLocalization.string("Allow photo access in Settings to save received images.")
                 return
             }
-            let (data, _) = try await URLSession.shared.data(from: url)
-            try await saveImageData(data)
+            let (data, response) = try await URLSession.shared.data(from: url)
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                throw PhotoSaveError.downloadFailed
+            }
+            guard data.count <= PhotoSaveError.maximumDownloadSize,
+                  let image = makePhotoLibraryImage(from: data) else {
+                throw PhotoSaveError.invalidImage
+            }
+            try await saveImage(image)
             saveMessage = AppLocalization.string("Image saved to Photos.")
         } catch {
             saveMessage = UserFacingError.message(for: error, context: .imageSaving)
         }
     }
 
-    private func saveImageData(_ data: Data) async throws {
+    private func makePhotoLibraryImage(from data: Data) -> UIImage? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: 4_096
+        ]
+        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
+            return nil
+        }
+        return UIImage(cgImage: cgImage)
+    }
+
+    private func saveImage(_ image: UIImage) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             PHPhotoLibrary.shared().performChanges {
-                PHAssetCreationRequest.forAsset().addResource(with: .photo, data: data, options: nil)
+                PHAssetChangeRequest.creationRequestForAsset(from: image)
             } completionHandler: { success, error in
                 if let error {
                     continuation.resume(throwing: error)
@@ -653,10 +675,19 @@ struct FullScreenImageView: View {
 }
 
 private enum PhotoSaveError: LocalizedError {
+    static let maximumDownloadSize = 25 * 1_024 * 1_024
+
+    case downloadFailed
+    case invalidImage
     case unknownFailure
 
     var errorDescription: String? {
-        AppLocalization.string("Photos did not complete the save operation.")
+        switch self {
+        case .downloadFailed, .invalidImage:
+            AppLocalization.string("The selected image could not be loaded.")
+        case .unknownFailure:
+            AppLocalization.string("Photos did not complete the save operation.")
+        }
     }
 }
 
