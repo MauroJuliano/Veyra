@@ -186,8 +186,8 @@ struct ContactListView: View {
     }
 
     @MainActor
-    private func openConversation(with contact: Contact) async {
-        guard let repository else { return }
+    private func openConversation(with contact: Contact) async -> String? {
+        guard let repository else { return AppLocalization.string("Unable to start this conversation.") }
         openingContactID = contact.id
         defer { openingContactID = nil }
         do {
@@ -195,8 +195,10 @@ struct ContactListView: View {
             selectedContact = nil
             errorMessage = nil
             await load()
+            return nil
         } catch {
             errorMessage = UserFacingError.message(for: error, context: .startConversation)
+            return errorMessage
         }
     }
 }
