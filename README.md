@@ -59,7 +59,7 @@ Veyra is written in **Swift 6**, built with **SwiftUI**, and targets **iOS 17 or
 
 Message updates are optimistic, recent content is presented from the local cache first, and remote state is reconciled afterward. Images and audio include upload, playback, waveform, and caching behavior. In-memory repository implementations keep previews and tests independent from the live backend.
 
-The native repository is structured around `App`, `Core`, and feature folders for Authentication, Calls, Contacts, Conversations, Messages, and Profile. Supabase migrations, database functions, triggers, and Row Level Security policies live separately in [Veyra-Supabase](https://github.com/MauroJuliano/Veyra-Supabase), keeping this repository focused on the iOS application.
+The native repository is structured around `App`, `Core`, and feature folders for Authentication, Calls, Contacts, Conversations, Messages, and Profile. Supabase migrations, database functions, triggers, and Row Level Security policies are maintained in a separate private repository, keeping this public repository focused on the native iOS application.
 
 ## Running locally
 
@@ -70,11 +70,12 @@ You will need Xcode 16.4 or newer and an iOS 17+ simulator or device.
 3. Select the `Veyra` scheme and an iOS simulator.
 4. Run with `Command-R`.
 
-The project can build without private credentials, but features that depend on Supabase will remain unavailable. To connect your own backend:
+The project can build without private credentials, but features that depend on Supabase will remain unavailable. The backend infrastructure is maintained privately; running the complete realtime experience requires a compatible Supabase schema and policies.
+
+The repository still documents the client-side configuration boundary:
 
 1. Copy `Veyra/Configuration/Secrets.xcconfig.example` to `Veyra/Configuration/Secrets.xcconfig`.
-2. Add your Supabase project URL and publishable key.
-3. Apply the migrations from the separate backend repository.
+2. Add the URL and publishable key from a compatible Supabase project.
 
 Never place a `service_role` key or database password in the iOS project. The local secrets file is ignored by Git.
 
