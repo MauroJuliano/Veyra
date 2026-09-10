@@ -12,11 +12,11 @@ Veyra is a native iOS messaging app that combines familiar communication flows w
 
 ## App walkthrough
 
-<!-- Replace this placeholder with the walkthrough thumbnail and video link. -->
-<!-- Suggested asset: Docs/Assets/Veyra-Experience.png -->
+A complete walkthrough of Veyra, covering the main product experience from authentication to realtime messaging.
 
-> 🎬 **Video walkthrough coming soon**
-> A complete look at authentication, people discovery, realtime messaging, shared media, voice messages, calls, and profile settings will be added here.
+The video includes people discovery, one-to-one conversations, text and image messages, stickers, voice messages, shared media, profile settings, privacy flows, and experimental voice calls.
+
+🎬 [**Watch the full Veyra walkthrough**](https://youtube.com/shorts/0KcJlceDNcI)
 
 ---
 
