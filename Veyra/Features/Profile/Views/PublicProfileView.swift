@@ -12,21 +12,26 @@ struct PublicProfileView: View {
     @State private var isUpdatingBlock = false
     @State private var showsReport = false
     @State private var reportConfirmation: String?
+    @State private var activeVoiceCall: VoiceCall?
+    @State private var isStartingConversation = false
 
     let repository: (any RemoteChatRepository)?
+    let callRepository: (any CallRepository)?
     let conversationID: UUID?
     let isActive: Bool?
-    var onMessage: ((User) async -> Void)?
+    var onMessage: ((User) async -> String?)?
 
     init(
         user: User,
         repository: (any RemoteChatRepository)?,
+        callRepository: (any CallRepository)? = nil,
         conversationID: UUID? = nil,
         isActive: Bool? = nil,
-        onMessage: ((User) async -> Void)? = nil
+        onMessage: ((User) async -> String?)? = nil
     ) {
         _user = State(initialValue: user)
         self.repository = repository
+        self.callRepository = callRepository
         self.conversationID = conversationID
         self.isActive = isActive
         self.onMessage = onMessage
@@ -72,6 +77,9 @@ struct PublicProfileView: View {
                 selectedImage = nil
             }
         }
+        .fullScreenCover(item: $activeVoiceCall) { call in
+            VoiceCallView(call: call, repository: callRepository)
+        }
         .confirmationDialog(
             "Block \(user.participantName)?",
             isPresented: $confirmsBlock,
@@ -86,7 +94,7 @@ struct PublicProfileView: View {
         }
         .sheet(isPresented: $showsReport) {
             ReportUserView(user: user, repository: repository) {
-                reportConfirmation = "Thanks. Your report was submitted for review."
+                reportConfirmation = AppLocalization.string("Thanks. Your report was submitted for review.")
             }
         }
         .alert("Report submitted", isPresented: reportConfirmationIsPresented) {
@@ -131,36 +139,70 @@ struct PublicProfileView: View {
 
     private var profileActions: some View {
         VStack(spacing: VeyraSpacing.sm) {
-            Button {
-                if blockRelationship.isBlockedByMe {
-                    Task { await updateBlockState(false) }
-                } else if !blockRelationship.isBlockedByThem {
-                    Task {
-                        if let onMessage {
-                            await onMessage(user)
-                        } else {
-                            dismiss()
+            HStack(spacing: VeyraSpacing.md) {
+                Button {
+                    if blockRelationship.isBlockedByMe {
+                        Task { await updateBlockState(false) }
+                    } else if !blockRelationship.isBlockedByThem {
+                        Task {
+                            if let onMessage {
+                                isStartingConversation = true
+                                errorMessage = await onMessage(user)
+                                isStartingConversation = false
+                            } else {
+                                dismiss()
+                            }
                         }
                     }
+                } label: {
+                    Group {
+                        if isStartingConversation {
+                            ProgressView()
+                        } else {
+                            Label(primaryActionTitle, systemImage: primaryActionIcon)
+                        }
+                    }
+                        .font(VeyraTypography.bodyEmphasized)
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background {
+                            LinearGradient(
+                                colors: [VeyraColor.accent, VeyraColor.accent.opacity(0.65)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        }
+                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        .shadow(color: VeyraColor.accent.opacity(0.22), radius: 18, y: 8)
                 }
-            } label: {
-                Label(primaryActionTitle, systemImage: primaryActionIcon)
-                .font(VeyraTypography.bodyEmphasized)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 56)
-                .background {
-                    LinearGradient(
-                        colors: [VeyraColor.accent, VeyraColor.accent.opacity(0.65)],
-                        startPoint: .leading,
-                        endPoint: .trailing
+                .buttonStyle(.plain)
+                .disabled(isUpdatingBlock || isStartingConversation || blockRelationship.isBlockedByThem)
+
+                Button {
+                    activeVoiceCall = VoiceCall(
+                        participantID: user.participantID,
+                        participantName: user.participantName,
+                        participantAvatarURL: user.participantAvatarURL
                     )
+                } label: {
+                    Label("Call", systemImage: "phone")
+                        .font(VeyraTypography.bodyEmphasized)
+                        .foregroundStyle(VeyraColor.accent)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background {
+                            GlassBackground(cornerRadius: 18, tintOpacity: 0.08, glowOpacity: 0.12)
+                        }
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .stroke(VeyraColor.accent.opacity(0.8), lineWidth: 1)
+                        }
+                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                 }
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .shadow(color: VeyraColor.accent.opacity(0.22), radius: 18, y: 8)
+                .buttonStyle(.plain)
+                .disabled(blockRelationship.preventsMessaging)
             }
-            .buttonStyle(.plain)
-            .disabled(isUpdatingBlock || blockRelationship.isBlockedByThem)
 
             if !blockRelationship.preventsMessaging {
                 Button(role: .destructive) {
@@ -176,9 +218,9 @@ struct PublicProfileView: View {
     }
 
     private var primaryActionTitle: String {
-        if blockRelationship.isBlockedByMe { return "Unblock" }
-        if blockRelationship.isBlockedByThem { return "Messaging unavailable" }
-        return "Message"
+        if blockRelationship.isBlockedByMe { return AppLocalization.string("Unblock") }
+        if blockRelationship.isBlockedByThem { return AppLocalization.string("Messaging unavailable") }
+        return AppLocalization.string("Message")
     }
 
     private var primaryActionIcon: String {
@@ -192,7 +234,7 @@ struct PublicProfileView: View {
                 .foregroundStyle(VeyraColor.textPrimary)
 
             if let isActive {
-                Label(isActive ? "Active now" : "Offline", systemImage: "circle.fill")
+                Label(LocalizedStringKey(isActive ? "Active now" : "Offline"), systemImage: "circle.fill")
                     .font(VeyraTypography.body)
                     .foregroundStyle(isActive ? VeyraColor.success : VeyraColor.textSecondary)
             }
@@ -228,8 +270,15 @@ struct PublicProfileView: View {
             }
 
             if isLoading && sharedMedia.isEmpty {
-                ProgressView()
-                    .frame(maxWidth: .infinity, minHeight: 92)
+                HStack(spacing: VeyraSpacing.sm) {
+                    ForEach(0..<3, id: \.self) { _ in
+                        VeyraImagePlaceholder()
+                            .aspectRatio(1, contentMode: .fit)
+                            .frame(maxWidth: .infinity)
+                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    }
+                }
+                .accessibilityLabel("Loading shared media…")
             } else if sharedMedia.isEmpty {
                 ContentUnavailableView(
                     "No shared media yet",
@@ -252,7 +301,7 @@ struct PublicProfileView: View {
                                     VeyraCachedImage(url: url) { image in
                                         image.resizable().scaledToFill()
                                     } placeholder: {
-                                        ProgressView()
+                                        VeyraImagePlaceholder()
                                     }
                                     .frame(width: 108, height: 108)
                                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -272,7 +321,7 @@ struct PublicProfileView: View {
     }
 
     private var displayedBio: String {
-        user.bio.flatMap { $0.isEmpty ? nil : $0 } ?? "No bio yet"
+        user.bio.flatMap { $0.isEmpty ? nil : $0 } ?? AppLocalization.string("No bio yet")
     }
 
     private var reportConfirmationIsPresented: Binding<Bool> {
@@ -315,7 +364,7 @@ struct PublicProfileView: View {
                 blockRelationship = try await repository.fetchBlockRelationship(userID: userID)
                 errorMessage = nil
             } catch {
-                errorMessage = "Unable to refresh this profile."
+                errorMessage = AppLocalization.string("Unable to refresh this profile.")
             }
         }
 
@@ -327,7 +376,7 @@ struct PublicProfileView: View {
                 )
             } catch {
                 if errorMessage == nil {
-                    errorMessage = "Unable to load shared media."
+                    errorMessage = AppLocalization.string("Unable to load shared media.")
                 }
             }
         }
@@ -343,7 +392,7 @@ struct PublicProfileView: View {
             blockRelationship = try await repository.fetchBlockRelationship(userID: userID)
             errorMessage = nil
         } catch {
-            errorMessage = "Unable to update this block setting."
+            errorMessage = AppLocalization.string("Unable to update this block setting.")
         }
     }
 
@@ -399,7 +448,7 @@ private struct SharedMediaGalleryView: View {
                                             .resizable()
                                             .scaledToFill()
                                     } placeholder: {
-                                        ProgressView()
+                                        VeyraImagePlaceholder()
                                     }
                                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                                     .clipped()

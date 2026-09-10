@@ -42,6 +42,7 @@ struct MessageTimelineViewModelTests {
 
         #expect(viewModel.messages.map(\.id) == [cachedMessage.id])
         #expect(viewModel.errorMessage == nil)
+        #expect(viewModel.hasLoadedInitialPage)
     }
 
     @Test func sendsTrimmedOutgoingMessageAndClearsDraft() async {
@@ -65,16 +66,16 @@ struct MessageTimelineViewModelTests {
         #expect(viewModel.messages.isEmpty)
     }
 
-    @Test func deletesOnlyOutgoingMessages() async {
+    @Test func deletesIncomingAndOutgoingMessagesForCurrentUser() async {
         let incoming = Message(text: "Hi", direction: .incoming)
         let outgoing = Message(text: "Hello", direction: .outgoing)
         let viewModel = MessageTimelineViewModel(messages: [incoming, outgoing])
 
         await viewModel.delete(incoming)
-        #expect(viewModel.messages.map(\.id) == [incoming.id, outgoing.id])
+        #expect(viewModel.messages.map(\.id) == [outgoing.id])
 
         await viewModel.delete(outgoing)
-        #expect(viewModel.messages.map(\.id) == [incoming.id])
+        #expect(viewModel.messages.isEmpty)
     }
 
     @Test func sendsReplyWithOriginalMessagePreview() async {
@@ -98,5 +99,23 @@ struct MessageTimelineViewModelTests {
         viewModel.cancelReply()
 
         #expect(viewModel.replyingTo == nil)
+    }
+
+    @Test func cachesAudioMessageMetadata() async {
+        let conversationID = UUID()
+        let audioURL = URL(string: "https://example.com/audio.m4a")!
+        let message = Message(
+            text: "Audio",
+            direction: .incoming,
+            audioURL: audioURL,
+            audioDuration: 12.5
+        )
+        let cache = InMemoryMessageCacheRepository()
+        cache.saveMessages([message], conversationID: conversationID)
+
+        let restored = cache.fetchMessages(conversationID: conversationID, before: nil, limit: 50).first
+
+        #expect(restored?.audioURL == audioURL)
+        #expect(restored?.audioDuration == 12.5)
     }
 }

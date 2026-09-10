@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContactListView: View {
     let repository: (any RemoteChatRepository)?
+    let callRepository: (any CallRepository)?
     let localRepository: any ContactRepository
     let messageCache: any MessageCacheRepository
     @State private var contacts: [Contact]
@@ -22,8 +23,9 @@ struct ContactListView: View {
         groupedUsers.keys.sorted()
     }
 
-    init(repository: (any RemoteChatRepository)?, localRepository: any ContactRepository, messageCache: any MessageCacheRepository) {
+    init(repository: (any RemoteChatRepository)?, callRepository: (any CallRepository)? = nil, localRepository: any ContactRepository, messageCache: any MessageCacheRepository) {
         self.repository = repository
+        self.callRepository = callRepository
         self.localRepository = localRepository
         self.messageCache = messageCache
         _contacts = State(initialValue: localRepository.fetchContacts())
@@ -38,12 +40,18 @@ struct ContactListView: View {
     var body: some View {
         Group {
             if isLoading && contacts.isEmpty {
-                ProgressView("Loading contacts…")
+                ScrollView {
+                    LazyVStack(spacing: VeyraSpacing.sm) {
+                        ForEach(0..<6, id: \.self) { _ in VeyraSkeletonRow() }
+                    }
+                    .padding(.horizontal, VeyraSpacing.md)
+                }
+                .accessibilityLabel("Loading contacts…")
             } else if contacts.isEmpty {
                 ContentUnavailableView(
                     "No contacts yet",
                     systemImage: "person.2",
-                    description: Text(errorMessage ?? "People you start conversations with will appear here.")
+                    description: Text(errorMessage ?? AppLocalization.string("People you start conversations with will appear here."))
                 )
             } else {
                 List {
@@ -122,7 +130,7 @@ struct ContactListView: View {
         .task { await load() }
         .refreshable { await load() }
         .navigationDestination(item: $selectedConversation) { conversation in
-            MessageTimelineView(conversation: conversation, repository: repository, cache: messageCache, messages: [])
+            MessageTimelineView(conversation: conversation, repository: repository, callRepository: callRepository, cache: messageCache, messages: [])
         }
         .navigationDestination(item: $selectedContact) { contact in
             PublicProfileView(
@@ -135,6 +143,7 @@ struct ContactListView: View {
                     participantAvatarURL: contact.avatarURL
                 ),
                 repository: repository,
+                callRepository: callRepository,
                 conversationID: contact.conversationID
             ) { _ in
                 await openConversation(with: contact)
@@ -150,7 +159,7 @@ struct ContactListView: View {
                     .font(VeyraTypography.bodyEmphasized)
                     .foregroundStyle(VeyraColor.textPrimary)
 
-                Text(contact.bio.flatMap { $0.isEmpty ? nil : $0 } ?? "No bio yet")
+                Text(contact.bio.flatMap { $0.isEmpty ? nil : $0 } ?? AppLocalization.string("No bio yet"))
                     .font(VeyraTypography.body)
                     .foregroundStyle(VeyraColor.textSecondary)
                     .lineLimit(1)
@@ -172,13 +181,13 @@ struct ContactListView: View {
             contacts = remoteContacts
             errorMessage = nil
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .people)
         }
     }
 
     @MainActor
-    private func openConversation(with contact: Contact) async {
-        guard let repository else { return }
+    private func openConversation(with contact: Contact) async -> String? {
+        guard let repository else { return AppLocalization.string("Unable to start this conversation.") }
         openingContactID = contact.id
         defer { openingContactID = nil }
         do {
@@ -186,8 +195,10 @@ struct ContactListView: View {
             selectedContact = nil
             errorMessage = nil
             await load()
+            return nil
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .startConversation)
+            return errorMessage
         }
     }
 }

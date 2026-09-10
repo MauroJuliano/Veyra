@@ -12,8 +12,8 @@ enum AuthenticationServiceError: LocalizedError, Equatable {
 
     var errorDescription: String? {
         switch self {
-        case .missingConfiguration: "Supabase is not configured on this device."
-        case .usernameAlreadyInUse: "This username is already in use."
+        case .missingConfiguration: AppLocalization.string("Supabase is not configured on this device.")
+        case .usernameAlreadyInUse: AppLocalization.string("This username is already in use.")
         }
     }
 }
@@ -34,7 +34,10 @@ final class SupabaseAuthenticationService: AuthenticationService {
         self.client = client
     }
 
-    var hasSession: Bool { client.auth.currentSession != nil }
+    var hasSession: Bool {
+        guard let session = client.auth.currentSession else { return false }
+        return !session.isExpired
+    }
 
     func signIn(email: String, password: String) async throws {
         try await client.auth.signIn(email: email, password: password)

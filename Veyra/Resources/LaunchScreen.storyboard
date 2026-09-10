@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Veyra-Launch">
+    <device id="retina6_12" orientation="portrait" appearance="dark"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+    </dependencies>
+    <scenes>
+        <scene sceneID="Veyra-Scene">
+            <objects>
+                <viewController id="Veyra-Launch" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Veyra-Root">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" image="LaunchArtwork" translatesAutoresizingMaskIntoConstraints="NO" id="Veyra-Artwork">
+                                <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                            </imageView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="Veyra-SafeArea"/>
+                        <color key="backgroundColor" red="0.027" green="0.027" blue="0.075" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="Veyra-Artwork" firstAttribute="leading" secondItem="Veyra-Root" secondAttribute="leading" id="Launch-leading"/>
+                            <constraint firstAttribute="trailing" secondItem="Veyra-Artwork" secondAttribute="trailing" id="Launch-trailing"/>
+                            <constraint firstItem="Veyra-Artwork" firstAttribute="top" secondItem="Veyra-Root" secondAttribute="top" id="Launch-top"/>
+                            <constraint firstAttribute="bottom" secondItem="Veyra-Artwork" secondAttribute="bottom" id="Launch-bottom"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Veyra-Responder" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="LaunchArtwork" width="941" height="1672"/>
+    </resources>
+</document>

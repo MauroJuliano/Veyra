@@ -28,7 +28,7 @@ final class ConversationListViewModel {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !query.isEmpty else { return conversations }
         return conversations.filter {
-            $0.participantName.localizedStandardContains(query) || $0.lastMessage.localizedStandardContains(query)
+            $0.participantName.localizedStandardContains(query) || $0.lastActivityText.localizedStandardContains(query)
         }
     }
 
@@ -54,7 +54,7 @@ final class ConversationListViewModel {
             conversations = remoteConversations
             errorMessage = nil
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .conversations)
         }
     }
 
@@ -78,7 +78,7 @@ final class ConversationListViewModel {
         } catch is CancellationError {
             return
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .conversations)
         }
     }
 
@@ -89,14 +89,13 @@ final class ConversationListViewModel {
         defer { isLoading = false }
         do {
             let conversation = try await remoteRepository.startConversation(withEmail: email)
-            repository.save(conversation)
             let remoteConversations = try await remoteRepository.fetchConversations()
             remoteConversations.forEach(repository.save)
             conversations = remoteConversations
             errorMessage = nil
             return conversation
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .startConversation)
             return nil
         }
     }
@@ -109,13 +108,12 @@ final class ConversationListViewModel {
         do {
             let contact = Contact(id: userID, name: user.participantName, avatarURL: user.participantAvatarURL)
             let conversation = try await remoteRepository.startConversation(with: contact)
-            repository.save(conversation)
             conversations = try await remoteRepository.fetchConversations()
             conversations.forEach(repository.save)
             errorMessage = nil
             return conversation
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .startConversation)
             return nil
         }
     }
@@ -124,14 +122,16 @@ final class ConversationListViewModel {
     func delete(_ conversation: Conversation) async {
         guard let remoteRepository else {
             conversations.removeAll { $0.id == conversation.id }
+            repository.deleteConversation(id: conversation.id)
             return
         }
         do {
             try await remoteRepository.deleteConversation(id: conversation.id)
             conversations.removeAll { $0.id == conversation.id }
+            repository.deleteConversation(id: conversation.id)
             errorMessage = nil
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .deleteConversation)
         }
     }
 

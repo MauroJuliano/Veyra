@@ -27,6 +27,50 @@ struct SwiftDataConversationRepositoryTests {
         #expect(conversations[0].lastMessage == "Updated")
     }
 
+    @Test func deletesConversationAndItsMessagesFromLocalCache() throws {
+        let repository = try SwiftDataConversationRepository(isStoredInMemoryOnly: true)
+        let conversation = Conversation(participantName: "Ana", lastMessage: "Private", updatedAt: .now)
+        let message = Message(text: "Private", direction: .incoming)
+
+        repository.save(conversation)
+        repository.saveMessages([message], conversationID: conversation.id)
+        repository.deleteConversation(id: conversation.id)
+
+        #expect(repository.fetchConversations().isEmpty)
+        #expect(repository.fetchMessages(conversationID: conversation.id, before: nil, limit: 50).isEmpty)
+    }
+
+    @Test func clearsAllSessionDataBeforeAnotherUserSignsIn() throws {
+        let repository = try SwiftDataConversationRepository(isStoredInMemoryOnly: true)
+        let conversation = Conversation(participantName: "Martha", lastMessage: "Private", updatedAt: .now)
+        let contact = Contact(name: "Martha", conversationID: conversation.id)
+        let message = Message(text: "Private", direction: .incoming)
+        let participantID = UUID()
+        let call = VoiceCallHistory(
+            id: UUID(),
+            direction: .incoming,
+            status: .ended,
+            startedAt: .now,
+            answeredAt: .now.addingTimeInterval(-1),
+            endedAt: .now
+        )
+
+        repository.save(conversation)
+        repository.saveContacts([contact])
+        repository.saveMessages([message], conversationID: conversation.id)
+        repository.replaceCallHistory([call], participantID: participantID)
+
+        repository.clearConversations()
+        repository.clearContacts()
+        repository.clearMessageCache()
+
+        #expect(repository.fetchConversations().isEmpty)
+        #expect(repository.fetchContacts().isEmpty)
+        #expect(repository.fetchMessages(conversationID: conversation.id, before: nil, limit: 50).isEmpty)
+        #expect(repository.fetchCallHistory(participantID: participantID).isEmpty)
+        #expect(!repository.hasCachedCallHistory(participantID: participantID))
+    }
+
     @Test func persistsConversationParticipantAndAvatarMetadata() throws {
         let repository = try SwiftDataConversationRepository(isStoredInMemoryOnly: true)
         let participantID = UUID()
@@ -139,5 +183,34 @@ struct SwiftDataConversationRepositoryTests {
         #expect(restored.bio == contact.bio)
         #expect(restored.avatarURL == avatarURL)
         #expect(restored.isOnline == false)
+    }
+
+    @Test func persistsAndReconcilesCallHistoryOffline() throws {
+        let repository = try SwiftDataConversationRepository(isStoredInMemoryOnly: true)
+        let participantID = UUID()
+        let oldCall = VoiceCallHistory(
+            id: UUID(),
+            direction: .incoming,
+            status: .missed,
+            startedAt: Date(timeIntervalSince1970: 100),
+            answeredAt: nil,
+            endedAt: Date(timeIntervalSince1970: 120)
+        )
+        let latestCall = VoiceCallHistory(
+            id: UUID(),
+            direction: .outgoing,
+            status: .ended,
+            startedAt: Date(timeIntervalSince1970: 200),
+            answeredAt: Date(timeIntervalSince1970: 205),
+            endedAt: Date(timeIntervalSince1970: 230)
+        )
+
+        #expect(!repository.hasCachedCallHistory(participantID: participantID))
+        repository.replaceCallHistory([oldCall, latestCall], participantID: participantID)
+        #expect(repository.hasCachedCallHistory(participantID: participantID))
+        #expect(repository.fetchCallHistory(participantID: participantID) == [oldCall, latestCall])
+
+        repository.replaceCallHistory([latestCall], participantID: participantID)
+        #expect(repository.fetchCallHistory(participantID: participantID) == [latestCall])
     }
 }

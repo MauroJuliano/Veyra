@@ -5,8 +5,6 @@ on:
     branches:
       - main
   pull_request:
-    branches:
-      - main
 
 permissions:
   contents: read
@@ -15,9 +13,15 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  PROJECT: Veyra.xcodeproj
+  SCHEME: Veyra
+  BUILD_DESTINATION: generic/platform=iOS Simulator
+  TEST_DESTINATION: platform=iOS Simulator,name=iPhone 16,OS=18.5
+
 jobs:
-  build-and-test:
-    name: Build and test
+  build:
+    name: Build
     runs-on: macos-15
     timeout-minutes: 20
 
@@ -31,12 +35,53 @@ jobs:
       - name: Show build environment
         run: xcodebuild -version
 
-      - name: Build and run tests
+      - name: Resolve Swift packages
         run: |
-          set -o pipefail
-          xcodebuild test \
-            -project Veyra.xcodeproj \
-            -scheme Veyra \
-            -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5' \
-            -derivedDataPath "$RUNNER_TEMP/VeyraDerivedData" \
+          xcodebuild \
+            -resolvePackageDependencies \
+            -project "$PROJECT" \
+            -scheme "$SCHEME"
+
+      - name: Build for testing
+        run: |
+          xcodebuild build-for-testing \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -destination "$BUILD_DESTINATION" \
+            -derivedDataPath "$RUNNER_TEMP/VeyraBuildDerivedData" \
             CODE_SIGNING_ALLOWED=NO
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 16.4
+        run: sudo xcode-select --switch /Applications/Xcode_16.4.app/Contents/Developer
+
+      - name: Show build environment
+        run: xcodebuild -version
+
+      - name: Run unit tests
+        run: |
+          xcodebuild test \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -destination "$TEST_DESTINATION" \
+            -derivedDataPath "$RUNNER_TEMP/VeyraDerivedData" \
+            -resultBundlePath "$RUNNER_TEMP/TestResults.xcresult" \
+            -parallel-testing-enabled NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ${{ runner.temp }}/TestResults.xcresult
+          if-no-files-found: warn
+          retention-days: 7

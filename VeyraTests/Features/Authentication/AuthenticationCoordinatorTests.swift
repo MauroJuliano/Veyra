@@ -22,6 +22,39 @@ struct AuthenticationCoordinatorTests {
         #expect(coordinator.route == .emailConfirmation("user@veyra.app"))
     }
 
+    @Test func clearsPreviousSessionBeforeShowingTheNewAccount() async {
+        let coordinator = AuthenticationCoordinator(service: AuthenticationServiceSpy())
+        coordinator.showRegistration()
+        var routeWhenCleanupRan: AuthenticationCoordinator.Route?
+
+        await coordinator.signUp(
+            name: "New user",
+            username: "new.user",
+            email: "new@veyra.app",
+            password: "password",
+            onRegistrationSucceeded: { routeWhenCleanupRan = coordinator.route }
+        )
+
+        #expect(routeWhenCleanupRan == .registration)
+        #expect(coordinator.route == .authenticated)
+    }
+
+    @Test func keepsLocalDataWhenRegistrationFails() async {
+        let coordinator = AuthenticationCoordinator(service: AuthenticationServiceSpy(error: TestError.failed))
+        var cleanupRan = false
+
+        await coordinator.signUp(
+            name: "New user",
+            username: "new.user",
+            email: "new@veyra.app",
+            password: "password",
+            onRegistrationSucceeded: { cleanupRan = true }
+        )
+
+        #expect(!cleanupRan)
+        #expect(coordinator.route == .login)
+    }
+
     @Test func exposesAuthenticationErrors() async {
         let coordinator = AuthenticationCoordinator(service: AuthenticationServiceSpy(error: TestError.failed))
         await coordinator.signIn(email: "user@veyra.app", password: "password")

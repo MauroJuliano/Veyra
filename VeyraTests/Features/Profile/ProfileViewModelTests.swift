@@ -37,6 +37,17 @@ struct ProfileViewModelTests {
         #expect(viewModel.validationMessage != nil)
     }
 
+    @Test @MainActor func acceptsUsernameWithPeriods() async {
+        let store = InMemoryProfileStore()
+        let viewModel = ProfileViewModel(store: store)
+        viewModel.displayName = "Emma Wells"
+        viewModel.username = "@Emma.Wells"
+        viewModel.email = "emma@example.com"
+
+        #expect(await viewModel.save())
+        #expect(store.load().username == "emma.wells")
+    }
+
     @Test @MainActor func rejectsInvalidEmail() async {
         let viewModel = ProfileViewModel(store: InMemoryProfileStore())
         viewModel.email = "not-an-email"

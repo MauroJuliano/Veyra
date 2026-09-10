@@ -152,7 +152,7 @@ struct LoginView: View {
                 Image(systemName: viewModel.showsPassword ? "eye.slash" : "eye")
             }
             .foregroundStyle(VeyraColor.textSecondary)
-            .accessibilityLabel(viewModel.showsPassword ? "Hide password" : "Show password")
+            .accessibilityLabel(Text(viewModel.showsPassword ? "Hide password" : "Show password"))
         }
         .padding(.horizontal, VeyraSpacing.md)
         .frame(height: 70)

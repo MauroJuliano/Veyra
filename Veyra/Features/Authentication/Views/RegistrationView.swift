@@ -93,7 +93,7 @@ struct RegistrationView: View {
     private func field(_ title: String, icon: String, text: Binding<String>, contentType: UITextContentType) -> some View {
         HStack(spacing: VeyraSpacing.md) {
             Image(systemName: icon).foregroundStyle(VeyraColor.accent)
-            TextField(title, text: text)
+            TextField(LocalizedStringKey(title), text: text)
                 .textContentType(contentType)
                 .textInputAutocapitalization(contentType == .emailAddress || contentType == .username ? .never : .words)
                 .autocorrectionDisabled(contentType == .emailAddress || contentType == .username)
@@ -108,7 +108,7 @@ struct RegistrationView: View {
     private func secureField(_ title: String, text: Binding<String>, contentType: UITextContentType) -> some View {
         HStack(spacing: VeyraSpacing.md) {
             Image(systemName: "lock").foregroundStyle(VeyraColor.accent)
-            SecureField(title, text: text).textContentType(contentType)
+            SecureField(LocalizedStringKey(title), text: text).textContentType(contentType)
         }
         .padding(.horizontal, VeyraSpacing.md)
         .frame(height: 64)

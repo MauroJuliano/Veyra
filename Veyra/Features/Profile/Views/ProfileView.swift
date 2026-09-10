@@ -3,11 +3,21 @@ import PhotosUI
 
 struct ProfileView: View {
     private enum Route: String, Hashable {
-        case personalDetails = "Personal details"
-        case privacy = "Privacy"
-        case notifications = "Notifications"
-        case help = "Help & Support"
-        case language = "Language"
+        case personalDetails
+        case privacy
+        case notifications
+        case help
+        case language
+
+        var title: String {
+            switch self {
+            case .personalDetails: AppLocalization.string("Personal details")
+            case .privacy: AppLocalization.string("Privacy")
+            case .notifications: AppLocalization.string("Notifications")
+            case .help: AppLocalization.string("Help & Support")
+            case .language: AppLocalization.string("Language")
+            }
+        }
 
         var icon: String {
             switch self {
@@ -56,8 +66,12 @@ struct ProfileView: View {
                     PersonalDetailsView(viewModel: viewModel)
                 } else if route == .privacy {
                     BlockedUsersView(repository: viewModel.profileRepository)
-                } else {
-                    ProfileDetailPlaceholder(route: route.rawValue, systemImage: route.icon)
+                } else if route == .notifications {
+                    NotificationSettingsView()
+                } else if route == .help {
+                    HelpSupportView()
+                } else if route == .language {
+                    LanguageSelectionView()
                 }
             }
             .confirmationDialog("Log out of Veyra?", isPresented: $confirmsLogout, titleVisibility: .visible) {
@@ -110,7 +124,7 @@ struct ProfileView: View {
                 Text(viewModel.profile.formattedUsername)
                     .font(VeyraTypography.caption)
                     .foregroundStyle(.secondary)
-                Text(viewModel.profile.bio.isEmpty ? "No bio yet" : viewModel.profile.bio)
+                Text(viewModel.profile.bio.isEmpty ? AppLocalization.string("No bio yet") : viewModel.profile.bio)
                     .font(VeyraTypography.body)
                     .foregroundStyle(VeyraColor.textSecondary)
                     .lineLimit(2)
@@ -135,7 +149,7 @@ struct ProfileView: View {
 
     private func settingsSection(title: String, items: [SettingsItem]) -> some View {
         VStack(alignment: .leading, spacing: VeyraSpacing.sm) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(VeyraTypography.bodyEmphasized)
                 .foregroundStyle(VeyraColor.textSecondary)
                 .padding(.leading, VeyraSpacing.xs)
@@ -164,8 +178,8 @@ struct ProfileView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 14))
 
             VStack(alignment: .leading, spacing: VeyraSpacing.xs) {
-                Text(item.route.rawValue).font(VeyraTypography.bodyEmphasized)
-                Text(item.subtitle).font(VeyraTypography.caption).foregroundStyle(.secondary)
+                Text(LocalizedStringKey(item.route.title)).font(VeyraTypography.bodyEmphasized)
+                Text(LocalizedStringKey(item.subtitle)).font(VeyraTypography.caption).foregroundStyle(.secondary)
             }
             Spacer()
             Image(systemName: "chevron.right")
@@ -217,16 +231,16 @@ struct ProfileView: View {
 
     private var accountItems: [SettingsItem] {
         [
-            SettingsItem(route: .personalDetails, subtitle: "Edit your info and preferences"),
-            SettingsItem(route: .privacy, subtitle: "Control who can see you"),
-            SettingsItem(route: .notifications, subtitle: "Manage your alerts and sounds")
+            SettingsItem(route: .personalDetails, subtitle: AppLocalization.string("Edit your info and preferences")),
+            SettingsItem(route: .privacy, subtitle: AppLocalization.string("Control who can see you")),
+            SettingsItem(route: .notifications, subtitle: AppLocalization.string("Manage your alerts and sounds"))
         ]
     }
 
     private var supportItems: [SettingsItem] {
         [
-            SettingsItem(route: .help, subtitle: "Get help or contact us"),
-            SettingsItem(route: .language, subtitle: "Choose your preferred language")
+            SettingsItem(route: .help, subtitle: AppLocalization.string("Get help or contact us")),
+            SettingsItem(route: .language, subtitle: AppLocalization.string("Choose your preferred language"))
         ]
     }
 
@@ -238,17 +252,6 @@ struct ProfileView: View {
             }
             selectedAvatar = nil
         }
-    }
-}
-
-private struct ProfileDetailPlaceholder: View {
-    let route: String
-    let systemImage: String
-
-    var body: some View {
-        ContentUnavailableView(route, systemImage: systemImage, description: Text("This setting will be implemented in a focused pull request."))
-            .navigationTitle(route)
-            .navigationBarTitleDisplayMode(.inline)
     }
 }
 
