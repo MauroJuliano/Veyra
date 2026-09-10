@@ -1,6 +1,6 @@
 import SwiftUI
 import PhotosUI
-import Photos
+@preconcurrency import Photos
 import ImageIO
 import UIKit
 
@@ -637,7 +637,10 @@ struct FullScreenImageView: View {
                   let image = makePhotoLibraryImage(from: data) else {
                 throw PhotoSaveError.invalidImage
             }
-            try await saveImage(image)
+            guard let normalizedData = image.jpegData(compressionQuality: 0.95) else {
+                throw PhotoSaveError.invalidImage
+            }
+            try await saveImageData(normalizedData)
             saveMessage = AppLocalization.string("Image saved to Photos.")
         } catch {
             saveMessage = UserFacingError.message(for: error, context: .imageSaving)
@@ -657,19 +660,9 @@ struct FullScreenImageView: View {
         return UIImage(cgImage: cgImage)
     }
 
-    private func saveImage(_ image: UIImage) async throws {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            PHPhotoLibrary.shared().performChanges {
-                PHAssetChangeRequest.creationRequestForAsset(from: image)
-            } completionHandler: { success, error in
-                if let error {
-                    continuation.resume(throwing: error)
-                } else if success {
-                    continuation.resume(returning: ())
-                } else {
-                    continuation.resume(throwing: PhotoSaveError.unknownFailure)
-                }
-            }
+    private nonisolated func saveImageData(_ data: Data) async throws {
+        try await PHPhotoLibrary.shared().performChanges {
+            PHAssetCreationRequest.forAsset().addResource(with: .photo, data: data, options: nil)
         }
     }
 }
