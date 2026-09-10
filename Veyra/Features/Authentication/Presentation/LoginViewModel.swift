@@ -15,11 +15,11 @@ final class LoginViewModel {
     func submit() -> Bool {
         let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
         guard normalizedEmail.contains("@"), normalizedEmail.contains(".") else {
-            validationMessage = String(localized: "Enter a valid email address.")
+            validationMessage = AppLocalization.string("Enter a valid email address.")
             return false
         }
         guard password.count >= 6 else {
-            validationMessage = String(localized: "Password must contain at least 6 characters.")
+            validationMessage = AppLocalization.string("Password must contain at least 6 characters.")
             return false
         }
         email = normalizedEmail

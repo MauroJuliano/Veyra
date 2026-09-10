@@ -1,6 +1,7 @@
 import SwiftUI
 import PhotosUI
-import Photos
+@preconcurrency import Photos
+import ImageIO
 import UIKit
 
 struct MessageTimelineView: View {
@@ -13,6 +14,10 @@ struct MessageTimelineView: View {
     @State private var messageShowingActions: Message?
     @State private var showsParticipantProfile = false
     @State private var activeVoiceCall: VoiceCall?
+    @State private var audioRecorder = AudioMessageRecorder()
+    @State private var currentUserProfile: UserProfile?
+    @State private var hasPositionedInitialTimeline = false
+    private let timelineBottomAnchor = "timeline-bottom"
 
     init(conversation: Conversation, repository: (any RemoteChatRepository)? = nil, callRepository: (any CallRepository)? = nil, cache: any MessageCacheRepository = InMemoryMessageCacheRepository(), messages: [Message]? = nil) {
         self.conversation = conversation
@@ -54,15 +59,25 @@ struct MessageTimelineView: View {
                 )
             }
             .task { await viewModel.observeMessages() }
+            .task { await loadCurrentUserProfile() }
             .onChange(of: viewModel.draft) { _, _ in viewModel.draftDidChange() }
             .onChange(of: selectedPhoto) { _, item in sendSelectedPhoto(item) }
-            .onDisappear { Task { await viewModel.stopTyping() } }
+            .onDisappear {
+                audioRecorder.cancel()
+                Task { await viewModel.stopTyping() }
+            }
             .animation(.easeInOut(duration: 0.2), value: viewModel.isParticipantTyping)
-            .alert("Delete message?", isPresented: deletionAlertIsPresented, presenting: messagePendingDeletion) { message in
-                Button("Delete", role: .destructive) { Task { await viewModel.delete(message) } }
-                Button("Cancel", role: .cancel) {}
+        .alert(
+            AppLocalization.string("Delete message?", table: "Deletion"),
+            isPresented: deletionAlertIsPresented,
+            presenting: messagePendingDeletion
+        ) { message in
+                Button(AppLocalization.string("Delete for me", table: "Deletion"), role: .destructive) {
+                    Task { await viewModel.delete(message) }
+                }
+                Button(AppLocalization.string("Cancel", table: "Deletion"), role: .cancel) {}
             } message: { _ in
-                Text("This message will be removed for everyone in the conversation.")
+                Text(AppLocalization.string("This message will be removed only from your chat.", table: "Deletion"))
             }
             .fullScreenCover(item: $selectedImage) { image in
                 FullScreenImageView(url: image.url, canSave: image.canSave) { selectedImage = nil }
@@ -122,6 +137,8 @@ struct MessageTimelineView: View {
                     onSend: { Task { await viewModel.send() } },
                     selectedPhoto: $selectedPhoto,
                     onSendSticker: { sticker in Task { await viewModel.sendSticker(sticker) } },
+                    audioRecorder: audioRecorder,
+                    onSendAudio: { recording in Task { await viewModel.sendAudio(recording) } },
                     isReplying: viewModel.replyingTo != nil
                 )
             }
@@ -129,61 +146,83 @@ struct MessageTimelineView: View {
     }
 
     private var messageList: some View {
-        ScrollView {
-            LazyVStack(spacing: VeyraSpacing.sm) {
-                if viewModel.messages.isEmpty && !viewModel.hasLoadedInitialPage {
-                    VStack(spacing: VeyraSpacing.md) {
-                        ProgressView()
-                            .controlSize(.large)
-                            .tint(VeyraColor.accent)
-                        Text("Loading messages…")
-                            .font(VeyraTypography.caption)
-                            .foregroundStyle(VeyraColor.textSecondary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 72)
-                    .transition(.opacity)
-                }
-                if viewModel.hasEarlierMessages && !viewModel.messages.isEmpty {
-                    Button {
-                        Task { await viewModel.loadEarlierMessages() }
-                    } label: {
-                        if viewModel.isLoadingEarlier {
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(spacing: VeyraSpacing.sm) {
+                    if !viewModel.hasLoadedInitialPage {
+                        VStack(spacing: VeyraSpacing.md) {
                             ProgressView()
-                        } else {
-                            Label("Load earlier messages", systemImage: "clock.arrow.circlepath")
+                                .controlSize(.large)
+                                .tint(VeyraColor.accent)
+                            Text("Loading messages…")
+                                .font(VeyraTypography.caption)
+                                .foregroundStyle(VeyraColor.textSecondary)
                         }
-                    }
-                    .font(VeyraTypography.caption)
-                    .foregroundStyle(VeyraColor.accent)
-                    .disabled(viewModel.isLoadingEarlier)
-                    .padding(.vertical, VeyraSpacing.sm)
-                }
-                if let errorMessage = viewModel.errorMessage {
-                    Text(errorMessage).font(VeyraTypography.caption).foregroundStyle(VeyraColor.danger)
-                }
-                ForEach(viewModel.timelineDays) { day in
-                    Text(day.date, format: .dateTime.day().month(.wide))
-                        .font(VeyraTypography.caption)
-                        .foregroundStyle(VeyraColor.textPrimary)
-                        .padding(.horizontal, VeyraSpacing.md)
-                        .padding(.vertical, VeyraSpacing.xs)
-                        .background(VeyraColor.surfaceElevated)
-                        .clipShape(Capsule())
-                        .padding(.vertical, VeyraSpacing.md)
-                    ForEach(day.items) { item in
-                        switch item {
-                        case let .message(message): messageRow(message)
-                        case let .call(call): CallHistoryRow(call: call)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 72)
+                        .transition(.opacity)
+                    } else {
+                        if viewModel.hasEarlierMessages && !viewModel.messages.isEmpty {
+                            Button {
+                                Task { await viewModel.loadEarlierMessages() }
+                            } label: {
+                                if viewModel.isLoadingEarlier {
+                                    ProgressView()
+                                } else {
+                                    Label("Load earlier messages", systemImage: "clock.arrow.circlepath")
+                                }
+                            }
+                            .font(VeyraTypography.caption)
+                            .foregroundStyle(VeyraColor.accent)
+                            .disabled(viewModel.isLoadingEarlier)
+                            .padding(.vertical, VeyraSpacing.sm)
                         }
+                        if let errorMessage = viewModel.errorMessage {
+                            Text(errorMessage).font(VeyraTypography.caption).foregroundStyle(VeyraColor.danger)
+                        }
+                        ForEach(viewModel.timelineDays) { day in
+                            Text(day.date, format: .dateTime.day().month(.wide))
+                                .font(VeyraTypography.caption)
+                                .foregroundStyle(VeyraColor.textPrimary)
+                                .padding(.horizontal, VeyraSpacing.md)
+                                .padding(.vertical, VeyraSpacing.xs)
+                                .background(VeyraColor.surfaceElevated)
+                                .clipShape(Capsule())
+                                .padding(.vertical, VeyraSpacing.md)
+                            ForEach(day.items) { item in
+                                switch item {
+                                case let .message(message): messageRow(message)
+                                case let .call(call): CallHistoryRow(call: call)
+                                }
+                            }
+                        }
+                        Color.clear
+                            .frame(height: 1)
+                            .id(timelineBottomAnchor)
                     }
                 }
+                .padding(VeyraSpacing.md)
             }
-            .padding(VeyraSpacing.md)
+            .defaultScrollAnchor(.bottom)
+            .scrollDismissesKeyboard(.interactively)
+            .dismissKeyboardOnTap()
+            .onAppear { positionInitialTimeline(using: proxy) }
+            .onChange(of: viewModel.hasLoadedInitialPage) { _, _ in
+                positionInitialTimeline(using: proxy)
+            }
         }
-        .defaultScrollAnchor(.bottom)
-        .scrollDismissesKeyboard(.interactively)
-        .dismissKeyboardOnTap()
+    }
+
+    private func positionInitialTimeline(using proxy: ScrollViewProxy) {
+        guard viewModel.hasLoadedInitialPage, !hasPositionedInitialTimeline else { return }
+        hasPositionedInitialTimeline = true
+        Task { @MainActor in
+            // Calls are fetched after messages and audio rows finish their first
+            // layout asynchronously. Waiting one run-loop turn makes the anchor
+            // represent the complete, chronologically merged timeline.
+            await Task.yield()
+            proxy.scrollTo(timelineBottomAnchor, anchor: .bottom)
+        }
     }
 
     private func messageRow(_ message: Message) -> some View {
@@ -191,11 +230,16 @@ struct MessageTimelineView: View {
             message: message,
             participantName: conversation.participantName,
             participantAvatarURL: conversation.participantAvatarURL,
+            currentUserName: currentUserProfile?.displayName,
+            currentUserAvatarURL: currentUserProfile?.avatarURL,
             onReply: { viewModel.beginReply(to: message) },
             onImageTap: { url in
                 selectedImage = FullScreenImage(url: url, canSave: message.direction == .incoming)
             },
-            onRetry: { Task { await viewModel.retry(message) } }
+            onRetry: { Task { await viewModel.retry(message) } },
+            onToggleHeartReaction: {
+                Task { await viewModel.toggleReaction("❤️", on: message) }
+            }
         )
         .onLongPressGesture(minimumDuration: 0.35) {
             guard !viewModel.isMessagingBlocked else { return }
@@ -203,15 +247,23 @@ struct MessageTimelineView: View {
         }
     }
 
+    @MainActor
+    private func loadCurrentUserProfile() async {
+        currentUserProfile = UserDefaultsProfileStore().load()
+        guard let repository = viewModel.profileRepository,
+              let remoteProfile = try? await repository.fetchMyProfile() else { return }
+        currentUserProfile = remoteProfile
+    }
+
     @ViewBuilder private var replyComposerPreview: some View {
         if let message = viewModel.replyingTo {
             HStack(spacing: 0) {
                 Rectangle().fill(VeyraColor.accent).frame(width: 4, height: 64)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(message.direction == .outgoing ? String(localized: "You") : conversation.participantName)
+                    Text(message.direction == .outgoing ? AppLocalization.string("You") : conversation.participantName)
                         .font(VeyraTypography.bodyEmphasized)
                         .foregroundStyle(VeyraColor.accent)
-                    Text(message.imageURL == nil ? message.text : "Photo")
+                    Text(message.audioURL != nil ? "Audio" : (message.imageURL == nil ? message.text : "Photo"))
                         .font(VeyraTypography.body)
                         .foregroundStyle(VeyraColor.textPrimary.opacity(0.9))
                         .lineLimit(1)
@@ -302,9 +354,18 @@ struct MessageTimelineView: View {
     }
 
     private var participantStatus: String {
-        if viewModel.isParticipantActive { return String(localized: "Active") }
-        guard let lastSeenAt = viewModel.participantLastSeenAt else { return String(localized: "Offline") }
-        return String(localized: "Last seen at \(lastSeenAt.formatted(date: .omitted, time: .shortened))")
+        let locale = AppLocalization.locale
+
+        if viewModel.isParticipantActive {
+            return AppLocalization.string("Active", table: "Language", locale: locale)
+        }
+        guard let lastSeenAt = viewModel.participantLastSeenAt else {
+            return AppLocalization.string("Offline", table: "Language", locale: locale)
+        }
+        let time = lastSeenAt.formatted(
+            Date.FormatStyle(date: .omitted, time: .shortened).locale(locale)
+        )
+        return AppLocalization.string("Last seen at \(time)", table: "Language", locale: locale)
     }
 
     private func sendSelectedPhoto(_ item: PhotosPickerItem?) {
@@ -360,12 +421,12 @@ private struct CallHistoryRow: View {
 
     private var title: String {
         switch (call.direction, call.status) {
-        case (.incoming, .declined): String(localized: "Declined incoming call")
-        case (.incoming, .missed), (.incoming, .ringing): String(localized: "Missed incoming call")
-        case (.outgoing, .declined): String(localized: "Declined outgoing call")
-        case (.outgoing, .missed), (.outgoing, .ringing): String(localized: "Unanswered outgoing call")
-        case (.incoming, _): String(localized: "Incoming call")
-        case (.outgoing, _): String(localized: "Outgoing call")
+        case (.incoming, .declined): AppLocalization.string("Declined incoming call")
+        case (.incoming, .missed), (.incoming, .ringing): AppLocalization.string("Missed incoming call")
+        case (.outgoing, .declined): AppLocalization.string("Declined outgoing call")
+        case (.outgoing, .missed), (.outgoing, .ringing): AppLocalization.string("Unanswered outgoing call")
+        case (.incoming, _): AppLocalization.string("Incoming call")
+        case (.outgoing, _): AppLocalization.string("Outgoing call")
         }
     }
 
@@ -437,7 +498,7 @@ private struct MessageActionsOverlay: View {
         VStack(spacing: 0) {
             actionButton("Reply", icon: "arrowshape.turn.up.left", action: onReply)
             Divider().overlay(Color.white.opacity(0.1))
-            if message.imageURL == nil {
+            if message.imageURL == nil && message.audioURL == nil {
                 actionButton("Copy", icon: "doc.on.doc", action: onCopy)
                 Divider().overlay(Color.white.opacity(0.1))
             }
@@ -469,7 +530,7 @@ private struct MessageActionsOverlay: View {
 private enum ImageSelectionError: LocalizedError {
     case noData
 
-    var errorDescription: String? { String(localized: "The selected image could not be loaded.") }
+    var errorDescription: String? { AppLocalization.string("The selected image could not be loaded.") }
 }
 
 struct FullScreenImage: Identifiable {
@@ -564,39 +625,62 @@ struct FullScreenImageView: View {
             guard let url = currentImage?.url else { return }
             let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
             guard status == .authorized || status == .limited else {
-                saveMessage = String(localized: "Allow photo access in Settings to save received images.")
+                saveMessage = AppLocalization.string("Allow photo access in Settings to save received images.")
                 return
             }
-            let (data, _) = try await URLSession.shared.data(from: url)
-            try await saveImageData(data)
-            saveMessage = String(localized: "Image saved to Photos.")
+            let (data, response) = try await URLSession.shared.data(from: url)
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                throw PhotoSaveError.downloadFailed
+            }
+            guard data.count <= PhotoSaveError.maximumDownloadSize,
+                  let image = makePhotoLibraryImage(from: data) else {
+                throw PhotoSaveError.invalidImage
+            }
+            guard let normalizedData = image.jpegData(compressionQuality: 0.95) else {
+                throw PhotoSaveError.invalidImage
+            }
+            try await saveImageData(normalizedData)
+            saveMessage = AppLocalization.string("Image saved to Photos.")
         } catch {
-            saveMessage = String(localized: "The image could not be saved. \(error.localizedDescription)")
+            saveMessage = UserFacingError.message(for: error, context: .imageSaving)
         }
     }
 
-    private func saveImageData(_ data: Data) async throws {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            PHPhotoLibrary.shared().performChanges {
-                PHAssetCreationRequest.forAsset().addResource(with: .photo, data: data, options: nil)
-            } completionHandler: { success, error in
-                if let error {
-                    continuation.resume(throwing: error)
-                } else if success {
-                    continuation.resume(returning: ())
-                } else {
-                    continuation.resume(throwing: PhotoSaveError.unknownFailure)
-                }
-            }
+    private func makePhotoLibraryImage(from data: Data) -> UIImage? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: 4_096
+        ]
+        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
+            return nil
+        }
+        return UIImage(cgImage: cgImage)
+    }
+
+    private nonisolated func saveImageData(_ data: Data) async throws {
+        try await PHPhotoLibrary.shared().performChanges {
+            PHAssetCreationRequest.forAsset().addResource(with: .photo, data: data, options: nil)
         }
     }
 }
 
 private enum PhotoSaveError: LocalizedError {
+    static let maximumDownloadSize = 25 * 1_024 * 1_024
+
+    case downloadFailed
+    case invalidImage
     case unknownFailure
 
     var errorDescription: String? {
-        String(localized: "Photos did not complete the save operation.")
+        switch self {
+        case .downloadFailed, .invalidImage:
+            AppLocalization.string("The selected image could not be loaded.")
+        case .unknownFailure:
+            AppLocalization.string("Photos did not complete the save operation.")
+        }
     }
 }
 

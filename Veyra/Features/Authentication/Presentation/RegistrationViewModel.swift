@@ -28,27 +28,30 @@ final class RegistrationViewModel {
             .lowercased()
         let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         guard normalizedName.count >= 2 else {
-            validationMessage = String(localized: "Enter your full name.")
+            validationMessage = AppLocalization.string("Enter your full name.")
             return false
         }
-        guard normalizedUsername.range(of: "^[a-z0-9_]{3,30}$", options: .regularExpression) != nil else {
-            validationMessage = String(localized: "Username must contain 3–30 lowercase letters, numbers, or underscores.")
+        guard normalizedUsername.range(of: "^[a-z0-9._]{3,30}$", options: .regularExpression) != nil else {
+            validationMessage = AppLocalization.string(
+                "Username must contain 3–30 lowercase letters, numbers, periods, or underscores.",
+                table: "Errors"
+            )
             return false
         }
         guard normalizedEmail.range(of: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", options: .regularExpression) != nil else {
-            validationMessage = String(localized: "Enter a valid email address.")
+            validationMessage = AppLocalization.string("Enter a valid email address.")
             return false
         }
         guard password.count >= 6 else {
-            validationMessage = String(localized: "Password must contain at least 6 characters.")
+            validationMessage = AppLocalization.string("Password must contain at least 6 characters.")
             return false
         }
         guard password == passwordConfirmation else {
-            validationMessage = String(localized: "Passwords do not match.")
+            validationMessage = AppLocalization.string("Passwords do not match.")
             return false
         }
         guard acceptsTerms else {
-            validationMessage = String(localized: "Accept the terms to continue.")
+            validationMessage = AppLocalization.string("Accept the terms to continue.")
             return false
         }
         name = normalizedName

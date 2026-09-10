@@ -26,7 +26,15 @@ struct RegistrationViewModelTests {
         let viewModel = validViewModel()
         viewModel.username = "invalid username"
         #expect(!viewModel.submit())
-        #expect(viewModel.validationMessage == "Username must contain 3–30 lowercase letters, numbers, or underscores.")
+        #expect(viewModel.validationMessage == "Username must contain 3–30 lowercase letters, numbers, periods, or underscores.")
+    }
+
+    @Test func acceptsUsernameWithPeriods() {
+        let viewModel = validViewModel()
+        viewModel.username = "@Emma.Wells"
+
+        #expect(viewModel.submit())
+        #expect(viewModel.username == "emma.wells")
     }
 
     @Test func normalizesUsernameAndEmail() {

@@ -36,7 +36,7 @@ struct RecentConversationRowView: View {
                 Text(user.participantName)
                     .font(VeyraTypography.bodyEmphasized)
                     .foregroundStyle(VeyraColor.textPrimary)
-                Text(user.bio.flatMap { $0.isEmpty ? nil : $0 } ?? String(localized: "No bio yet"))
+                Text(user.bio.flatMap { $0.isEmpty ? nil : $0 } ?? AppLocalization.string("No bio yet"))
                     .font(VeyraTypography.body)
                     .foregroundStyle(VeyraColor.textSecondary)
                     .lineLimit(1)

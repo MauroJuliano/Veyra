@@ -16,13 +16,13 @@ struct Conversation: Identifiable, Hashable {
     var lastActivityText: String {
         guard lastMessage.hasPrefix("[call]") else { return lastMessage }
         return switch String(lastMessage.dropFirst("[call]".count)) {
-        case "incoming:declined": String(localized: "Declined incoming call")
-        case "incoming:missed", "incoming:ringing": String(localized: "Missed incoming call")
-        case "outgoing:declined": String(localized: "Declined outgoing call")
-        case "outgoing:missed", "outgoing:ringing": String(localized: "Unanswered outgoing call")
-        case "incoming:accepted", "incoming:ended": String(localized: "Incoming call")
-        case "outgoing:accepted", "outgoing:ended": String(localized: "Outgoing call")
-        default: String(localized: "Voice call")
+        case "incoming:declined": AppLocalization.string("Declined incoming call")
+        case "incoming:missed", "incoming:ringing": AppLocalization.string("Missed incoming call")
+        case "outgoing:declined": AppLocalization.string("Declined outgoing call")
+        case "outgoing:missed", "outgoing:ringing": AppLocalization.string("Unanswered outgoing call")
+        case "incoming:accepted", "incoming:ended": AppLocalization.string("Incoming call")
+        case "outgoing:accepted", "outgoing:ended": AppLocalization.string("Outgoing call")
+        default: AppLocalization.string("Voice call")
         }
     }
 

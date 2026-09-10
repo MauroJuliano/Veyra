@@ -86,6 +86,7 @@ struct OfflineRemoteChatRepository: RemoteChatRepository {
     func fetchMessages(conversationID: UUID, before: Date?, limit: Int) async throws -> [Message] { throw URLError(.notConnectedToInternet) }
     func sendMessage(_ text: String, conversationID: UUID, replyingTo messageID: UUID?, clientMessageID: UUID?) async throws -> Message { throw URLError(.notConnectedToInternet) }
     func sendImage(_ data: Data, conversationID: UUID) async throws -> Message { throw URLError(.notConnectedToInternet) }
+    func sendAudio(_ data: Data, duration: TimeInterval, conversationID: UUID) async throws -> Message { throw URLError(.notConnectedToInternet) }
     func messageEvents(conversationID: UUID, participantID: UUID?) async throws -> AsyncStream<MessageEvent> { throw URLError(.notConnectedToInternet) }
     func setTyping(_ isTyping: Bool, conversationID: UUID) async throws { throw URLError(.notConnectedToInternet) }
     func conversationEvents() async throws -> AsyncStream<ConversationEvent> { throw URLError(.notConnectedToInternet) }

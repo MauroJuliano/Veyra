@@ -12,8 +12,8 @@ enum AuthenticationServiceError: LocalizedError, Equatable {
 
     var errorDescription: String? {
         switch self {
-        case .missingConfiguration: String(localized: "Supabase is not configured on this device.")
-        case .usernameAlreadyInUse: String(localized: "This username is already in use.")
+        case .missingConfiguration: AppLocalization.string("Supabase is not configured on this device.")
+        case .usernameAlreadyInUse: AppLocalization.string("This username is already in use.")
         }
     }
 }

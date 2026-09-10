@@ -62,7 +62,23 @@ final class MessageTimelineViewModel {
         let cached = cache.fetchMessages(conversationID: conversationID, before: nil, limit: pageSize)
         if messages.isEmpty && !cached.isEmpty { messages = cached }
         hasEarlierMessages = cached.count == pageSize
-        guard let repository else { return }
+
+        let hasLocalCallSnapshot: Bool
+        if let participantID, callRepository != nil {
+            callHistory = cache.fetchCallHistory(participantID: participantID)
+            hasLocalCallSnapshot = cache.hasCachedCallHistory(participantID: participantID)
+        } else {
+            hasLocalCallSnapshot = true
+        }
+
+        // Once calls have been synchronized at least once, the complete local
+        // timeline can be rendered immediately while remote refresh continues.
+        if hasLocalCallSnapshot { hasLoadedInitialPage = true }
+
+        guard let repository else {
+            hasLoadedInitialPage = true
+            return
+        }
         isLoading = true
         defer {
             isLoading = false
@@ -76,7 +92,7 @@ final class MessageTimelineViewModel {
             hasEarlierMessages = page.count == pageSize
             errorMessage = nil
         } catch {
-            errorMessage = cached.isEmpty ? error.localizedDescription : nil
+            errorMessage = cached.isEmpty ? UserFacingError.message(for: error, context: .messages) : nil
         }
         await loadCallHistory()
     }
@@ -86,6 +102,7 @@ final class MessageTimelineViewModel {
         guard let callRepository, let participantID else { return }
         do {
             callHistory = try await callRepository.fetchCallHistory(with: participantID)
+            cache.replaceCallHistory(callHistory, participantID: participantID)
         } catch {
             // Call history enriches the conversation but must not hide messages
             // when its backend migration has not been deployed yet.
@@ -110,7 +127,7 @@ final class MessageTimelineViewModel {
         } catch {
             let cachedPage = cache.fetchMessages(conversationID: conversationID, before: oldest.sentAt, limit: pageSize)
             if cachedPage.isEmpty {
-                errorMessage = error.localizedDescription
+                errorMessage = UserFacingError.message(for: error, context: .messages)
             } else {
                 merge(cachedPage)
                 hasEarlierMessages = cachedPage.count == pageSize
@@ -127,11 +144,7 @@ final class MessageTimelineViewModel {
         await load()
         guard let repository else { return }
         await refreshMessagingAvailability(using: repository)
-        do {
-            try await repository.markConversationRead(conversationID: conversationID)
-        } catch {
-            errorMessage = error.localizedDescription
-        }
+        try? await repository.markConversationRead(conversationID: conversationID)
 
         while !Task.isCancelled {
             do {
@@ -171,7 +184,7 @@ final class MessageTimelineViewModel {
         let reply = replyingTo
         guard let repository else {
             let preview = reply.map {
-                Message.ReplyPreview(messageID: $0.id, text: $0.imageURL == nil ? $0.text : String(localized: "Photo"), isOwnMessage: $0.direction == .outgoing)
+                Message.ReplyPreview(messageID: $0.id, text: replyDescription(for: $0), isOwnMessage: $0.direction == .outgoing)
             }
             messages.append(Message(text: text, direction: .outgoing, replyPreview: preview))
             draft = ""
@@ -179,7 +192,7 @@ final class MessageTimelineViewModel {
             return
         }
         let preview = reply.map {
-            Message.ReplyPreview(messageID: $0.id, text: $0.imageURL == nil ? $0.text : String(localized: "Photo"), isOwnMessage: $0.direction == .outgoing)
+            Message.ReplyPreview(messageID: $0.id, text: replyDescription(for: $0), isOwnMessage: $0.direction == .outgoing)
         }
         let pending = Message(text: text, direction: .outgoing, replyPreview: preview, deliveryState: .sending)
         appendIfNeeded(pending)
@@ -247,6 +260,25 @@ final class MessageTimelineViewModel {
     }
 
     @MainActor
+    func sendAudio(_ recording: AudioMessageRecorder.Recording) async {
+        guard !isMessagingBlocked, let repository else { return }
+        isSending = true
+        defer { isSending = false }
+        do {
+            let message = try await repository.sendAudio(
+                recording.data,
+                duration: recording.duration,
+                conversationID: conversationID
+            )
+            appendIfNeeded(message)
+            cache.saveMessages([message], conversationID: conversationID)
+            errorMessage = nil
+        } catch {
+            handleMessagingError(error)
+        }
+    }
+
+    @MainActor
     func sendSticker(_ sticker: String) async {
         guard !isMessagingBlocked else { return }
         guard let repository else {
@@ -273,7 +305,7 @@ final class MessageTimelineViewModel {
 
     @MainActor
     func reportImageSelectionError(_ error: any Error) {
-        errorMessage = error.localizedDescription
+        errorMessage = UserFacingError.message(for: error, context: .imageLoading)
     }
 
     @MainActor
@@ -300,7 +332,6 @@ final class MessageTimelineViewModel {
 
     @MainActor
     func delete(_ message: Message) async {
-        guard message.direction == .outgoing else { return }
         guard let repository else {
             messages.removeAll { $0.id == message.id }
             cache.deleteMessage(id: message.id)
@@ -311,7 +342,7 @@ final class MessageTimelineViewModel {
             messages.removeAll { $0.id == message.id }
             errorMessage = nil
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .deleteMessage)
         }
     }
 
@@ -339,7 +370,7 @@ final class MessageTimelineViewModel {
             if let currentIndex = messages.firstIndex(where: { $0.id == message.id }) {
                 messages[currentIndex].reactions = previousReactions
             }
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .reaction)
         }
     }
 
@@ -357,7 +388,7 @@ final class MessageTimelineViewModel {
         if case ChatRepositoryError.messagingBlocked = error {
             isMessagingBlocked = true
         }
-        errorMessage = error.localizedDescription
+        errorMessage = UserFacingError.message(for: error, context: .sendMessage)
     }
 
     private func toggledReactions(_ reactions: [Message.Reaction], emoji: String) -> [Message.Reaction] {
@@ -390,7 +421,7 @@ final class MessageTimelineViewModel {
         } catch is CancellationError {
             return
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .messages)
         }
     }
 
@@ -409,6 +440,12 @@ final class MessageTimelineViewModel {
     private func removeLocalMessage(id: UUID) {
         messages.removeAll { $0.id == id }
         cache.deleteMessage(id: id)
+    }
+
+    private func replyDescription(for message: Message) -> String {
+        if message.audioURL != nil { return AppLocalization.string("Audio") }
+        if message.imageURL != nil { return AppLocalization.string("Photo") }
+        return message.text
     }
 
     private func merge(_ incoming: [Message]) {

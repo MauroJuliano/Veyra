@@ -28,13 +28,8 @@ struct ConversationListView: View {
                 Text("Messages")
                     .font(VeyraTypography.title)
                     .foregroundStyle(VeyraColor.textPrimary)
+
                 Spacer()
-                Text("Recent")
-                    .font(VeyraTypography.body)
-                    .foregroundStyle(VeyraColor.textSecondary)
-                Image(systemName: "chevron.down")
-                    .font(.caption.bold())
-                    .foregroundStyle(VeyraColor.textSecondary)
             }
             .padding(.horizontal, VeyraSpacing.md)
             .padding(.top, VeyraSpacing.xl)
@@ -42,7 +37,13 @@ struct ConversationListView: View {
 
             Group {
                 if viewModel.isLoading && viewModel.conversations.isEmpty {
-                    ProgressView("Loading conversations…")
+                    ScrollView {
+                        LazyVStack(spacing: VeyraSpacing.sm) {
+                            ForEach(0..<5, id: \.self) { _ in VeyraSkeletonRow() }
+                        }
+                        .padding(.horizontal, VeyraSpacing.md)
+                    }
+                    .accessibilityLabel("Loading conversations…")
                 } else if viewModel.filteredConversations.isEmpty {
                     ContentUnavailableView {
                         Label(LocalizedStringKey(viewModel.hasSearchQuery ? "No conversations found" : "No conversations yet"), systemImage: viewModel.hasSearchQuery ? "magnifyingglass" : "message")
@@ -50,25 +51,37 @@ struct ConversationListView: View {
                         Text(LocalizedStringKey(viewModel.hasSearchQuery ? "Try another name or message." : "Your conversations will appear here."))
                     }
                 } else {
-                    ScrollView {
-                        LazyVStack(spacing: VeyraSpacing.sm) {
-                            ForEach(viewModel.filteredConversations) { conversation in
-                                NavigationLink(value: AppRoute.conversation(conversation)) {
-                                    ConversationRowView(conversation: conversation)
-                                }
-                                .buttonStyle(.plain)
-                                .background { GlassBackground() }
-                                .clipShape(RoundedRectangle(cornerRadius: 18))
-                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                    Button("Delete", systemImage: "trash", role: .destructive) {
-                                        conversationPendingDeletion = conversation
-                                    }
+                    List {
+                        ForEach(viewModel.filteredConversations) { conversation in
+                            Button {
+                                selectedConversation = conversation
+                            } label: {
+                                ConversationRowView(conversation: conversation)
+                            }
+                            .buttonStyle(.plain)
+                            .background { GlassBackground() }
+                            .clipShape(RoundedRectangle(cornerRadius: 18))
+                            .listRowInsets(
+                                EdgeInsets(
+                                    top: VeyraSpacing.xs,
+                                    leading: VeyraSpacing.md,
+                                    bottom: VeyraSpacing.xs,
+                                    trailing: VeyraSpacing.md
+                                )
+                            )
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button("Delete", systemImage: "trash", role: .destructive) {
+                                    conversationPendingDeletion = conversation
                                 }
                             }
                         }
-                        .padding(.horizontal, VeyraSpacing.md)
-                        .padding(.bottom, VeyraSpacing.xl)
                     }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+                    .contentMargins(.top, 0, for: .scrollContent)
+                    .contentMargins(.bottom, VeyraSpacing.xl, for: .scrollContent)
                     .scrollDismissesKeyboard(.interactively)
                     .dismissKeyboardOnTap()
                 }
@@ -94,23 +107,28 @@ struct ConversationListView: View {
                     selectedConversation = conversation
                     return nil
                 }
-                return viewModel.errorMessage ?? String(localized: "Unable to start this conversation.")
+                return viewModel.errorMessage ?? AppLocalization.string("Unable to start this conversation.")
             }
         }
         .task { await viewModel.observeConversations() }
-        .alert("Delete conversation?", isPresented: deletionAlertIsPresented, presenting: conversationPendingDeletion) { conversation in
-            Button("Delete", role: .destructive) {
+        .alert(
+            AppLocalization.string("Delete conversation?", table: "Deletion"),
+            isPresented: deletionAlertIsPresented,
+            presenting: conversationPendingDeletion
+        ) { conversation in
+            Button(AppLocalization.string("Delete for me", table: "Deletion"), role: .destructive) {
                 Task { await viewModel.delete(conversation) }
             }
-            Button("Cancel", role: .cancel) {}
+            Button(AppLocalization.string("Cancel", table: "Deletion"), role: .cancel) {}
         } message: { conversation in
-            Text("The conversation with \(conversation.participantName) and all of its messages will be removed for both participants.")
+            Text(
+                AppLocalization.string(
+                    "The conversation with \(conversation.participantName) will be removed only for you. It will appear again if a new message arrives.",
+                    table: "Deletion"
+                )
+            )
         }
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                VeyraAvatar(name: "Mauro Juliano", size: .small)
-            }
-
             ToolbarItem(placement: .principal) {
                 Text("Chats")
                     .font(VeyraTypography.title)
@@ -119,8 +137,8 @@ struct ConversationListView: View {
 
             ToolbarItem(placement: .topBarTrailing) {
                 Button { presentsNewConversation = true } label: {
-                    Image(systemName: "ellipsis")
-                        .frame(width: 36, height: 36)
+                    Image(systemName: "plus")
+                        .frame(width: 44, height: 44)
                         .background(VeyraColor.surfaceElevated)
                         .clipShape(Circle())
                 }

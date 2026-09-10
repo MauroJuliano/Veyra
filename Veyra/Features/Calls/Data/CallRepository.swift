@@ -34,7 +34,7 @@ enum CallRepositoryError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .missingParticipant:
-            String(localized: "This user cannot receive calls right now.")
+            AppLocalization.string("This user cannot receive calls right now.")
         }
     }
 }

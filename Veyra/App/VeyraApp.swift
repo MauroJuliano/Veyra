@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import OSLog
 @preconcurrency import UserNotifications
 
 @main
@@ -14,6 +15,8 @@ struct VeyraApp: App {
 }
 
 final class VeyraAppDelegate: NSObject, UIApplicationDelegate {
+    private let logger = Logger(subsystem: "com.maurojuliano.veyra", category: "PushNotifications")
+
     func application(
         _ application: UIApplication,
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
@@ -28,7 +31,7 @@ final class VeyraAppDelegate: NSObject, UIApplicationDelegate {
         didFailToRegisterForRemoteNotificationsWithError error: Error
     ) {
         #if DEBUG
-        print("APNs registration failed: \(error.localizedDescription)")
+        logger.error("APNs registration failed: \(String(reflecting: error), privacy: .public)")
         #endif
     }
 }

@@ -1,52 +1,12 @@
 import Foundation
 @preconcurrency import Supabase
 
-protocol RemoteChatRepository: Sendable {
-    func fetchConversations() async throws -> [Conversation]
-    func startConversation(withEmail email: String) async throws -> Conversation
-    func startConversation(with contact: Contact) async throws -> Conversation
-    func fetchMessages(conversationID: UUID, before: Date?, limit: Int) async throws -> [Message]
-    func sendMessage(_ text: String, conversationID: UUID, replyingTo messageID: UUID?, clientMessageID: UUID?) async throws -> Message
-    func sendImage(_ data: Data, conversationID: UUID) async throws -> Message
-    func messageEvents(conversationID: UUID, participantID: UUID?) async throws -> AsyncStream<MessageEvent>
-    func setTyping(_ isTyping: Bool, conversationID: UUID) async throws
-    func conversationEvents() async throws -> AsyncStream<ConversationEvent>
-    func markConversationRead(conversationID: UUID) async throws
-    func deleteMessage(id: UUID) async throws
-    func toggleReaction(_ emoji: String, messageID: UUID) async throws
-    func deleteConversation(id: UUID) async throws
-    func fetchContacts() async throws -> [Contact]
-    func searchPeople(query: String) async throws -> [User]
-    func fetchPublicProfile(userID: UUID) async throws -> User
-    func fetchBlockRelationship(userID: UUID) async throws -> BlockRelationship
-    func setUserBlocked(userID: UUID, isBlocked: Bool) async throws
-    func fetchBlockedUsers() async throws -> [User]
-    func canSendMessages(conversationID: UUID) async throws -> Bool
-    func reportUser(userID: UUID, reason: String, details: String) async throws
-    func fetchMyProfile() async throws -> UserProfile
-    func updateMyProfile(displayName: String, username: String, bio: String, email: String) async throws -> UserProfile
-    func updateMyAvatar(_ data: Data) async throws -> UserProfile
-    func maintainPresence() async
-    func registerPushToken(_ token: String) async throws
-    func unregisterPushToken(_ token: String) async throws
-}
-
-enum ConversationEvent: Sendable {
-    case contentChanged
-    case presenceChanged(Set<UUID>)
-}
-
-enum MessageEvent: Sendable {
-    case contentChanged
-    case readReceiptChanged
-    case typingChanged(Bool)
-    case presenceChanged(isActive: Bool, lastSeenAt: Date?)
-}
-
 final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
     private let client: SupabaseClient
 
     init(client: SupabaseClient) { self.client = client }
+
+    // MARK: - Device registration
 
     func registerPushToken(_ token: String) async throws {
         try await client.rpc("register_push_token", params: ["device_token": token]).execute()
@@ -55,6 +15,8 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
     func unregisterPushToken(_ token: String) async throws {
         try await client.rpc("unregister_push_token", params: ["device_token": token]).execute()
     }
+
+    // MARK: - Conversations
 
     func fetchConversations() async throws -> [Conversation] {
         let rows: [ConversationRow] = try await client
@@ -96,11 +58,18 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             .rpc("start_direct_conversation_with_user", params: ["target_user_id": contact.id])
             .execute()
             .value
-        guard let conversation = try await fetchConversations().first(where: { $0.id == conversationID }) else {
-            throw ChatRepositoryError.conversationNotFound
-        }
-        return conversation
+        return Conversation(
+            id: conversationID,
+            participantID: contact.id,
+            participantName: contact.name,
+            lastMessage: "",
+            updatedAt: .now,
+            isOnline: contact.isOnline,
+            participantAvatarURL: contact.avatarURL
+        )
     }
+
+    // MARK: - Messages
 
     func fetchMessages(conversationID: UUID, before: Date? = nil, limit: Int = 50) async throws -> [Message] {
         let currentUserID = try await client.auth.session.user.id
@@ -121,7 +90,13 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             } else {
                 signedURL = nil
             }
-            messages.append(row.message(currentUserID: currentUserID, imageURL: signedURL))
+            let audioURL: URL?
+            if let audioPath = row.audioPath {
+                audioURL = try await client.storage.from("chat-media").createSignedURL(path: audioPath, expiresIn: 3_600)
+            } else {
+                audioURL = nil
+            }
+            messages.append(row.message(currentUserID: currentUserID, imageURL: signedURL, audioURL: audioURL))
         }
         return messages
     }
@@ -164,7 +139,7 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
                 .execute()
                 .value
         }
-        return row.message(currentUserID: currentUserID, imageURL: nil)
+        return row.message(currentUserID: currentUserID, imageURL: nil, audioURL: nil)
     }
 
     func toggleReaction(_ emoji: String, messageID: UUID) async throws {
@@ -189,14 +164,26 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
         let imageURL = try await bucket.createSignedURL(path: path, expiresIn: 3_600)
         let payload = NewMessageRow(conversationID: conversationID, senderID: currentUserID, body: "Photo", imagePath: path)
         let row: MessageRow = try await client.from("messages").insert(payload).select().single().execute().value
-        return row.message(currentUserID: currentUserID, imageURL: imageURL)
+        return row.message(currentUserID: currentUserID, imageURL: imageURL, audioURL: nil)
+    }
+
+    func sendAudio(_ data: Data, duration: TimeInterval, conversationID: UUID) async throws -> Message {
+        guard try await canSendMessages(conversationID: conversationID) else {
+            throw ChatRepositoryError.messagingBlocked
+        }
+        let currentUserID = try await client.auth.session.user.id
+        let path = [currentUserID.uuidString.lowercased(), conversationID.uuidString.lowercased(), "\(UUID().uuidString.lowercased()).m4a"].joined(separator: "/")
+        let bucket = client.storage.from("chat-media")
+        try await bucket.upload(path, data: data, options: FileOptions(contentType: "audio/mp4"))
+        let audioURL = try await bucket.createSignedURL(path: path, expiresIn: 3_600)
+        let payload = NewMessageRow(conversationID: conversationID, senderID: currentUserID, body: "Audio", audioPath: path, audioDurationMilliseconds: Int(duration * 1_000))
+        let row: MessageRow = try await client.from("messages").insert(payload).select().single().execute().value
+        return row.message(currentUserID: currentUserID, imageURL: nil, audioURL: audioURL)
     }
 
     func deleteMessage(id: UUID) async throws {
         try await client
-            .from("messages")
-            .delete()
-            .eq("id", value: id)
+            .rpc("delete_message_for_me", params: ["target_message_id": id])
             .execute()
     }
 
@@ -205,6 +192,8 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             .rpc("delete_conversation", params: ["target_conversation_id": id])
             .execute()
     }
+
+    // MARK: - Contacts and discovery
 
     func fetchContacts() async throws -> [Contact] {
         let rows: [ContactRow] = try await client
@@ -229,6 +218,8 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
         }
         return users
     }
+
+    // MARK: - Profiles and safety
 
     func fetchMyProfile() async throws -> UserProfile {
         let session = try await client.auth.session
@@ -312,6 +303,8 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
         return try await fetchMyProfile()
     }
 
+    // MARK: - Message realtime
+
     func messageEvents(conversationID: UUID, participantID: UUID?) async throws -> AsyncStream<MessageEvent> {
         let currentUserID = try await client.auth.session.user.id
         let messagesChannel = client.channel("messages:\(conversationID.uuidString)")
@@ -319,6 +312,7 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
         // RLS still limits events to the signed-in user's conversations, and
         // the timeline refetch below keeps this conversation consistent.
         let changes = messagesChannel.postgresChange(AnyAction.self, table: "messages")
+        let deletionChanges = messagesChannel.postgresChange(AnyAction.self, table: "message_deletions")
         let reactionChanges = messagesChannel.postgresChange(AnyAction.self, table: "message_reactions")
         let typingChanges = messagesChannel.postgresChange(
             AnyAction.self,
@@ -339,6 +333,12 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
         return AsyncStream { continuation in
             let messagesTask = Task {
                 for await _ in changes {
+                    guard !Task.isCancelled else { break }
+                    continuation.yield(.contentChanged)
+                }
+            }
+            let deletionsTask = Task {
+                for await _ in deletionChanges {
                     guard !Task.isCancelled else { break }
                     continuation.yield(.contentChanged)
                 }
@@ -379,6 +379,7 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
 
             continuation.onTermination = { [client] _ in
                 messagesTask.cancel()
+                deletionsTask.cancel()
                 reactionsTask.cancel()
                 typingTask.cancel()
                 presenceTask.cancel()
@@ -402,6 +403,8 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
             ))
             .execute()
     }
+
+    // MARK: - Presence and conversation realtime
 
     func maintainPresence() async {
         while !Task.isCancelled {
@@ -466,6 +469,8 @@ final class SupabaseChatRepository: RemoteChatRepository, @unchecked Sendable {
         }
     }
 
+    // MARK: - Realtime helpers
+
     private func fetchParticipantTyping(conversationID: UUID, currentUserID: UUID) async throws -> Bool {
         let rows: [TypingStatusRow] = try await client
             .from("typing_status")
@@ -506,8 +511,8 @@ enum ChatRepositoryError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .conversationNotFound: String(localized: "The conversation could not be loaded.")
-        case .messagingBlocked: String(localized: "Messages are unavailable while either user is blocked.")
+        case .conversationNotFound: AppLocalization.string("The conversation could not be loaded.")
+        case .messagingBlocked: AppLocalization.string("Messages are unavailable while either user is blocked.")
         }
     }
 }
@@ -741,6 +746,8 @@ private struct MessageRow: Decodable {
     let createdAt: Date
     let isRead: Bool?
     let imagePath: String?
+    let audioPath: String?
+    let audioDurationMilliseconds: Int?
     let replyToMessageID: UUID?
     let replyBody: String?
     let replySenderID: UUID?
@@ -753,13 +760,15 @@ private struct MessageRow: Decodable {
         case createdAt = "created_at"
         case isRead = "is_read"
         case imagePath = "image_path"
+        case audioPath = "audio_path"
+        case audioDurationMilliseconds = "audio_duration_ms"
         case replyToMessageID = "reply_to_message_id"
         case replyBody = "reply_body"
         case replySenderID = "reply_sender_id"
         case reactions
     }
 
-    func message(currentUserID: UUID, imageURL: URL?) -> Message {
+    func message(currentUserID: UUID, imageURL: URL?, audioURL: URL?) -> Message {
         let stickerPrefix = "[sticker]"
         let isSticker = body.hasPrefix(stickerPrefix)
         return Message(
@@ -769,9 +778,11 @@ private struct MessageRow: Decodable {
             direction: senderID == currentUserID ? .outgoing : .incoming,
             receipt: isRead == true ? .read : .sent,
             imageURL: imageURL,
+            audioURL: audioURL,
+            audioDuration: audioDurationMilliseconds.map { TimeInterval($0) / 1_000 },
             isSticker: isSticker,
             replyPreview: replyToMessageID.map {
-                Message.ReplyPreview(messageID: $0, text: replyBody ?? String(localized: "Message unavailable"), isOwnMessage: replySenderID == currentUserID)
+                Message.ReplyPreview(messageID: $0, text: replyBody ?? AppLocalization.string("Message unavailable"), isOwnMessage: replySenderID == currentUserID)
             },
             reactions: (reactions ?? []).map {
                 Message.Reaction(emoji: $0.emoji, count: $0.count, isSelectedByCurrentUser: $0.selected)
@@ -804,14 +815,18 @@ private struct NewMessageRow: Encodable {
     let senderID: UUID
     let body: String
     let imagePath: String?
+    let audioPath: String?
+    let audioDurationMilliseconds: Int?
     let replyToMessageID: UUID?
 
-    init(id: UUID = UUID(), conversationID: UUID, senderID: UUID, body: String, imagePath: String? = nil, replyToMessageID: UUID? = nil) {
+    init(id: UUID = UUID(), conversationID: UUID, senderID: UUID, body: String, imagePath: String? = nil, audioPath: String? = nil, audioDurationMilliseconds: Int? = nil, replyToMessageID: UUID? = nil) {
         self.id = id
         self.conversationID = conversationID
         self.senderID = senderID
         self.body = body
         self.imagePath = imagePath
+        self.audioPath = audioPath
+        self.audioDurationMilliseconds = audioDurationMilliseconds
         self.replyToMessageID = replyToMessageID
     }
 
@@ -821,6 +836,8 @@ private struct NewMessageRow: Encodable {
         case senderID = "sender_id"
         case body
         case imagePath = "image_path"
+        case audioPath = "audio_path"
+        case audioDurationMilliseconds = "audio_duration_ms"
         case replyToMessageID = "reply_to_message_id"
     }
 }

@@ -40,12 +40,18 @@ struct ContactListView: View {
     var body: some View {
         Group {
             if isLoading && contacts.isEmpty {
-                ProgressView("Loading contacts…")
+                ScrollView {
+                    LazyVStack(spacing: VeyraSpacing.sm) {
+                        ForEach(0..<6, id: \.self) { _ in VeyraSkeletonRow() }
+                    }
+                    .padding(.horizontal, VeyraSpacing.md)
+                }
+                .accessibilityLabel("Loading contacts…")
             } else if contacts.isEmpty {
                 ContentUnavailableView(
                     "No contacts yet",
                     systemImage: "person.2",
-                    description: Text(errorMessage ?? String(localized: "People you start conversations with will appear here."))
+                    description: Text(errorMessage ?? AppLocalization.string("People you start conversations with will appear here."))
                 )
             } else {
                 List {
@@ -153,7 +159,7 @@ struct ContactListView: View {
                     .font(VeyraTypography.bodyEmphasized)
                     .foregroundStyle(VeyraColor.textPrimary)
 
-                Text(contact.bio.flatMap { $0.isEmpty ? nil : $0 } ?? String(localized: "No bio yet"))
+                Text(contact.bio.flatMap { $0.isEmpty ? nil : $0 } ?? AppLocalization.string("No bio yet"))
                     .font(VeyraTypography.body)
                     .foregroundStyle(VeyraColor.textSecondary)
                     .lineLimit(1)
@@ -175,13 +181,13 @@ struct ContactListView: View {
             contacts = remoteContacts
             errorMessage = nil
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .people)
         }
     }
 
     @MainActor
-    private func openConversation(with contact: Contact) async {
-        guard let repository else { return }
+    private func openConversation(with contact: Contact) async -> String? {
+        guard let repository else { return AppLocalization.string("Unable to start this conversation.") }
         openingContactID = contact.id
         defer { openingContactID = nil }
         do {
@@ -189,8 +195,10 @@ struct ContactListView: View {
             selectedContact = nil
             errorMessage = nil
             await load()
+            return nil
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = UserFacingError.message(for: error, context: .startConversation)
+            return errorMessage
         }
     }
 }

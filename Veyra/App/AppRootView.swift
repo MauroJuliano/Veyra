@@ -4,6 +4,7 @@ struct AppRootView: View {
     private let dependencies: AppDependencies
     @State private var authentication: AuthenticationCoordinator
     @State private var incomingCalls: IncomingCallCoordinator
+    @AppStorage(AppLanguage.storageKey) private var selectedLanguage = AppLanguage.system.rawValue
 
     init(
         dependencies: AppDependencies = AppDependencies(),
@@ -15,6 +16,12 @@ struct AppRootView: View {
     }
 
     var body: some View {
+        content
+            .environment(\.locale, appLanguage.locale)
+    }
+
+    @ViewBuilder
+    private var content: some View {
         switch authentication.route {
         case .authenticated:
             authenticatedContent
@@ -25,7 +32,15 @@ struct AppRootView: View {
                 externalError: authentication.errorMessage,
                 onBack: authentication.showLogin,
                 onRegistered: { name, username, email, password in
-                    Task { await authentication.signUp(name: name, username: username, email: email, password: password) }
+                    Task {
+                        await authentication.signUp(
+                            name: name,
+                            username: username,
+                            email: email,
+                            password: password,
+                            onRegistrationSucceeded: dependencies.clearLocalData
+                        )
+                    }
                 }
             )
             .transition(.opacity)
@@ -43,6 +58,10 @@ struct AppRootView: View {
             EmailConfirmationView(email: email, onBack: authentication.showLogin)
                 .transition(.opacity)
         }
+    }
+
+    private var appLanguage: AppLanguage {
+        AppLanguage(rawValue: selectedLanguage) ?? .system
     }
 
     private var authenticatedContent: some View {
@@ -77,15 +96,18 @@ struct AppRootView: View {
             }
                 .tabItem { Label("Connections", systemImage: "person.2.fill") }
 
-            ProfileView(viewModel: ProfileViewModel(remoteRepository: dependencies.remoteChat), onLogout: {
+            ProfileView(viewModel: ProfileViewModel(store: dependencies.profileStore, remoteRepository: dependencies.remoteChat), onLogout: {
                 Task {
                     if let token = UserDefaults.standard.string(forKey: PushNotificationRegistration.tokenKey) {
                         try? await dependencies.remoteChat?.unregisterPushToken(token)
                     }
                     await authentication.signOut()
+                    if authentication.route == .login {
+                        dependencies.clearLocalData()
+                    }
                 }
             })
-                .tabItem { Label("Profile", systemImage: "person.crop.circle.fill") }
+                .tabItem { Label("You", systemImage: "person.crop.circle.fill") }
         }
         .tint(VeyraColor.accent)
         .toolbarBackground(VeyraColor.surface, for: .tabBar)

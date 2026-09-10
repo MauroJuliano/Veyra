@@ -103,6 +103,8 @@ final class LocalMessageRecord {
     var directionRaw: String
     var receiptRaw: String
     var imageURLString: String?
+    var audioURLString: String?
+    var audioDuration: Double?
     var isSticker: Bool
     var replyMessageID: UUID?
     var replyText: String?
@@ -118,6 +120,8 @@ final class LocalMessageRecord {
         directionRaw = message.direction == .outgoing ? "outgoing" : "incoming"
         receiptRaw = message.receipt == .read ? "read" : "sent"
         imageURLString = message.imageURL?.absoluteString
+        audioURLString = message.audioURL?.absoluteString
+        audioDuration = message.audioDuration
         isSticker = message.isSticker
         replyMessageID = message.replyPreview?.messageID
         replyText = message.replyPreview?.text
@@ -131,7 +135,7 @@ final class LocalMessageRecord {
         let storedDeliveryState = Message.DeliveryState(rawValue: deliveryStateRaw) ?? .sent
         let restoredDeliveryState: Message.DeliveryState = storedDeliveryState == .sending ? .failed : storedDeliveryState
         let reply = replyMessageID.map {
-            Message.ReplyPreview(messageID: $0, text: replyText ?? String(localized: "Message unavailable"), isOwnMessage: replyIsOwnMessage ?? false)
+            Message.ReplyPreview(messageID: $0, text: replyText ?? AppLocalization.string("Message unavailable"), isOwnMessage: replyIsOwnMessage ?? false)
         }
         return Message(
             id: id,
@@ -140,6 +144,8 @@ final class LocalMessageRecord {
             direction: directionRaw == "outgoing" ? .outgoing : .incoming,
             receipt: receiptRaw == "read" ? .read : .sent,
             imageURL: imageURLString.flatMap(URL.init(string:)),
+            audioURL: audioURLString.flatMap(URL.init(string:)),
+            audioDuration: audioDuration,
             isSticker: isSticker,
             replyPreview: reply,
             reactions: reactions,
@@ -154,12 +160,67 @@ final class LocalMessageRecord {
         directionRaw = message.direction == .outgoing ? "outgoing" : "incoming"
         receiptRaw = message.receipt == .read ? "read" : "sent"
         imageURLString = message.imageURL?.absoluteString
+        audioURLString = message.audioURL?.absoluteString
+        audioDuration = message.audioDuration
         isSticker = message.isSticker
         replyMessageID = message.replyPreview?.messageID
         replyText = message.replyPreview?.text
         replyIsOwnMessage = message.replyPreview?.isOwnMessage
         reactionsData = (try? JSONEncoder().encode(message.reactions.map(CachedReaction.init))) ?? Data()
         deliveryStateRaw = message.deliveryState.rawValue
+    }
+}
+
+@Model
+final class LocalCallHistoryRecord {
+    @Attribute(.unique) var id: UUID
+    var participantID: UUID
+    var directionRaw: String
+    var statusRaw: String
+    var startedAt: Date
+    var answeredAt: Date?
+    var endedAt: Date?
+
+    init(call: VoiceCallHistory, participantID: UUID) {
+        id = call.id
+        self.participantID = participantID
+        directionRaw = call.direction == .incoming ? "incoming" : "outgoing"
+        statusRaw = call.status.rawValue
+        startedAt = call.startedAt
+        answeredAt = call.answeredAt
+        endedAt = call.endedAt
+    }
+
+    var call: VoiceCallHistory? {
+        guard let status = VoiceCallHistoryStatus(rawValue: statusRaw) else { return nil }
+        return VoiceCallHistory(
+            id: id,
+            direction: directionRaw == "incoming" ? .incoming : .outgoing,
+            status: status,
+            startedAt: startedAt,
+            answeredAt: answeredAt,
+            endedAt: endedAt
+        )
+    }
+
+    func update(with call: VoiceCallHistory, participantID: UUID) {
+        self.participantID = participantID
+        directionRaw = call.direction == .incoming ? "incoming" : "outgoing"
+        statusRaw = call.status.rawValue
+        startedAt = call.startedAt
+        answeredAt = call.answeredAt
+        endedAt = call.endedAt
+    }
+}
+
+@Model
+final class CallHistorySyncRecord {
+    @Attribute(.unique) var participantID: UUID
+    var synchronizedAt: Date
+
+    init(participantID: UUID, synchronizedAt: Date = .now) {
+        self.participantID = participantID
+        self.synchronizedAt = synchronizedAt
     }
 }
 
