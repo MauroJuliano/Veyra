@@ -36,9 +36,12 @@ final class ProfileViewModel {
             validationMessage = AppLocalization.string("Enter a valid display name.")
             return false
         }
-        let validUsername = handle.range(of: "^[a-zA-Z0-9_]{3,30}$", options: .regularExpression) != nil
+        let validUsername = handle.range(of: "^[a-zA-Z0-9._]{3,30}$", options: .regularExpression) != nil
         guard validUsername else {
-            validationMessage = AppLocalization.string("Username must have 3–30 letters, numbers or underscores.")
+            validationMessage = AppLocalization.string(
+                "Username must contain 3–30 lowercase letters, numbers, periods, or underscores.",
+                table: "Errors"
+            )
             return false
         }
         guard normalizedEmail.range(of: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", options: .regularExpression) != nil else {

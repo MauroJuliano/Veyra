@@ -3,6 +3,7 @@ import OSLog
 
 enum UserFacingErrorContext: String {
     case authentication
+    case registration
     case conversations
     case people
     case startConversation
@@ -41,6 +42,20 @@ enum UserFacingError {
             }
             if description.contains("email not confirmed") {
                 return localized("Confirm your email before signing in.")
+            }
+            if description.contains("rate limit") || description.contains("too many") {
+                return localized("Too many attempts. Wait a moment and try again.")
+            }
+        }
+
+        if context == .registration {
+            if description.contains("already registered")
+                || description.contains("email already")
+                || description.contains("user already exists") {
+                return localized("This email is already in use.")
+            }
+            if description.contains("username already") || description.contains("profiles_username_key") {
+                return localized("This username is already in use.")
             }
             if description.contains("rate limit") || description.contains("too many") {
                 return localized("Too many attempts. Wait a moment and try again.")
@@ -102,6 +117,7 @@ enum UserFacingError {
     private static func defaultKey(for context: UserFacingErrorContext) -> String.LocalizationValue {
         switch context {
         case .authentication: "We couldn't complete this sign-in request. Please try again."
+        case .registration: "We couldn't create your account. Please try again."
         case .conversations: "Unable to refresh conversations. Please try again."
         case .people: "Unable to load people right now. Please try again."
         case .startConversation: "Unable to start this conversation. Please try again."
