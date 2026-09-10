@@ -6,13 +6,10 @@ struct MessageComposerView: View {
     let canSend: Bool
     let onSend: () -> Void
     @Binding var selectedPhoto: PhotosPickerItem?
-    let onSendSticker: (String) -> Void
     let audioRecorder: AudioMessageRecorder
     let onSendAudio: (AudioMessageRecorder.Recording) -> Void
     let isReplying: Bool
     @FocusState private var isTextFieldFocused: Bool
-
-    private let stickers = ["🎉", "👏", "💯", "🚀", "✨", "🙌"]
 
     var body: some View {
         HStack(alignment: .bottom, spacing: VeyraSpacing.sm) {
@@ -44,16 +41,6 @@ struct MessageComposerView: View {
                     Button { Task { await audioRecorder.start() } } label: { Image(systemName: "mic") }
                         .accessibilityLabel("Record audio")
                 }
-                if !audioRecorder.isRecording { Menu {
-                    Section("Stickers") {
-                        ForEach(stickers, id: \.self) { sticker in
-                            Button(sticker) { onSendSticker(sticker) }
-                        }
-                    }
-                } label: {
-                    Image(systemName: "sparkles")
-                }
-                .accessibilityLabel("Choose sticker") }
             }
             .foregroundStyle(VeyraColor.textSecondary)
             .padding(.horizontal, VeyraSpacing.md)

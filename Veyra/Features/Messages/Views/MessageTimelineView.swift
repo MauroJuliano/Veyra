@@ -136,7 +136,6 @@ struct MessageTimelineView: View {
                     canSend: viewModel.canSend && !viewModel.isSending,
                     onSend: { Task { await viewModel.send() } },
                     selectedPhoto: $selectedPhoto,
-                    onSendSticker: { sticker in Task { await viewModel.sendSticker(sticker) } },
                     audioRecorder: audioRecorder,
                     onSendAudio: { recording in Task { await viewModel.sendAudio(recording) } },
                     isReplying: viewModel.replyingTo != nil

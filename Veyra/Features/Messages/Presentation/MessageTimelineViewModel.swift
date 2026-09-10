@@ -279,31 +279,6 @@ final class MessageTimelineViewModel {
     }
 
     @MainActor
-    func sendSticker(_ sticker: String) async {
-        guard !isMessagingBlocked else { return }
-        guard let repository else {
-            messages.append(Message(text: sticker, direction: .outgoing, isSticker: true))
-            return
-        }
-        let pending = Message(text: sticker, direction: .outgoing, isSticker: true, deliveryState: .sending)
-        appendIfNeeded(pending)
-        cache.saveMessages([pending], conversationID: conversationID)
-        isSending = true
-        defer { isSending = false }
-        do {
-            let message = try await repository.sendMessage("[sticker]\(sticker)", conversationID: conversationID, replyingTo: replyingTo?.id, clientMessageID: pending.id)
-            removeLocalMessage(id: pending.id)
-            appendIfNeeded(message)
-            cache.saveMessages([message], conversationID: conversationID)
-            replyingTo = nil
-            errorMessage = nil
-        } catch {
-            updateDeliveryState(id: pending.id, state: .failed)
-            handleMessagingError(error)
-        }
-    }
-
-    @MainActor
     func reportImageSelectionError(_ error: any Error) {
         errorMessage = UserFacingError.message(for: error, context: .imageLoading)
     }
