@@ -27,6 +27,19 @@ struct SwiftDataConversationRepositoryTests {
         #expect(conversations[0].lastMessage == "Updated")
     }
 
+    @Test func deletesConversationAndItsMessagesFromLocalCache() throws {
+        let repository = try SwiftDataConversationRepository(isStoredInMemoryOnly: true)
+        let conversation = Conversation(participantName: "Ana", lastMessage: "Private", updatedAt: .now)
+        let message = Message(text: "Private", direction: .incoming)
+
+        repository.save(conversation)
+        repository.saveMessages([message], conversationID: conversation.id)
+        repository.deleteConversation(id: conversation.id)
+
+        #expect(repository.fetchConversations().isEmpty)
+        #expect(repository.fetchMessages(conversationID: conversation.id, before: nil, limit: 50).isEmpty)
+    }
+
     @Test func persistsConversationParticipantAndAvatarMetadata() throws {
         let repository = try SwiftDataConversationRepository(isStoredInMemoryOnly: true)
         let participantID = UUID()

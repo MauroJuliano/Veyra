@@ -3,6 +3,7 @@ import Foundation
 protocol ConversationRepository {
     func fetchConversations() -> [Conversation]
     func save(_ conversation: Conversation)
+    func deleteConversation(id: UUID)
 }
 
 protocol MessageCacheRepository {
@@ -67,5 +68,9 @@ final class InMemoryConversationRepository: ConversationRepository {
     func save(_ conversation: Conversation) {
         storage.removeAll { $0.id == conversation.id }
         storage.append(conversation)
+    }
+
+    func deleteConversation(id: UUID) {
+        storage.removeAll { $0.id == id }
     }
 }

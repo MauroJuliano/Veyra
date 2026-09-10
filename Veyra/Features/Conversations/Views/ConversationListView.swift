@@ -47,7 +47,9 @@ struct ConversationListView: View {
                 } else {
                     List {
                         ForEach(viewModel.filteredConversations) { conversation in
-                            NavigationLink(value: AppRoute.conversation(conversation)) {
+                            Button {
+                                selectedConversation = conversation
+                            } label: {
                                 ConversationRowView(conversation: conversation)
                             }
                             .buttonStyle(.plain)
@@ -103,13 +105,22 @@ struct ConversationListView: View {
             }
         }
         .task { await viewModel.observeConversations() }
-        .alert("Delete conversation?", isPresented: deletionAlertIsPresented, presenting: conversationPendingDeletion) { conversation in
-            Button("Delete", role: .destructive) {
+        .alert(
+            AppLocalization.string("Delete conversation?", table: "Deletion"),
+            isPresented: deletionAlertIsPresented,
+            presenting: conversationPendingDeletion
+        ) { conversation in
+            Button(AppLocalization.string("Delete for me", table: "Deletion"), role: .destructive) {
                 Task { await viewModel.delete(conversation) }
             }
-            Button("Cancel", role: .cancel) {}
+            Button(AppLocalization.string("Cancel", table: "Deletion"), role: .cancel) {}
         } message: { conversation in
-            Text("The conversation with \(conversation.participantName) and all of its messages will be removed for both participants.")
+            Text(
+                AppLocalization.string(
+                    "The conversation with \(conversation.participantName) will be removed only for you. It will appear again if a new message arrives.",
+                    table: "Deletion"
+                )
+            )
         }
         .toolbar {
             ToolbarItem(placement: .principal) {
