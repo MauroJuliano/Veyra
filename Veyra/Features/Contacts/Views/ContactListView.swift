@@ -40,7 +40,13 @@ struct ContactListView: View {
     var body: some View {
         Group {
             if isLoading && contacts.isEmpty {
-                ProgressView("Loading contacts…")
+                ScrollView {
+                    LazyVStack(spacing: VeyraSpacing.sm) {
+                        ForEach(0..<6, id: \.self) { _ in VeyraSkeletonRow() }
+                    }
+                    .padding(.horizontal, VeyraSpacing.md)
+                }
+                .accessibilityLabel("Loading contacts…")
             } else if contacts.isEmpty {
                 ContentUnavailableView(
                     "No contacts yet",

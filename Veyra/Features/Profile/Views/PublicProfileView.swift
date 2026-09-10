@@ -261,8 +261,15 @@ struct PublicProfileView: View {
             }
 
             if isLoading && sharedMedia.isEmpty {
-                ProgressView()
-                    .frame(maxWidth: .infinity, minHeight: 92)
+                HStack(spacing: VeyraSpacing.sm) {
+                    ForEach(0..<3, id: \.self) { _ in
+                        VeyraImagePlaceholder()
+                            .aspectRatio(1, contentMode: .fit)
+                            .frame(maxWidth: .infinity)
+                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    }
+                }
+                .accessibilityLabel("Loading shared media…")
             } else if sharedMedia.isEmpty {
                 ContentUnavailableView(
                     "No shared media yet",
@@ -285,7 +292,7 @@ struct PublicProfileView: View {
                                     VeyraCachedImage(url: url) { image in
                                         image.resizable().scaledToFill()
                                     } placeholder: {
-                                        ProgressView()
+                                        VeyraImagePlaceholder()
                                     }
                                     .frame(width: 108, height: 108)
                                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -432,7 +439,7 @@ private struct SharedMediaGalleryView: View {
                                             .resizable()
                                             .scaledToFill()
                                     } placeholder: {
-                                        ProgressView()
+                                        VeyraImagePlaceholder()
                                     }
                                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                                     .clipped()

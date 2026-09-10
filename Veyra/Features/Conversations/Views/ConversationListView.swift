@@ -37,7 +37,13 @@ struct ConversationListView: View {
 
             Group {
                 if viewModel.isLoading && viewModel.conversations.isEmpty {
-                    ProgressView("Loading conversations…")
+                    ScrollView {
+                        LazyVStack(spacing: VeyraSpacing.sm) {
+                            ForEach(0..<5, id: \.self) { _ in VeyraSkeletonRow() }
+                        }
+                        .padding(.horizontal, VeyraSpacing.md)
+                    }
+                    .accessibilityLabel("Loading conversations…")
                 } else if viewModel.filteredConversations.isEmpty {
                     ContentUnavailableView {
                         Label(LocalizedStringKey(viewModel.hasSearchQuery ? "No conversations found" : "No conversations yet"), systemImage: viewModel.hasSearchQuery ? "magnifyingglass" : "message")
@@ -132,7 +138,7 @@ struct ConversationListView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { presentsNewConversation = true } label: {
                     Image(systemName: "plus")
-                        .frame(width: 36, height: 36)
+                        .frame(width: 44, height: 44)
                         .background(VeyraColor.surfaceElevated)
                         .clipShape(Circle())
                 }
