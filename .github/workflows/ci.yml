@@ -17,7 +17,7 @@ env:
   PROJECT: Veyra.xcodeproj
   SCHEME: Veyra
   BUILD_DESTINATION: generic/platform=iOS Simulator
-  TEST_DESTINATION: platform=iOS Simulator,name=iPhone 16,OS=18.5
+  TEST_DESTINATION: platform=iOS Simulator,name=Veyra CI
 
 jobs:
   build:
@@ -65,6 +65,11 @@ jobs:
 
       - name: Show build environment
         run: xcodebuild -version
+
+      - name: Prepare iOS Simulator
+        run: |
+          sudo xcodebuild -runFirstLaunch
+          xcrun simctl create "Veyra CI" "iPhone 16"
 
       - name: Run unit tests
         run: |

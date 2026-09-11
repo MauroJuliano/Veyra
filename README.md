@@ -24,17 +24,15 @@ The video includes people discovery, one-to-one conversations, text and image me
 
 ### Messaging experience
 
-Find people by name or username, start one-to-one conversations, and exchange text, images, stickers, and voice messages. The timeline supports replies, emoji reactions, delivery and read states, typing presence, last-seen information, unread indicators, and call history. Veyra also explores experimental WebRTC voice calls with incoming, active, timeout, and missed-call states.
+Find people by name or username, start one-to-one conversations, and exchange text, images, emojis, and voice messages. The timeline supports replies, emoji reactions, delivery and read states, typing presence, last-seen information, unread indicators, and call history. Veyra also explores experimental WebRTC voice calls with incoming, active, timeout, and missed-call states.
 
-<!-- Add one image containing Home, Chat, Voice Message, and Call screens. -->
-> 🖼️ **Messaging preview coming soon**
+🎬 [**Watch the messaging experience**](Docs/Media/Chatting.m4v)
 
 ### People, media, and profile
 
 Profiles include a name, unique username, bio, email, and photo. Shared images can be browsed in a dedicated gallery, while privacy flows make it possible to block, unblock, and report users. The interface is available in English, Brazilian Portuguese, and German.
 
-<!-- Add one image containing People, Shared Media, and Profile screens. -->
-> 🖼️ **People and profile preview coming soon**
+🎬 [**Watch profile and settings**](Docs/Media/Settings.m4v)
 
 ---
 
